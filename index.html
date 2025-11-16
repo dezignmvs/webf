@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kauthukam App</title>
+
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+
+    <!-- Fontshare Fonts -->
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@400,500,600,700&f[]=clash-grotesk@400,500,600,700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Set base font for the entire application */
+        body { 
+            font-family: "General Sans", "Cabinet Grotesk", "Clash Grotesk", sans-serif; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Animation for password toggle icon */
+        .eye-anim { 
+            transition: .15s ease; 
+            transform: scale(.8); 
+            opacity: 0; 
+        }
+        .eye-anim.show { 
+            transform: scale(1); 
+            opacity: 1; 
+        }
+
+        /* Utility to hide elements */
+        .hidden-page {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 
+      PAGE 1: LOGIN SCREEN 
+      This is visible by default.
+    -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
+            <h1 class="text-3xl font-bold text-center mb-1">Kauthukam.47</h1>
+            <p class="text-center text-base font-medium mb-8">Refusing to be ignored!!!</p>
+
+            <!-- Username -->
+            <label class="font-semibold text-sm">Username</label>
+            <input type="text" id="username" placeholder="Enter your username"
+                class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300" />
+
+            <!-- Password -->
+            <label class="font-semibold text-sm">Password</label>
+            <div class="relative">
+                <input id="passwordField" type="password" placeholder="Enter your password"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4
+                    focus:outline-none focus:ring-2 focus:ring-yellow-300 pr-12" />
+
+                <span id="togglePassword"
+                    class="absolute right-4 top-4 cursor-pointer text-gray-600 text-xl select-none">
+                    <iconify-icon id="eyeIcon" icon="fluent:eye-16-filled"
+                        width="20" height="20" class="eye-anim show"></iconify-icon>
+                </span>
+            </div>
+
+            <!-- Options -->
+            <div class="flex justify-between items-center mb-2 text-sm">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" class="accent-yellow-400" /> Remember me
+                </label>
+            </div>
+
+            <!-- Login Button -->
+            <button onclick="loginUser()"
+                class="w-full py-3 bg-yellow-400 rounded-xl font-semibold text-lg hover:bg-yellow-500 transition mb-6">
+                Login
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 
+      PAGE 2: DASHBOARD SCREEN 
+      This is hidden by default using the 'hidden-page' class (display: none).
+    -->
+    <div id="dashboardPage" class="bg-gray-100 min-h-screen flex hidden-page">
+
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-white border-r p-4 flex flex-col">
+            
+            <div class="flex items-center mb-6 px-2">
+                <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center font-bold">md</div>
+                <div class="ml-3">
+                    <p class="font-semibold">mvs designs</p>
+                    <p class="text-xs text-green-500">active</p>
+                </div>
+            </div>
+
+            <nav class="space-y-1 text-sm flex-1">
+                <p class="font-medium text-gray-400 uppercase text-xs mb-1">Menu</p>
+
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:view-dashboard-outline"></iconify-icon> Dashboard
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:account-group-outline"></iconify-icon> Candidate
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:clipboard-list-outline"></iconify-icon> Programme
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:calendar-month"></iconify-icon> Schedule
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:trophy-outline"></iconify-icon> Result
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:file-document-edit-outline"></iconify-icon> Content
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:chart-bar"></iconify-icon> Analytics
+                </button>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:clipboard-text-outline"></iconify-icon> Reports
+                </button>
+
+                <p class="font-medium text-gray-400 uppercase text-xs mt-6">Public Pages</p>
+                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
+                    <iconify-icon icon="mdi:web"></iconify-icon> Website
+                </button>
+            </nav>
+
+            <button class="w-full flex items-center gap-3 py-2 px-3 mt-4 rounded hover:bg-gray-100 text-sm">
+                <iconify-icon icon="mdi:cog-outline"></iconify-icon> Go to Settings
+            </button>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-6 space-y-6">
+
+            <!-- Top Bar -->
+            <div class="flex justify-end items-center gap-4">
+                <button class="bg-yellow-400 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
+                    <iconify-icon icon="mdi:crown"></iconify-icon> Upgrade
+                </button>
+
+                <div class="flex items-center gap-2 cursor-pointer">
+                    <div class="w-8 h-8 rounded-full bg-yellow-300 flex items-center justify-center font-semibold">s</div>
+                    <span class="font-medium">suhail</span>
+                    <iconify-icon icon="mdi:chevron-down"></iconify-icon>
+                </div>
+
+                <!-- Logout Button Added -->
+                <button onclick="logoutUser()" class="text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-200 px-3 py-1.5 rounded-lg transition">
+                    Logout
+                </button>
+            </div>
+
+            <!-- Welcome Card -->
+            <div class="bg-white shadow rounded-2xl p-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold">Welcome to <br>Your Festival Dashboard</h2>
+                    <p class="text-gray-600 mt-2 text-sm">Manage your events, track participants, and monitor results all in one place.</p>
+                </div>
+                <img src="https://iili.io/J9Cjd0P.png" class="w-52" onerror="this.style.display='none'">
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-4">
+                <div class="bg-white p-5 shadow rounded-xl">
+                    <p class="text-gray-500 text-sm">TOTAL CANDIDATES</p>
+                    <h1 class="text-2xl font-bold mt-1">0</h1>
+                    <p class="text-xs text-gray-400">Registered participants</p>
+                </div>
+                <div class="bg-white p-5 shadow rounded-xl">
+                    <p class="text-gray-500 text-sm">TOTAL PROGRAMS</p>
+                    <h1 class="text-2xl font-bold mt-1">0</h1>
+                    <p class="text-xs text-gray-400">Active events</p>
+                </div>
+                <div class="bg-white p-5 shadow rounded-xl">
+                    <p class="text-gray-500 text-sm">PUBLISHED CONTENT</p>
+                    <h1 class="text-2xl font-bold mt-1">0</h1>
+                    <p class="text-xs text-gray-400">Public announcements</p>
+                </div>
+                <div class="bg-white p-5 shadow rounded-xl">
+                    <p class="text-gray-500 text-sm">RESULTS UPLOADED</p>
+                    <h1 class="text-2xl font-bold mt-1">0</h1>
+                    <p class="text-xs text-blue-600 cursor-pointer">Completed evaluations</p>
+                </div>
+            </div>
+
+            <!-- Quick Access -->
+            <section class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="text-sm font-semibold text-gray-500 mb-3">QUICK ACCESS</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
+                        <iconify-icon icon="mdi:account-plus-outline" width="26"></iconify-icon>
+                        <p class="mt-2">Add Candidates</p>
+                    </button>
+                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
+                        <iconify-icon icon="mdi:clipboard-plus-outline" width="26"></iconify-icon>
+                        <p class="mt-2">Add Programs</p>
+                    </button>
+                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
+                        <iconify-icon icon="mdi:trophy-outline" width="26"></iconify-icon>
+                        <p class="mt-2">Publish Results</p>
+                    </button>
+                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
+                        <iconify-icon icon="mdi:calendar-edit" width="26"></iconify-icon>
+                        <p class="mt-2">Manage Schedules</p>
+                    </button>
+                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
+                        <iconify-icon icon="mdi:image-multiple-outline" width="26"></iconify-icon>
+                        <p class="mt-2">Manage Gallery</p>
+                    </button>
+                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
+                        <iconify-icon icon="mdi:download-outline" width="26"></iconify-icon>
+                        <p class="mt-2">Manage Downloads</p>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Users -->
+            <section class="bg-white shadow rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-semibold text-gray-500">FEST USERS</h3>
+                    <button class="px-3 py-1 bg-yellow-400 rounded-full text-sm flex items-center gap-1">
+                        <iconify-icon icon="mdi:account-cog-outline"></iconify-icon> Manage
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full border flex items-center justify-center bg-yellow-100 font-semibold">s</div>
+                    <div>
+                        <p class="font-medium">suhail</p>
+                        <p class="text-xs text-gray-500">Owner</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+
+    <script>
+        // --- Get Element References ---
+        const loginPage = document.getElementById("loginPage");
+        const dashboardPage = document.getElementById("dashboardPage");
+        
+        const pwd = document.getElementById("passwordField");
+        const toggle = document.getElementById("togglePassword");
+        const icon = document.getElementById("eyeIcon");
+        
+        let visible = false;
+
+        // --- Password Visibility Toggle ---
+        toggle.addEventListener("click", () => {
+            visible = !visible;
+            pwd.type = visible ? "text" : "password";
+
+            icon.classList.remove("show");
+            setTimeout(() => {
+                icon.setAttribute("icon", visible ? "fluent:eye-off-16-filled" : "fluent:eye-16-filled");
+                icon.classList.add("show");
+            }, 80);
+        });
+
+        // --- Page Navigation Functions ---
+
+        /**
+         * Hides the login page and shows the dashboard page.
+         */
+        function loginUser() {
+            // Hide login
+            loginPage.classList.add("hidden-page");
+            loginPage.classList.remove("flex"); // remove flex display
+
+            // Show dashboard
+            dashboardPage.classList.remove("hidden-page");
+            dashboardPage.classList.add("flex"); // add flex display
+        }
+
+        /**
+         * Hides the dashboard page and shows the login page.
+         */
+        function logoutUser() {
+            // Hide dashboard
+            dashboardPage.classList.add("hidden-page");
+            dashboardPage.classList.remove("flex");
+
+            // Show login
+            loginPage.classList.remove("hidden-page");
+            loginPage.classList.add("flex"); // Re-add flex for centering
+        }
+    </script>
+
+</body>
+</html>
