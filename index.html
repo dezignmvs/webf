@@ -1,962 +1,523 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kauthukam App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festival Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Scripts -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Updated Iconify script -->
-<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-<!-- Alpine.js (Required for new dashboard) -->
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            yellow: '#FCD34D', // Amber-300
+                            yellowDark: '#F59E0B', // Amber-500
+                            grayBg: '#F9FAFB',
+                            card: '#FFFFFF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-<!-- Toastify.js (for login notifications) -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-<!-- Fontshare Fonts (Updated Link) -->
-<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
-
-<!-- Custom Tailwind Configuration -->
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      fontFamily: {
-        'general-sans': ['"General Sans"', 'sans-serif'],
-        'cabinet-grotesk': ['"Cabinet Grotesk"', 'sans-serif'],
-      },
-      colors: {
-        // Based on the UI images
-        'brand-dark': '#1E1E2D', // Dark sidebar
-        'brand-light': '#F5F7FA', // Light main background
-        'brand-indigo': {
-          '50': '#EEF2FF',
-          '600': '#4F46E5',
-        },
-        'brand-yellow': {
-          '400': '#FACC15', // Main button yellow
-          '800': '#854D0E', // Dark text for yellow button
-          '100': '#FEF9C3', // Light bg for button
-        },
-        'brand-gray': {
-          '100': '#F3F4F6', // Light page background
-          '500': '#6B7280', // Menu text
-          '900': '#111827', // Headings
-        },
-        'brand-red': {
-          '600': '#DC2626', // Sign out red
-          '50': '#FEF2F2', // Sign out background
-        },
-        // Icon colors
-        'icon-purple': '#8B5CF6',
-        'icon-blue': '#3B82F6',
-        'icon-green': '#10B981',
-        'icon-red': '#EF4444',
-        'icon-cyan': '#06B6D4',
-        'icon-orange': '#F97316',
-      }
-    }
-  }
-}
-</script>
-
-<!-- Custom Styles -->
-<style>
-body {
-  /* Apply the base font to the whole page */
-  font-family: 'General Sans', sans-serif;
-  /* bg-brand-gray-100 is set on the individual page containers */
-  margin: 0;
-  padding: 0;
-  background-color: #FFFFFF; /* Set base white bg */
-}
-
-/* Use Cabinet Grotesk for bold headings */
-.font-heading {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-weight: 700;
-}
-
-/* Scrollbar styling for a cleaner look */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* slate-300 */
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* slate-400 */
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Animation for password toggle icon */
-.eye-anim {
-  transition: .15s ease;
-  transform: scale(.8);
-  opacity: 0;
-}
-.eye-anim.show {
-  transform: scale(1);
-  opacity: 1;
-}
-
-/* Utility to hide elements */
-.hidden-page {
-  display: none;
-}
-</style>
+    <style>
+        /* Custom Scrollbar for neatness */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+    </style>
 </head>
-
-<body>
-
-<!--
-PAGE 1: LOGIN SCREEN
-This is visible by default.
--->
-<div id="loginPage" class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-
-<div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
-<h1 class="text-3xl font-bold text-center mb-1">Kauthukam.47</h1>
-<p class="text-center text-base font-medium mb-8">Refusing to be ignored!!!</p>
-
-<!-- Username -->
-<label for="username" class="font-semibold text-sm">Username</label>
-<input type="text" id="username" placeholder="Enter your username"
-class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300" />
-
-<!-- Password -->
-<label for="passwordField" class="font-semibold text-sm">Password</label>
-<div class="relative">
-<input id="passwordField" type="password" placeholder="Enter your password"
-class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4
-focus:outline-none focus:ring-2 focus:ring-yellow-300 pr-12" />
-
-<span id="togglePassword"
-class="absolute right-4 top-4 cursor-pointer text-gray-600 text-xl select-none">
-<!-- Note: Iconify icons are now used in the dashboard, but this is a simple span -->
-<span id="eyeIcon" class="iconify w-5 h-5 eye-anim show" data-icon="fluent:eye-16-filled"></span>
-</span>
-</div>
-
-<!-- Options -->
-<div class="flex justify-between items-center mb-2 text-sm">
-<label class="flex items-center gap-2">
-<input type="checkbox" class="accent-yellow-400" /> Remember me
-</label>
-</div>
-
-<!-- Login Button -->
-<button onclick="loginUser()"
-class="w-full py-3 bg-yellow-400 rounded-xl font-semibold text-lg hover:bg-yellow-500 transition mb-6">
-Login
-</button>
-</div>
-
-</div>
-
-<!--
-PAGE 2: DASHBOARD SCREEN
-This is hidden by default using the 'hidden-page' class (display: none).
-This content is now replaced with the new dashboard code.
--->
-<div id="dashboardPage" class="hidden-page">
-
-<!-- This content is from File 1 (Festival Dashboard) -->
-<div class="flex h-screen overflow-hidden">
-
-<!-- Mobile Sidebar Overlay -->
-<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" aria-hidden="true"></div>
-
-<!-- Sidebar -->
-<aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-brand-dark text-brand-light border-r border-gray-700
-transform -translate-x-full lg:translate-x-0
-transition-transform duration-300 ease-in-out
-flex flex-col">
-
-<!-- Sidebar Header -->
-<div class="flex items-center justify-between p-4 h-16 border-b border-gray-700">
-<div class="flex items-center gap-3">
-<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-indigo-600 text-white font-semibold">
-md
-</span>
-<div>
-<span class="block text-sm font-semibold text-white">mvs designs</span>
-<span class="block text-xs text-icon-green">active</span>
-</div>
-</div>
-
-<!-- Mobile Close Button -->
-<button id="sidebar-close-btn" class="lg:hidden p-1 text-gray-400 rounded-md hover:bg-gray-700">
-<span class="iconify w-5 h-5" data-icon="iconamoon:close-light"></span>
-</button>
-</div>
-
-<!-- Sidebar Navigation -->
-<nav class="flex-1 overflow-y-auto p-4 space-y-6">
-
-<!-- Menu Section -->
-<div>
-<h3 class="px-3 text-xs font-semibold uppercase text-gray-500 tracking-wider">Menu</h3>
-<ul class="mt-2 space-y-1">
-<li>
-<a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md
-bg-brand-indigo-600 text-white font-semibold">
-<span class="iconify w-5 h-5" data-icon="radix-icons:dashboard"></span>
-<span>Dashboard</span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-purple" data-icon="ph:users-three-outline"></span>
-<span>Candidate</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-blue" data-icon="solar:notebook-outline"></span>
-<span>Programme</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-green" data-icon="solar:calendar-outline"></span>
-<span>Schedule</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-red" data-icon="solar:ranking-outline"></span>
-<span>Result</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-cyan" data-icon="solar:document-text-outline"></span>
-<span>Content</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-orange" data-icon="solar:chart-outline"></span>
-<span>Analytics</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-purple" data-icon="solar:file-text-outline"></span>
-<span>Reports</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-</ul>
-</div>
-
-<!-- Public Pages Section -->
-<div>
-<h3 class="px-3 text-xs font-semibold uppercase text-gray-500 tracking-wider">Public Pages</h3>
-<ul class="mt-2 space-y-1">
-<li>
-<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<div class="flex items-center gap-3">
-<span class="iconify w-5 h-5 text-icon-blue" data-icon="solar:globe-outline"></span>
-<span>Website</span>
-</div>
-<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
-</a>
-</li>
-</ul>
-</div>
-</nav>
-
-<!-- Sidebar Footer -->
-<div class="p-4 border-t border-gray-700">
-<a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md
-text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
-<span class="iconify w-5 h-5" data-icon="solar:settings-outline"></span>
-<span>Go to Settings</span>
-</a>
-</div>
-</aside>
-
-<!-- Main Content Area -->
-<div class="flex-1 flex flex-col lg:ml-64 bg-brand-light">
-
-<!-- Header -->
-<header class="sticky top-0 z-10 flex items-center justify-between h-16 px-4 md:px-6
-bg-white border-b border-gray-200 shadow-sm">
-
-<!-- Left Header -->
-<div class="flex items-center gap-2">
-
-<!-- Mobile Menu Button -->
-<button id="sidebar-open-btn" class="lg:hidden p-2 -ml-2 text-gray-600 rounded-md hover:bg-gray-100">
-<span class="iconify w-6 h-6" data-icon="iconamoon:menu-burger-horizontal-light"></span>
-</button>
-
-<!-- Desktop Breadcrumb -->
-<div class="hidden lg:flex items-center gap-2 text-gray-600">
-<span class="iconify w-5 h-5" data-icon="solar:home-outline"></span>
-<span class="font-medium">Admin</span>
-</div>
-</div>
-
-<!-- Right Header (Profile) -->
-<div class="flex items-center gap-3 md:gap-4">
-
-<!-- Profile Dropdown -->
-<div class="relative" x-data="{ open: false }" @click.outside="open = false">
-<button @click="open = !open"
-class="flex items-center gap-1.5 md:gap-2 px-2 py-1.5 md:p-2 rounded-lg
-bg-brand-indigo-50 text-brand-indigo-600
-hover:bg-brand-indigo-100 transition-colors">
-
-<!-- Icon -->
-<span class="w-8 h-8 rounded-full bg-brand-indigo-600 flex items-center justify-center
-font-semibold text-white border-2 border-white ring-1 ring-brand-indigo-600 uppercase">
-S
-</span>
-
-<!-- Name and Arrow (Desktop) -->
-<div class="hidden lg:flex items-center gap-1">
-<span class="text-sm font-medium text-gray-700">suhail</span>
-<span class="iconify w-4 h-4 text-gray-500 transition-transform" :class="{'rotate-180': open}" data-icon="solar:alt-arrow-down-outline"></span>
-</div>
-</button>
-
-<!-- Dropdown Menu -->
-<div x-show="open"
-x-transition:enter="transition ease-out duration-100"
-x-transition:enter-start="transform opacity-0 scale-95"
-x-transition:enter-end="transform opacity-100 scale-100"
-x-transition:leave="transition ease-in duration-75"
-x-transition:leave-start="transform opacity-100 scale-100"
-x-transition:leave-end="transform opacity-0 scale-95"
-class="absolute right-0 mt-2 w-64 origin-top-right rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1"
-style="display: none;">
-<div class="p-4 border-b border-gray-100">
-<div class="flex items-center gap-3">
-<span class="w-10 h-10 rounded-full bg-brand-indigo-50 flex items-center justify-center
-font-semibold text-brand-indigo-600 border border-brand-indigo-200 uppercase">
-S
-</span>
-<div>
-<span class="font-semibold text-gray-800">suhail</span>
-<span class="block text-sm text-gray-500">user1@gmail.com</span>
-</div>
-</div>
-</div>
-<div class="py-1" role="none">
-<a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
-<span class="iconify w-5 h-5" data-icon="solar:user-circle-outline"></span>
-<span>Manage account</span>
-</a>
-<a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
-<span class="iconify w-5 h-5" data-icon="solar:database-outline"></span>
-<span>Database</span>
-</a>
-</div>
-<div class="py-1 border-t border-gray-100" role="none">
-<!-- Logout Button -->
-<button @click="logoutUser()" class="w-full flex items-center gap-3 px-4 py-2 text-sm text-brand-red-600 hover:bg-brand-red-50" role="menuitem" tabindex="-1">
-<span class="iconify w-5 h-5" data-icon="solar:logout-2-outline"></span>
-<span>Sign out</span>
-</button>
-</div>
-</div>
-</div>
-
-</div>
-</header>
-
-<!-- Scrollable Main Content -->
-<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-<!-- Left Column -->
-<div class="lg:col-span-2 flex flex-col gap-6">
-
-<!-- Welcome Banner -->
-<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex justify-between items-center">
-<div>
-<h1 class="font-heading text-2xl md:text-3xl text-brand-gray-900">
-Welcome to <br> Your Festival Dashboard
-</h1>
-<p class="mt-2 text-base text-gray-600 max-w-sm">
-Manage your events, track participants, and monitor results all in one place.
-</p>
-</div>
-
-<!-- Decorative Graphic -->
-<div class="hidden lg:block">
-<!-- Abstract shapes -->
-<div class="relative w-40 h-40" aria-hidden="true">
-<div class="absolute w-28 h-40 right-0 top-0 rounded-l-full bg-icon-blue opacity-20"></div>
-<div class="absolute w-16 h-16 rounded-full bg-icon-red opacity-20 bottom-8 left-10 z-10"></div>
-<div class="absolute w-12 h-12 rounded-lg bg-icon-yellow opacity-20 top-8 left-6 transform -rotate-12"></div>
-<div class="absolute w-10 h-10 border-2 border-brand-gray-900 rounded-md top-16 left-0"></div>
-<!-- Simple line art -->
-<svg class="absolute top-0 right-8 w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5 12h14M12 5l7 7-7 7"></path>
-</svg>
-</div>
-</div>
-</section>
-
-<!-- Quick Access -->
-<section class="hidden md:block">
-<h2 class="text-sm font-semibold uppercase text-gray-500 tracking-wider mb-4">
-Quick Access
-</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4"> <!-- Changed lg:grid-cols-3 to lg:grid-cols-2 -->
-<!-- Quick Access Card -->
-<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex flex-col items-center justify-center gap-3
-text-center text-gray-700 hover:text-brand-indigo-600
-hover:shadow-md transition-all group">
-<span class="iconify w-10 h-10 text-icon-purple group-hover:scale-110 transition-transform" data-icon="solar:user-plus-bold-duotone"></span> <!-- Icon Updated -->
-<span class="font-semibold">Add Candidates</span>
-</a>
-<!-- Quick Access Card -->
-<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex flex-col items-center justify-center gap-3
-text-center text-gray-700 hover:text-brand-indigo-600
-hover:shadow-md transition-all group">
-<span class="iconify w-10 h-10 text-icon-blue group-hover:scale-110 transition-transform" data-icon="solar:notebook-bold-duotone"></span> <!-- Icon Updated -->
-<span class="font-semibold">Add Programs</span>
-</a>
-<!-- Quick Access Card -->
-<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex flex-col items-center justify-center gap-3
-text-center text-gray-700 hover:text-brand-indigo-600
-hover:shadow-md transition-all group">
-<span class="iconify w-10 h-10 text-icon-red group-hover:scale-110 transition-transform" data-icon="solar:cup-star-bold-duotone"></span> <!-- Icon Updated -->
-<span class="font-semibold">Publish Results</span>
-</a>
-<!-- Quick Access Card -->
-<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex flex-col items-center justify-center gap-3
-text-center text-gray-700 hover:text-brand-indigo-600
-hover:shadow-md transition-all group">
-<span class="iconify w-10 h-10 text-icon-green group-hover:scale-110 transition-transform" data-icon="solar:calendar-date-bold-duotone"></span> <!-- Icon Updated -->
-<span class="font-semibold">Manage Schedules</span>
-</a>
-<!-- Quick Access Card -->
-<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex flex-col items-center justify-center gap-3
-text-center text-gray-700 hover:text-brand-indigo-600
-hover:shadow-md transition-all group">
-<span class="iconify w-10 h-10 text-icon-cyan group-hover:scale-110 transition-transform" data-icon="solar:gallery-bold-duotone"></span> <!-- Icon Updated -->
-<span class="font-semibold">Manage Gallery</span>
-</a>
-<!-- Quick Access Card -->
-<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
-flex flex-col items-center justify-center gap-3
-text-center text-gray-700 hover:text-brand-indigo-600
-hover:shadow-md transition-all group">
-<span class="iconify w-10 h-10 text-icon-orange group-hover:scale-110 transition-transform" data-icon="solar:file-download-bold-duotone"></span> <!-- Icon Updated -->
-<span class="font-semibold">Manage Downloads</span>
-</a>
-</div>
-</section>
-
-<!-- Fest Users Card (Moved from right column) -->
-<section class="bg-white p-5 rounded-lg shadow-sm border border-gray-200"> <!-- Added border -->
-<div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-2">
-<span class="iconify w-5 h-5 text-icon-purple" data-icon="ph:users-bold-duotone"></span> <!-- Icon Updated -->
-<h3 class="font-semibold text-gray-800">Fest Users</h3>
-</div>
-<button @click="$store.app.isModalOpen = true" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-bg-brand-indigo-50 text-brand-indigo-600
-hover:bg-brand-indigo-100 transition-colors text-sm font-semibold">
-<span class="iconify w-4 h-4" data-icon="solar:settings-bold-duotone"></span>
-<span>Manage</span>
-</button>
-</div>
-
-<!-- User List -->
-<div class="space-y-4">
-<div class="flex items-center gap-3">
-<span class="w-10 h-10 rounded-full bg-brand-indigo-50 flex items-center justify-center
-font-semibold text-brand-indigo-600 border border-brand-indigo-200 uppercase">
-S
-</span>
-<div>
-<span class="font-semibold text-sm text-gray-800">suhail</span>
-<span class="block text-xs text-gray-500">Owner</span>
-</div>
-</div>
-<!-- More users can be added here -->
-</div>
-</section>
-
-</div>
-
-<!-- Right Column (Stats Only) -->
-<div class="lg:col-span-1 flex flex-col gap-6">
-
-<!-- Stats Cards -->
-<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-<!-- Stats Card: Total Candidates -->
-<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
-<div>
-<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
-Total Candidates
-</h3>
-<!-- Data-bound count -->
-<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.candidateCount">0</span>
-<span class="text-sm text-gray-500">Registered participants</span>
-</div>
-<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-purple/10">
-<span class="iconify w-6 h-6 text-icon-purple" data-icon="ph:users-bold-duotone"></span> <!-- Icon Updated -->
-</div>
-</div>
-
-<!-- Stats Card: Total Programs -->
-<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
-<div>
-<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
-Total Programs
-</h3>
-<!-- Data-bound count -->
-<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.programCount">0</span>
-<span class="text-sm text-gray-500">Active events</span>
-</div>
-<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-blue/10">
-<span class="iconify w-6 h-6 text-icon-blue" data-icon="solar:notebook-bold-duotone"></span> <!-- Icon Updated -->
-</div>
-</div>
-
-<!-- Stats Card: Published Content -->
-<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
-<div>
-<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
-Published Content
-</h3>
-<!-- Data-bound count -->
-<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.contentCount">0</span>
-<span class="text-sm text-gray-500">Public announcements</span>
-</div> <!-- Removed "In-sourcing" text that was here -->
-<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-cyan/10">
-<span class="iconify w-6 h-6 text-icon-cyan" data-icon="solar:document-text-bold-duotone"></span> <!-- Icon Updated -->
-</div>
-</div>
-
-<!-- Stats Card: Results Uploaded -->
-<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
-<div>
-<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
-Results Uploaded
-</h3>
-<!-- Data-bound count -->
-<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.resultCount">0</span>
-<span class="text-sm text-gray-500">Completed evaluations</span>
-</div>
-<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-red/10">
-<span class="iconify w-6 h-6 text-icon-red" data-icon="solar:cup-star-bold-duotone"></span> <!-- Icon Updated -->
-</div>
-</div>
-</section>
-
-</div>
-
-</div>
-
-</main>
-</div>
-
-</div>
-
-<!-- Manage Users Modal -->
-<div x-show="$store.app.isModalOpen"
-style="display: none;"
-x-transition:enter="transition ease-out duration-300"
-x-transition:enter-start="opacity-0"
-x-transition:enter-end="opacity-100"
-x-transition:leave="transition ease-in duration-200"
-x-transition:leave-start="opacity-100"
-x-transition:leave-end="opacity-0"
-class="fixed inset-0 z-50 flex items-center justify-center p-4">
-
-<!-- Modal Overlay -->
-<div @click="$store.app.isModalOpen = false" class="fixed inset-0 bg-black/50" aria-hidden="true"></div>
-
-<!-- Modal Panel -->
-<div @click.outside="$store.app.isModalOpen = false"
-x-show="$store.app.isModalOpen"
-x-transition:enter="transition ease-out duration-300"
-x-transition:enter-start="opacity-0 transform scale-95"
-x-transition:enter-end="opacity-100 transform scale-100"
-x-transition:leave="transition ease-in duration-200"
-x-transition:leave-start="opacity-100 transform scale-100"
-x-transition:leave-end="opacity-0 transform scale-95"
-class="relative bg-white w-full max-w-md p-6 rounded-2xl shadow-xl"> <!-- rounded-2xl is 16px, close to 20px -->
-
-<!-- Modal Header -->
-<div class="flex items-center justify-between pb-3 border-b border-gray-200">
-<h3 class="text-xl font-semibold font-heading text-gray-900">Manage Fest Users</h3>
-<button @click="$store.app.isModalOpen = false"
-class="p-1 text-gray-400 rounded-full hover:bg-gray-100 hover:text-gray-600">
-<span class="iconify w-6 h-6" data-icon="iconamoon:close-light"></span>
-</button>
-</div>
-
-<!-- Modal Body -->
-<div class="mt-6 space-y-4">
-<form action="#" id="manage-user-form">
-<!-- Current User (Example) -->
-<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-<div class="flex items-center gap-3">
-<span class="w-10 h-10 rounded-full bg-brand-indigo-50 flex items-center justify-center
-font-semibold text-brand-indigo-600 border border-brand-indigo-200 uppercase">
-S
-</span>
-<div>
-<span class="font-semibold text-sm text-gray-800">suhail</span>
-<span class="block text-xs text-gray-500">user1@gmail.com</span>
-</div>
-</div>
-<span class="text-sm font-medium text-gray-600">Owner</span>
-</div>
-
-<!-- Add/Edit User Form -->
-<div class="pt-4 space-y-4">
-<div>
-<label for="user-name" class="block text-sm font-medium text-gray-700 mb-1">User Name</label>
-<input type="text" id="user-name" placeholder="Enter full name"
-class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo-600 focus:border-transparent">
-</div>
-<div>
-<label for="user-role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-<select id="user-role"
-class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo-600 focus:border-transparent">
-<option value="owner">Owner</option>
-<option value="admin">Admin</option>
-<option value="editor">Editor</option>
-<option value="viewer">Viewer</option>
-</select>
-</div>
-</div>
-</form>
-</div>
-
-<!-- Modal Footer -->
-<div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-<button @click="$store.app.isModalOpen = false"
-class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-Cancel
-</button>
-<button type="submit" form="manage-user-form"
-class="px-4 py-2 text-sm font-medium text-white bg-brand-indigo-600 border border-transparent rounded-lg hover:bg-brand-indigo-600/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-indigo-600">
-Save Changes
-</button>
-</div>
-</div>
-</div>
-
-<!-- End of File 1 Content -->
-
-</div>
-
-
-<!-- Firebase SDKs (UPDATED to 12.6.0 and NEW config) -->
-<script type="module">
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
-import {
-getAuth,
-signInAnonymously,
-signInWithCustomToken,
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import {
-getFirestore,
-collection,
-onSnapshot,
-setLogLevel
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
-// --- Firebase Configuration (NEW) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE",
-  authDomain: "dtbase-fest1.firebaseapp.com",
-  projectId: "dtbase-fest1",
-  storageBucket: "dtbase-fest1.firebasestorage.app",
-  messagingSenderId: "761020619162",
-  appId: "1:761020619162:web:4982fc6db9a80c25808223",
-  measurementId: "G-WKGSBNZ672"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app); // Initialize analytics
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Enable Firebase logging for debugging
-setLogLevel('Debug');
-
-// --- Alpine.js Global State ---
-document.addEventListener('alpine:init', () => {
-// Store for general app state (like modals)
-Alpine.store('app', {
-isModalOpen: false,
-userId: null,
-isAuthReady: false
-});
-
-// Store for dashboard statistics
-Alpine.store('stats', {
-candidateCount: 0,
-programCount: 0,
-contentCount: 0,
-resultCount: 0
-});
-
-// Initialize Firebase Auth and Firestore listeners
-// This will run when Alpine initializes, which happens AFTER login
-// We will call this function *after* successful login instead.
-// initializeAppLogic();
-});
-
-// --- Application Logic ---
-async function initializeAppLogic() {
-// 1. Sign in the user (for Firestore data access)
-try {
-  // Use anonymous sign-in for simplicity, as dashboard data is public
-  await signInAnonymously(auth);
-  console.log("Signed in anonymously for data fetching.");
-  
-  // Note: The __initial_auth_token logic is removed as we are using the new config
-  // and a simple username/password login for page access.
-  
-} catch (error) {
-  console.error("Firebase auth error:", error);
-}
-
-// 2. Listen for auth state changes
-onAuthStateChanged(auth, (user) => {
-if (user) {
-  console.log("Auth state ready. User ID:", user.uid);
-  Alpine.store('app').userId = user.uid;
-  Alpine.store('app').isAuthReady = true;
-  
-  // 3. Once auth is ready, set up Firestore listeners
-  setupFirestoreListeners(user.uid); // Pass uid
-} else {
-  console.log("User is signed out.");
-  Alpine.store('app').userId = null;
-  Alpine.store('app').isAuthReady = false;
-}
-});
-}
-
-// --- Firestore Real-time Listeners ---
-function setupFirestoreListeners(userId) {
-// This app's ID. We'll use the projectId as a stable appId
-const appId = firebaseConfig.projectId || 'default-app-id';
-
-// Base path for public festival data
-const basePath = `/artifacts/${appId}/public/data`;
-console.log(`Setting up listeners for path: ${basePath}`);
-
-// Listen for 'candidates' count
-const candidatesRef = collection(db, `${basePath}/candidates`);
-onSnapshot(candidatesRef, (snapshot) => {
-  console.log("Candidates snapshot:", snapshot.size);
-  Alpine.store('stats').candidateCount = snapshot.size;
-}, (error) => console.error("Error fetching candidates:", error));
-
-// Listen for 'programs' count
-const programsRef = collection(db, `${basePath}/programs`);
-onSnapshot(programsRef, (snapshot) => {
-  console.log("Programs snapshot:", snapshot.size);
-  Alpine.store('stats').programCount = snapshot.size;
-}, (error) => console.error("Error fetching programs:", error));
-
-// Listen for 'content' count
-const contentRef = collection(db, `${basePath}/content`);
-onSnapshot(contentRef, (snapshot) => {
-  console.log("Content snapshot:", snapshot.size);
-  Alpine.store('stats').contentCount = snapshot.size;
-}, (error) => console.error("Error fetching content:", error));
-
-// Listen for 'results' count
-const resultsRef = collection(db, `${basePath}/results`);
-onSnapshot(resultsRef, (snapshot) => {
-  console.log("Results snapshot:", snapshot.size);
-  Alpine.store('stats').resultCount = snapshot.size;
-}, (error) => console.error("Error fetching results:", error));
-}
-
-// --- Make loginUser and logoutUser globally accessible ---
-// This is necessary because the module script is separate from the inline script
-window.loginUser = loginUser;
-window.logoutUser = logoutUser;
-</script>
-
-
-<!-- Main app script for login, logout, and sidebar -->
-<script>
-// --- Get Element References ---
-const loginPage = document.getElementById("loginPage");
-const dashboardPage = document.getElementById("dashboardPage");
-
-const usernameInput = document.getElementById("username");
-const pwd = document.getElementById("passwordField");
-const toggle = document.getElementById("togglePassword");
-const icon = document.getElementById("eyeIcon");
-
-let visible = false;
-
-// --- Password Visibility Toggle ---
-toggle.addEventListener("click", () => {
-visible = !visible;
-pwd.type = visible ? "text" : "password";
-const iconEl = document.getElementById("eyeIcon"); // Re-select for safety
-
-iconEl.classList.remove("show");
-setTimeout(() => {
-iconEl.setAttribute("data-icon", visible ? "fluent:eye-off-16-filled" : "fluent:eye-16-filled");
-iconEl.classList.add("show");
-}, 80);
-});
-
-// --- Page Navigation Functions ---
-
-/**
-* Hides the login page and shows the dashboard page.
-*/
-function loginUser() {
-const user = usernameInput.value;
-const pass = pwd.value;
-
-if (user === "su" && pass === "340") {
-// --- Login Success ---
-Toastify({
-  text: "Login Successful! Welcome.",
-  duration: 3000,
-  gravity: "top", // `top` or `bottom`
-  position: "right", // `left`, `center` or `right`
-  style: {
-    background: "linear-gradient(to right, #00b09b, #96c93d)",
-  },
-  stopOnFocus: true, // Prevents dismissing of toast on hover
-}).showToast();
-
-// Hide login
-loginPage.classList.add("hidden-page");
-loginPage.classList.remove("flex"); // remove flex display
-
-// Show dashboard
-dashboardPage.classList.remove("hidden-page");
-
-// --- IMPORTANT ---
-// Now that we are logged in, initialize the Firebase app logic
-// This will sign in anonymously and set up the Firestore listeners
-if (typeof initializeAppLogic === "function") {
-  initializeAppLogic();
-}
-
-} else {
-// --- Login Failure ---
-Toastify({
-  text: "Invalid username or password",
-  duration: 3000,
-  gravity: "top",
-  position: "right",
-  style: {
-    background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-  },
-  stopOnFocus: true,
-}).showToast();
-}
-}
-
-/**
-* Hides the dashboard page and shows the login page.
-*/
-function logoutUser() {
-// Hide dashboard
-dashboardPage.classList.add("hidden-page");
-
-// Show login
-loginPage.classList.remove("hidden-page");
-loginPage.classList.add("flex"); // Re-add flex for centering
-
-// Optional: You might want to sign out the anonymous user
-// if (typeof auth !== 'undefined' && auth.currentUser) {
-//   auth.signOut();
-//   console.log("Anonymous user signed out.");
-// }
-}
-
-// --- JavaScript for Mobile Sidebar Toggle ---
-document.addEventListener('DOMContentLoaded', () => {
-// We need to select these elements *after* the DOM is loaded
-// because the dashboard page is initially hidden.
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebar-overlay');
-const openBtn = document.getElementById('sidebar-open-btn');
-const closeBtn = document.getElementById('sidebar-close-btn');
-
-// Check if elements exist before adding listeners (prevents errors on login page)
-if (sidebar && overlay && openBtn && closeBtn) {
-function openSidebar() {
-  sidebar.classList.remove('-translate-x-full');
-  overlay.classList.remove('hidden');
-}
-
-function closeSidebar() {
-  sidebar.classList.add('-translate-x-full');
-  overlay.classList.add('hidden');
-}
-
-openBtn.addEventListener('click', openSidebar);
-closeBtn.addEventListener('click', closeSidebar);
-overlay.addEventListener('click', closeSidebar);
-}
-});
-</script>
-
+<body class="bg-brand-grayBg font-sans text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-white w-64 flex-shrink-0 border-r border-gray-200 flex flex-col h-full fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-30">
+        <!-- Sidebar Header -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <div class="h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center text-xs font-bold text-white mr-3 uppercase">
+                md
+            </div>
+            <div>
+                <h1 class="text-sm font-bold text-gray-900 leading-tight">mvs designs</h1>
+                <span class="text-xs text-green-500 font-medium">active</span>
+            </div>
+            <button class="ml-auto text-gray-400 hover:text-gray-600 lg:hidden">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+            
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group">
+                <i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>
+                Dashboard
+            </a>
+
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-regular fa-user w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Candidate
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-regular fa-calendar-check w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Programme
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-regular fa-calendar w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Schedule
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-trophy w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Result
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-regular fa-image w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Content
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+
+            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-chart-simple w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Analytics
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+            
+             <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                <div class="flex items-center">
+                    <i class="fa-regular fa-file-lines w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                    Reports
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+            </a>
+
+            <div class="pt-4">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Public Pages</p>
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-globe w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
+                        Website
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-gray-200">
+            <a href="#" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+                <i class="fa-solid fa-gear w-5 text-center mr-2 text-gray-400"></i>
+                Go to Settings
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        
+        <!-- Top Header -->
+        <header class="h-16 bg-white lg:bg-transparent lg:px-8 px-4 flex items-center justify-between border-b lg:border-b-0 border-gray-200">
+            <div class="flex items-center">
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none mr-2">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="hidden lg:flex items-center text-gray-400 text-sm">
+                    <i class="fa-solid fa-columns mr-2"></i>
+                    <span class="mr-2">/</span>
+                    <span class="font-medium text-gray-600">Admin</span>
+                </div>
+                 <!-- Mobile Title showing context -->
+                 <span class="lg:hidden font-semibold text-gray-700 ml-2">Admin</span>
+            </div>
+
+            <!-- User Profile Section with Dropdown -->
+            <div class="relative" id="userMenuContainer">
+                <!-- Trigger Button -->
+                <button onclick="toggleUserMenu()" class="flex items-center space-x-2 focus:outline-none hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
+                    <div class="h-9 w-9 rounded-full bg-yellow-200 flex items-center justify-center text-sm font-bold text-yellow-800 cursor-pointer uppercase">
+                        s
+                    </div>
+                    <span class="hidden lg:block text-sm font-medium text-gray-700">suhail</span>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 hidden lg:block ml-1 transition-transform duration-200" id="userMenuChevron"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-50 transform origin-top-right transition-all duration-200">
+                    
+                    <!-- User Info Header -->
+                    <div class="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
+                        <div class="h-10 w-10 rounded-full bg-yellow-400 flex items-center justify-center text-lg font-bold text-gray-900 flex-shrink-0 uppercase">
+                            s
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="font-bold text-gray-900 text-sm">suhail</span>
+                                <span class="px-1.5 py-[1px] rounded border border-gray-300 text-[10px] font-bold text-gray-500 tracking-wider uppercase">Trial</span>
+                            </div>
+                            <span class="text-xs text-gray-500 truncate">user1@gmail.com</span>
+                        </div>
+                    </div>
+
+                    <!-- Menu Items -->
+                    <div class="py-2">
+                        <a href="#" class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
+                            <i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i> 
+                            Manage Account
+                        </a>
+                        <a href="#" class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
+                            <i class="fa-solid fa-database w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i> 
+                            Database
+                        </a>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="border-t border-gray-100 mt-1 py-2">
+                        <a href="#" class="flex items-center px-5 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                            <i class="fa-solid fa-arrow-right-from-bracket w-5 mr-3 text-center"></i> 
+                            Signout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+            
+            <!-- Grid Wrapper for Top Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                
+                <!-- Welcome Card (Spans 2 columns on desktop) -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden flex flex-col justify-center min-h-[240px]">
+                    <div class="relative z-10 max-w-md">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                            Welcome to <br/> Your Festival Dashboard
+                        </h2>
+                        <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                            Manage your events, track participants, and monitor results all in one place.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid (2x2) -->
+                <div class="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                    
+                    <!-- Stat Card 1 -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Candidates</span>
+                            <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                                <i class="fa-solid fa-user-group text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-gray-900">0</span>
+                            <p class="text-xs text-gray-400 mt-1">Registered participants</p>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 2 -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Programs</span>
+                            <div class="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                                <i class="fa-regular fa-calendar text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-gray-900">0</span>
+                            <p class="text-xs text-gray-400 mt-1">Active events</p>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 3 -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Published Content</span>
+                            <div class="h-8 w-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                                <i class="fa-regular fa-file-lines text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-gray-900">0</span>
+                            <p class="text-xs text-gray-400 mt-1">Public announcements</p>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 4 -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Results Uploaded</span>
+                            <div class="h-8 w-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
+                                <i class="fa-solid fa-trophy text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-gray-900">0</span>
+                            <p class="text-xs text-gray-400 mt-1">Completed evaluations</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Bottom Section Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Quick Access Grid (Spans 2 cols) -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Quick Access</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <!-- Button 1 -->
+                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
+                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Add Candidates</span>
+                        </button>
+
+                        <!-- Button 2 -->
+                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
+                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-green-50 group-hover:text-green-600 transition-colors">
+                                <i class="fa-solid fa-plus-square"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Add Programs</span>
+                        </button>
+
+                        <!-- Button 3 -->
+                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
+                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Publish Results</span>
+                        </button>
+
+                        <!-- Button 4 -->
+                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
+                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+                                <i class="fa-regular fa-calendar-alt"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Manage Schedules</span>
+                        </button>
+
+                        <!-- Button 5 -->
+                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
+                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                                <i class="fa-regular fa-images"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Manage Gallery</span>
+                        </button>
+
+                        <!-- Button 6 -->
+                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
+                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-red-50 group-hover:text-red-600 transition-colors">
+                                <i class="fa-regular fa-folder-open"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Manage Downloads</span>
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Fest Users Card -->
+                <div class="lg:col-span-1">
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Fest Users</h3>
+                        <button onclick="openManageModal()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold px-3 py-1 rounded-full transition-colors flex items-center">
+                            <i class="fa-solid fa-user-plus mr-1"></i> Manage
+                        </button>
+                    </div>
+                    
+                    <!-- Added ID 'usersContainer' and flex-wrap for multiple users -->
+                    <div id="usersContainer" class="bg-white rounded-2xl shadow-sm p-6 h-auto flex flex-wrap gap-4">
+                         <!-- User Item -->
+                         <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group">
+                            <div class="h-12 w-12 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center text-lg font-bold text-gray-800 mb-2 uppercase">
+                                s
+                            </div>
+                            <span class="font-bold text-sm text-gray-900 truncate w-full text-center">suhail</span>
+                            <span class="text-xs text-gray-500 truncate w-full text-center">Owner</span>
+                         </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Spacer for bottom scrolling on mobile -->
+            <div class="h-8 lg:hidden"></div>
+        </main>
+    </div>
+
+    <!-- Manage Users Modal (Popup) -->
+    <div id="manageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <!-- Modal Header -->
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Add New User</h3>
+                <button onclick="closeManageModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Name</label>
+                    <input type="text" id="inputName" placeholder="e.g. John Doe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all text-sm">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Letter</label>
+                        <input type="text" id="inputLetter" maxlength="1" placeholder="J" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all text-sm uppercase text-center">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Position</label>
+                        <input type="text" id="inputPosition" placeholder="Admin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="closeManageModal()" class="text-gray-500 font-medium text-sm px-4 py-2 hover:text-gray-700 mr-2">Cancel</button>
+                <button onclick="saveUser()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Sidebar Toggle Logic
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            
+            if (isClosed) {
+                // Open sidebar
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+            } else {
+                // Close sidebar
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+        }
+
+        // User Dropdown Toggle Logic
+        function toggleUserMenu() {
+            const menu = document.getElementById('userDropdown');
+            const chevron = document.getElementById('userMenuChevron');
+            menu.classList.toggle('hidden');
+            
+            if (!menu.classList.contains('hidden')) {
+                chevron.classList.add('rotate-180');
+            } else {
+                chevron.classList.remove('rotate-180');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('userMenuContainer');
+            const menu = document.getElementById('userDropdown');
+            const chevron = document.getElementById('userMenuChevron');
+            
+            if (!container.contains(event.target)) {
+                menu.classList.add('hidden');
+                chevron.classList.remove('rotate-180');
+            }
+        });
+
+        // --- Manage Modal Logic ---
+
+        function openManageModal() {
+            document.getElementById('manageModal').classList.remove('hidden');
+        }
+
+        function closeManageModal() {
+            document.getElementById('manageModal').classList.add('hidden');
+            // Optional: Clear inputs on close
+            document.getElementById('inputName').value = '';
+            document.getElementById('inputLetter').value = '';
+            document.getElementById('inputPosition').value = '';
+        }
+
+        function saveUser() {
+            const name = document.getElementById('inputName').value;
+            const letter = document.getElementById('inputLetter').value;
+            const position = document.getElementById('inputPosition').value;
+
+            if (name && letter && position) {
+                const usersContainer = document.getElementById('usersContainer');
+                
+                // Create new user card HTML
+                const userCard = document.createElement('div');
+                userCard.className = 'border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group';
+                userCard.innerHTML = `
+                    <div class="h-12 w-12 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center text-lg font-bold text-gray-800 mb-2 uppercase">
+                        ${letter}
+                    </div>
+                    <span class="font-bold text-sm text-gray-900 truncate w-full text-center">${name}</span>
+                    <span class="text-xs text-gray-500 truncate w-full text-center">${position}</span>
+                `;
+
+                usersContainer.appendChild(userCard);
+                closeManageModal();
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+    </script>
 </body>
 </html>
