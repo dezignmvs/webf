@@ -1,303 +1,962 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kauthukam App</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kauthukam App</title>
 
-    <!-- Scripts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<!-- Scripts -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Updated Iconify script -->
+<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+<!-- Alpine.js (Required for new dashboard) -->
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
-    <!-- Fontshare Fonts -->
-    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@400,500,600,700&f[]=clash-grotesk@400,500,600,700&display=swap" rel="stylesheet">
+<!-- Toastify.js (for login notifications) -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <style>
-        /* Set base font for the entire application */
-        body { 
-            font-family: "General Sans", "Cabinet Grotesk", "Clash Grotesk", sans-serif; 
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* Animation for password toggle icon */
-        .eye-anim { 
-            transition: .15s ease; 
-            transform: scale(.8); 
-            opacity: 0; 
-        }
-        .eye-anim.show { 
-            transform: scale(1); 
-            opacity: 1; 
-        }
+<!-- Fontshare Fonts (Updated Link) -->
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
 
-        /* Utility to hide elements */
-        .hidden-page {
-            display: none;
-        }
-    </style>
+<!-- Custom Tailwind Configuration -->
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        'general-sans': ['"General Sans"', 'sans-serif'],
+        'cabinet-grotesk': ['"Cabinet Grotesk"', 'sans-serif'],
+      },
+      colors: {
+        // Based on the UI images
+        'brand-dark': '#1E1E2D', // Dark sidebar
+        'brand-light': '#F5F7FA', // Light main background
+        'brand-indigo': {
+          '50': '#EEF2FF',
+          '600': '#4F46E5',
+        },
+        'brand-yellow': {
+          '400': '#FACC15', // Main button yellow
+          '800': '#854D0E', // Dark text for yellow button
+          '100': '#FEF9C3', // Light bg for button
+        },
+        'brand-gray': {
+          '100': '#F3F4F6', // Light page background
+          '500': '#6B7280', // Menu text
+          '900': '#111827', // Headings
+        },
+        'brand-red': {
+          '600': '#DC2626', // Sign out red
+          '50': '#FEF2F2', // Sign out background
+        },
+        // Icon colors
+        'icon-purple': '#8B5CF6',
+        'icon-blue': '#3B82F6',
+        'icon-green': '#10B981',
+        'icon-red': '#EF4444',
+        'icon-cyan': '#06B6D4',
+        'icon-orange': '#F97316',
+      }
+    }
+  }
+}
+</script>
+
+<!-- Custom Styles -->
+<style>
+body {
+  /* Apply the base font to the whole page */
+  font-family: 'General Sans', sans-serif;
+  /* bg-brand-gray-100 is set on the individual page containers */
+  margin: 0;
+  padding: 0;
+  background-color: #FFFFFF; /* Set base white bg */
+}
+
+/* Use Cabinet Grotesk for bold headings */
+.font-heading {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-weight: 700;
+}
+
+/* Scrollbar styling for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Animation for password toggle icon */
+.eye-anim {
+  transition: .15s ease;
+  transform: scale(.8);
+  opacity: 0;
+}
+.eye-anim.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Utility to hide elements */
+.hidden-page {
+  display: none;
+}
+</style>
 </head>
 
 <body>
 
-    <!-- 
-      PAGE 1: LOGIN SCREEN 
-      This is visible by default.
-    -->
-    <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+<!--
+PAGE 1: LOGIN SCREEN
+This is visible by default.
+-->
+<div id="loginPage" class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
 
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
-            <h1 class="text-3xl font-bold text-center mb-1">Kauthukam.47</h1>
-            <p class="text-center text-base font-medium mb-8">Refusing to be ignored!!!</p>
+<div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
+<h1 class="text-3xl font-bold text-center mb-1">Kauthukam.47</h1>
+<p class="text-center text-base font-medium mb-8">Refusing to be ignored!!!</p>
 
-            <!-- Username -->
-            <label class="font-semibold text-sm">Username</label>
-            <input type="text" id="username" placeholder="Enter your username"
-                class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300" />
+<!-- Username -->
+<label for="username" class="font-semibold text-sm">Username</label>
+<input type="text" id="username" placeholder="Enter your username"
+class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-300" />
 
-            <!-- Password -->
-            <label class="font-semibold text-sm">Password</label>
-            <div class="relative">
-                <input id="passwordField" type="password" placeholder="Enter your password"
-                    class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4
-                    focus:outline-none focus:ring-2 focus:ring-yellow-300 pr-12" />
+<!-- Password -->
+<label for="passwordField" class="font-semibold text-sm">Password</label>
+<div class="relative">
+<input id="passwordField" type="password" placeholder="Enter your password"
+class="w-full px-4 py-3 rounded-xl border border-gray-300 mt-1 mb-4
+focus:outline-none focus:ring-2 focus:ring-yellow-300 pr-12" />
 
-                <span id="togglePassword"
-                    class="absolute right-4 top-4 cursor-pointer text-gray-600 text-xl select-none">
-                    <iconify-icon id="eyeIcon" icon="fluent:eye-16-filled"
-                        width="20" height="20" class="eye-anim show"></iconify-icon>
-                </span>
-            </div>
+<span id="togglePassword"
+class="absolute right-4 top-4 cursor-pointer text-gray-600 text-xl select-none">
+<!-- Note: Iconify icons are now used in the dashboard, but this is a simple span -->
+<span id="eyeIcon" class="iconify w-5 h-5 eye-anim show" data-icon="fluent:eye-16-filled"></span>
+</span>
+</div>
 
-            <!-- Options -->
-            <div class="flex justify-between items-center mb-2 text-sm">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" class="accent-yellow-400" /> Remember me
-                </label>
-            </div>
+<!-- Options -->
+<div class="flex justify-between items-center mb-2 text-sm">
+<label class="flex items-center gap-2">
+<input type="checkbox" class="accent-yellow-400" /> Remember me
+</label>
+</div>
 
-            <!-- Login Button -->
-            <button onclick="loginUser()"
-                class="w-full py-3 bg-yellow-400 rounded-xl font-semibold text-lg hover:bg-yellow-500 transition mb-6">
-                Login
-            </button>
-        </div>
+<!-- Login Button -->
+<button onclick="loginUser()"
+class="w-full py-3 bg-yellow-400 rounded-xl font-semibold text-lg hover:bg-yellow-500 transition mb-6">
+Login
+</button>
+</div>
 
-    </div>
+</div>
 
-    <!-- 
-      PAGE 2: DASHBOARD SCREEN 
-      This is hidden by default using the 'hidden-page' class (display: none).
-    -->
-    <div id="dashboardPage" class="bg-gray-100 min-h-screen flex hidden-page">
+<!--
+PAGE 2: DASHBOARD SCREEN
+This is hidden by default using the 'hidden-page' class (display: none).
+This content is now replaced with the new dashboard code.
+-->
+<div id="dashboardPage" class="hidden-page">
 
-        <!-- SIDEBAR -->
-        <aside class="w-64 bg-white border-r p-4 flex flex-col">
-            
-            <div class="flex items-center mb-6 px-2">
-                <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center font-bold">md</div>
-                <div class="ml-3">
-                    <p class="font-semibold">mvs designs</p>
-                    <p class="text-xs text-green-500">active</p>
-                </div>
-            </div>
+<!-- This content is from File 1 (Festival Dashboard) -->
+<div class="flex h-screen overflow-hidden">
 
-            <nav class="space-y-1 text-sm flex-1">
-                <p class="font-medium text-gray-400 uppercase text-xs mb-1">Menu</p>
+<!-- Mobile Sidebar Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" aria-hidden="true"></div>
 
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:view-dashboard-outline"></iconify-icon> Dashboard
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:account-group-outline"></iconify-icon> Candidate
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:clipboard-list-outline"></iconify-icon> Programme
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:calendar-month"></iconify-icon> Schedule
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:trophy-outline"></iconify-icon> Result
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:file-document-edit-outline"></iconify-icon> Content
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:chart-bar"></iconify-icon> Analytics
-                </button>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:clipboard-text-outline"></iconify-icon> Reports
-                </button>
+<!-- Sidebar -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-brand-dark text-brand-light border-r border-gray-700
+transform -translate-x-full lg:translate-x-0
+transition-transform duration-300 ease-in-out
+flex flex-col">
 
-                <p class="font-medium text-gray-400 uppercase text-xs mt-6">Public Pages</p>
-                <button class="w-full flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-100">
-                    <iconify-icon icon="mdi:web"></iconify-icon> Website
-                </button>
-            </nav>
+<!-- Sidebar Header -->
+<div class="flex items-center justify-between p-4 h-16 border-b border-gray-700">
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-indigo-600 text-white font-semibold">
+md
+</span>
+<div>
+<span class="block text-sm font-semibold text-white">mvs designs</span>
+<span class="block text-xs text-icon-green">active</span>
+</div>
+</div>
 
-            <button class="w-full flex items-center gap-3 py-2 px-3 mt-4 rounded hover:bg-gray-100 text-sm">
-                <iconify-icon icon="mdi:cog-outline"></iconify-icon> Go to Settings
-            </button>
-        </aside>
+<!-- Mobile Close Button -->
+<button id="sidebar-close-btn" class="lg:hidden p-1 text-gray-400 rounded-md hover:bg-gray-700">
+<span class="iconify w-5 h-5" data-icon="iconamoon:close-light"></span>
+</button>
+</div>
 
-        <!-- MAIN CONTENT -->
-        <main class="flex-1 p-6 space-y-6">
+<!-- Sidebar Navigation -->
+<nav class="flex-1 overflow-y-auto p-4 space-y-6">
 
-            <!-- Top Bar -->
-            <div class="flex justify-end items-center gap-4">
-                <button class="bg-yellow-400 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
-                    <iconify-icon icon="mdi:crown"></iconify-icon> Upgrade
-                </button>
+<!-- Menu Section -->
+<div>
+<h3 class="px-3 text-xs font-semibold uppercase text-gray-500 tracking-wider">Menu</h3>
+<ul class="mt-2 space-y-1">
+<li>
+<a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md
+bg-brand-indigo-600 text-white font-semibold">
+<span class="iconify w-5 h-5" data-icon="radix-icons:dashboard"></span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-purple" data-icon="ph:users-three-outline"></span>
+<span>Candidate</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-blue" data-icon="solar:notebook-outline"></span>
+<span>Programme</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-green" data-icon="solar:calendar-outline"></span>
+<span>Schedule</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-red" data-icon="solar:ranking-outline"></span>
+<span>Result</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-cyan" data-icon="solar:document-text-outline"></span>
+<span>Content</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-orange" data-icon="solar:chart-outline"></span>
+<span>Analytics</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-purple" data-icon="solar:file-text-outline"></span>
+<span>Reports</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+</ul>
+</div>
 
-                <div class="flex items-center gap-2 cursor-pointer">
-                    <div class="w-8 h-8 rounded-full bg-yellow-300 flex items-center justify-center font-semibold">s</div>
-                    <span class="font-medium">suhail</span>
-                    <iconify-icon icon="mdi:chevron-down"></iconify-icon>
-                </div>
+<!-- Public Pages Section -->
+<div>
+<h3 class="px-3 text-xs font-semibold uppercase text-gray-500 tracking-wider">Public Pages</h3>
+<ul class="mt-2 space-y-1">
+<li>
+<a href="#" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<div class="flex items-center gap-3">
+<span class="iconify w-5 h-5 text-icon-blue" data-icon="solar:globe-outline"></span>
+<span>Website</span>
+</div>
+<span class="iconify w-4 h-4" data-icon="solar:alt-arrow-right-outline"></span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
 
-                <!-- Logout Button Added -->
-                <button onclick="logoutUser()" class="text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-200 px-3 py-1.5 rounded-lg transition">
-                    Logout
-                </button>
-            </div>
+<!-- Sidebar Footer -->
+<div class="p-4 border-t border-gray-700">
+<a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-md
+text-gray-400 hover:bg-gray-700 hover:text-white font-medium">
+<span class="iconify w-5 h-5" data-icon="solar:settings-outline"></span>
+<span>Go to Settings</span>
+</a>
+</div>
+</aside>
 
-            <!-- Welcome Card -->
-            <div class="bg-white shadow rounded-2xl p-6 flex justify-between items-center">
-                <div>
-                    <h2 class="text-2xl font-bold">Welcome to <br>Your Festival Dashboard</h2>
-                    <p class="text-gray-600 mt-2 text-sm">Manage your events, track participants, and monitor results all in one place.</p>
-                </div>
-                <img src="https://iili.io/J9Cjd0P.png" class="w-52" onerror="this.style.display='none'">
-            </div>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col lg:ml-64 bg-brand-light">
 
-            <!-- Stats -->
-            <div class="grid grid-cols-4 gap-4">
-                <div class="bg-white p-5 shadow rounded-xl">
-                    <p class="text-gray-500 text-sm">TOTAL CANDIDATES</p>
-                    <h1 class="text-2xl font-bold mt-1">0</h1>
-                    <p class="text-xs text-gray-400">Registered participants</p>
-                </div>
-                <div class="bg-white p-5 shadow rounded-xl">
-                    <p class="text-gray-500 text-sm">TOTAL PROGRAMS</p>
-                    <h1 class="text-2xl font-bold mt-1">0</h1>
-                    <p class="text-xs text-gray-400">Active events</p>
-                </div>
-                <div class="bg-white p-5 shadow rounded-xl">
-                    <p class="text-gray-500 text-sm">PUBLISHED CONTENT</p>
-                    <h1 class="text-2xl font-bold mt-1">0</h1>
-                    <p class="text-xs text-gray-400">Public announcements</p>
-                </div>
-                <div class="bg-white p-5 shadow rounded-xl">
-                    <p class="text-gray-500 text-sm">RESULTS UPLOADED</p>
-                    <h1 class="text-2xl font-bold mt-1">0</h1>
-                    <p class="text-xs text-blue-600 cursor-pointer">Completed evaluations</p>
-                </div>
-            </div>
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center justify-between h-16 px-4 md:px-6
+bg-white border-b border-gray-200 shadow-sm">
 
-            <!-- Quick Access -->
-            <section class="bg-white p-6 rounded-2xl shadow">
-                <h3 class="text-sm font-semibold text-gray-500 mb-3">QUICK ACCESS</h3>
-                <div class="grid grid-cols-3 gap-4">
-                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
-                        <iconify-icon icon="mdi:account-plus-outline" width="26"></iconify-icon>
-                        <p class="mt-2">Add Candidates</p>
-                    </button>
-                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
-                        <iconify-icon icon="mdi:clipboard-plus-outline" width="26"></iconify-icon>
-                        <p class="mt-2">Add Programs</p>
-                    </button>
-                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
-                        <iconify-icon icon="mdi:trophy-outline" width="26"></iconify-icon>
-                        <p class="mt-2">Publish Results</p>
-                    </button>
-                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
-                        <iconify-icon icon="mdi:calendar-edit" width="26"></iconify-icon>
-                        <p class="mt-2">Manage Schedules</p>
-                    </button>
-                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
-                        <iconify-icon icon="mdi:image-multiple-outline" width="26"></iconify-icon>
-                        <p class="mt-2">Manage Gallery</p>
-                    </button>
-                    <button class="border rounded-xl py-6 flex flex-col items-center hover:bg-gray-50">
-                        <iconify-icon icon="mdi:download-outline" width="26"></iconify-icon>
-                        <p class="mt-2">Manage Downloads</p>
-                    </button>
-                </div>
-            </section>
+<!-- Left Header -->
+<div class="flex items-center gap-2">
 
-            <!-- Users -->
-            <section class="bg-white shadow rounded-2xl p-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-semibold text-gray-500">FEST USERS</h3>
-                    <button class="px-3 py-1 bg-yellow-400 rounded-full text-sm flex items-center gap-1">
-                        <iconify-icon icon="mdi:account-cog-outline"></iconify-icon> Manage
-                    </button>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full border flex items-center justify-center bg-yellow-100 font-semibold">s</div>
-                    <div>
-                        <p class="font-medium">suhail</p>
-                        <p class="text-xs text-gray-500">Owner</p>
-                    </div>
-                </div>
-            </section>
-        </main>
+<!-- Mobile Menu Button -->
+<button id="sidebar-open-btn" class="lg:hidden p-2 -ml-2 text-gray-600 rounded-md hover:bg-gray-100">
+<span class="iconify w-6 h-6" data-icon="iconamoon:menu-burger-horizontal-light"></span>
+</button>
 
-    </div>
+<!-- Desktop Breadcrumb -->
+<div class="hidden lg:flex items-center gap-2 text-gray-600">
+<span class="iconify w-5 h-5" data-icon="solar:home-outline"></span>
+<span class="font-medium">Admin</span>
+</div>
+</div>
+
+<!-- Right Header (Profile) -->
+<div class="flex items-center gap-3 md:gap-4">
+
+<!-- Profile Dropdown -->
+<div class="relative" x-data="{ open: false }" @click.outside="open = false">
+<button @click="open = !open"
+class="flex items-center gap-1.5 md:gap-2 px-2 py-1.5 md:p-2 rounded-lg
+bg-brand-indigo-50 text-brand-indigo-600
+hover:bg-brand-indigo-100 transition-colors">
+
+<!-- Icon -->
+<span class="w-8 h-8 rounded-full bg-brand-indigo-600 flex items-center justify-center
+font-semibold text-white border-2 border-white ring-1 ring-brand-indigo-600 uppercase">
+S
+</span>
+
+<!-- Name and Arrow (Desktop) -->
+<div class="hidden lg:flex items-center gap-1">
+<span class="text-sm font-medium text-gray-700">suhail</span>
+<span class="iconify w-4 h-4 text-gray-500 transition-transform" :class="{'rotate-180': open}" data-icon="solar:alt-arrow-down-outline"></span>
+</div>
+</button>
+
+<!-- Dropdown Menu -->
+<div x-show="open"
+x-transition:enter="transition ease-out duration-100"
+x-transition:enter-start="transform opacity-0 scale-95"
+x-transition:enter-end="transform opacity-100 scale-100"
+x-transition:leave="transition ease-in duration-75"
+x-transition:leave-start="transform opacity-100 scale-100"
+x-transition:leave-end="transform opacity-0 scale-95"
+class="absolute right-0 mt-2 w-64 origin-top-right rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1"
+style="display: none;">
+<div class="p-4 border-b border-gray-100">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-full bg-brand-indigo-50 flex items-center justify-center
+font-semibold text-brand-indigo-600 border border-brand-indigo-200 uppercase">
+S
+</span>
+<div>
+<span class="font-semibold text-gray-800">suhail</span>
+<span class="block text-sm text-gray-500">user1@gmail.com</span>
+</div>
+</div>
+</div>
+<div class="py-1" role="none">
+<a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+<span class="iconify w-5 h-5" data-icon="solar:user-circle-outline"></span>
+<span>Manage account</span>
+</a>
+<a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+<span class="iconify w-5 h-5" data-icon="solar:database-outline"></span>
+<span>Database</span>
+</a>
+</div>
+<div class="py-1 border-t border-gray-100" role="none">
+<!-- Logout Button -->
+<button @click="logoutUser()" class="w-full flex items-center gap-3 px-4 py-2 text-sm text-brand-red-600 hover:bg-brand-red-50" role="menuitem" tabindex="-1">
+<span class="iconify w-5 h-5" data-icon="solar:logout-2-outline"></span>
+<span>Sign out</span>
+</button>
+</div>
+</div>
+</div>
+
+</div>
+</header>
+
+<!-- Scrollable Main Content -->
+<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+<!-- Left Column -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+
+<!-- Welcome Banner -->
+<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex justify-between items-center">
+<div>
+<h1 class="font-heading text-2xl md:text-3xl text-brand-gray-900">
+Welcome to <br> Your Festival Dashboard
+</h1>
+<p class="mt-2 text-base text-gray-600 max-w-sm">
+Manage your events, track participants, and monitor results all in one place.
+</p>
+</div>
+
+<!-- Decorative Graphic -->
+<div class="hidden lg:block">
+<!-- Abstract shapes -->
+<div class="relative w-40 h-40" aria-hidden="true">
+<div class="absolute w-28 h-40 right-0 top-0 rounded-l-full bg-icon-blue opacity-20"></div>
+<div class="absolute w-16 h-16 rounded-full bg-icon-red opacity-20 bottom-8 left-10 z-10"></div>
+<div class="absolute w-12 h-12 rounded-lg bg-icon-yellow opacity-20 top-8 left-6 transform -rotate-12"></div>
+<div class="absolute w-10 h-10 border-2 border-brand-gray-900 rounded-md top-16 left-0"></div>
+<!-- Simple line art -->
+<svg class="absolute top-0 right-8 w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</div>
+</section>
+
+<!-- Quick Access -->
+<section class="hidden md:block">
+<h2 class="text-sm font-semibold uppercase text-gray-500 tracking-wider mb-4">
+Quick Access
+</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4"> <!-- Changed lg:grid-cols-3 to lg:grid-cols-2 -->
+<!-- Quick Access Card -->
+<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex flex-col items-center justify-center gap-3
+text-center text-gray-700 hover:text-brand-indigo-600
+hover:shadow-md transition-all group">
+<span class="iconify w-10 h-10 text-icon-purple group-hover:scale-110 transition-transform" data-icon="solar:user-plus-bold-duotone"></span> <!-- Icon Updated -->
+<span class="font-semibold">Add Candidates</span>
+</a>
+<!-- Quick Access Card -->
+<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex flex-col items-center justify-center gap-3
+text-center text-gray-700 hover:text-brand-indigo-600
+hover:shadow-md transition-all group">
+<span class="iconify w-10 h-10 text-icon-blue group-hover:scale-110 transition-transform" data-icon="solar:notebook-bold-duotone"></span> <!-- Icon Updated -->
+<span class="font-semibold">Add Programs</span>
+</a>
+<!-- Quick Access Card -->
+<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex flex-col items-center justify-center gap-3
+text-center text-gray-700 hover:text-brand-indigo-600
+hover:shadow-md transition-all group">
+<span class="iconify w-10 h-10 text-icon-red group-hover:scale-110 transition-transform" data-icon="solar:cup-star-bold-duotone"></span> <!-- Icon Updated -->
+<span class="font-semibold">Publish Results</span>
+</a>
+<!-- Quick Access Card -->
+<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex flex-col items-center justify-center gap-3
+text-center text-gray-700 hover:text-brand-indigo-600
+hover:shadow-md transition-all group">
+<span class="iconify w-10 h-10 text-icon-green group-hover:scale-110 transition-transform" data-icon="solar:calendar-date-bold-duotone"></span> <!-- Icon Updated -->
+<span class="font-semibold">Manage Schedules</span>
+</a>
+<!-- Quick Access Card -->
+<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex flex-col items-center justify-center gap-3
+text-center text-gray-700 hover:text-brand-indigo-600
+hover:shadow-md transition-all group">
+<span class="iconify w-10 h-10 text-icon-cyan group-hover:scale-110 transition-transform" data-icon="solar:gallery-bold-duotone"></span> <!-- Icon Updated -->
+<span class="font-semibold">Manage Gallery</span>
+</a>
+<!-- Quick Access Card -->
+<a href="#" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200
+flex flex-col items-center justify-center gap-3
+text-center text-gray-700 hover:text-brand-indigo-600
+hover:shadow-md transition-all group">
+<span class="iconify w-10 h-10 text-icon-orange group-hover:scale-110 transition-transform" data-icon="solar:file-download-bold-duotone"></span> <!-- Icon Updated -->
+<span class="font-semibold">Manage Downloads</span>
+</a>
+</div>
+</section>
+
+<!-- Fest Users Card (Moved from right column) -->
+<section class="bg-white p-5 rounded-lg shadow-sm border border-gray-200"> <!-- Added border -->
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="iconify w-5 h-5 text-icon-purple" data-icon="ph:users-bold-duotone"></span> <!-- Icon Updated -->
+<h3 class="font-semibold text-gray-800">Fest Users</h3>
+</div>
+<button @click="$store.app.isModalOpen = true" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+bg-brand-indigo-50 text-brand-indigo-600
+hover:bg-brand-indigo-100 transition-colors text-sm font-semibold">
+<span class="iconify w-4 h-4" data-icon="solar:settings-bold-duotone"></span>
+<span>Manage</span>
+</button>
+</div>
+
+<!-- User List -->
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-full bg-brand-indigo-50 flex items-center justify-center
+font-semibold text-brand-indigo-600 border border-brand-indigo-200 uppercase">
+S
+</span>
+<div>
+<span class="font-semibold text-sm text-gray-800">suhail</span>
+<span class="block text-xs text-gray-500">Owner</span>
+</div>
+</div>
+<!-- More users can be added here -->
+</div>
+</section>
+
+</div>
+
+<!-- Right Column (Stats Only) -->
+<div class="lg:col-span-1 flex flex-col gap-6">
+
+<!-- Stats Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+<!-- Stats Card: Total Candidates -->
+<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+<div>
+<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
+Total Candidates
+</h3>
+<!-- Data-bound count -->
+<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.candidateCount">0</span>
+<span class="text-sm text-gray-500">Registered participants</span>
+</div>
+<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-purple/10">
+<span class="iconify w-6 h-6 text-icon-purple" data-icon="ph:users-bold-duotone"></span> <!-- Icon Updated -->
+</div>
+</div>
+
+<!-- Stats Card: Total Programs -->
+<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+<div>
+<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
+Total Programs
+</h3>
+<!-- Data-bound count -->
+<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.programCount">0</span>
+<span class="text-sm text-gray-500">Active events</span>
+</div>
+<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-blue/10">
+<span class="iconify w-6 h-6 text-icon-blue" data-icon="solar:notebook-bold-duotone"></span> <!-- Icon Updated -->
+</div>
+</div>
+
+<!-- Stats Card: Published Content -->
+<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+<div>
+<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
+Published Content
+</h3>
+<!-- Data-bound count -->
+<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.contentCount">0</span>
+<span class="text-sm text-gray-500">Public announcements</span>
+</div> <!-- Removed "In-sourcing" text that was here -->
+<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-cyan/10">
+<span class="iconify w-6 h-6 text-icon-cyan" data-icon="solar:document-text-bold-duotone"></span> <!-- Icon Updated -->
+</div>
+</div>
+
+<!-- Stats Card: Results Uploaded -->
+<div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+<div>
+<h3 class="text-xs font-semibold uppercase text-gray-500 tracking-wider">
+Results Uploaded
+</h3>
+<!-- Data-bound count -->
+<span class="font-heading text-3xl text-brand-gray-900 mt-1 block" x-text="$store.stats.resultCount">0</span>
+<span class="text-sm text-gray-500">Completed evaluations</span>
+</div>
+<div class="flex items-center justify-center w-12 h-12 rounded-full bg-icon-red/10">
+<span class="iconify w-6 h-6 text-icon-red" data-icon="solar:cup-star-bold-duotone"></span> <!-- Icon Updated -->
+</div>
+</div>
+</section>
+
+</div>
+
+</div>
+
+</main>
+</div>
+
+</div>
+
+<!-- Manage Users Modal -->
+<div x-show="$store.app.isModalOpen"
+style="display: none;"
+x-transition:enter="transition ease-out duration-300"
+x-transition:enter-start="opacity-0"
+x-transition:enter-end="opacity-100"
+x-transition:leave="transition ease-in duration-200"
+x-transition:leave-start="opacity-100"
+x-transition:leave-end="opacity-0"
+class="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+<!-- Modal Overlay -->
+<div @click="$store.app.isModalOpen = false" class="fixed inset-0 bg-black/50" aria-hidden="true"></div>
+
+<!-- Modal Panel -->
+<div @click.outside="$store.app.isModalOpen = false"
+x-show="$store.app.isModalOpen"
+x-transition:enter="transition ease-out duration-300"
+x-transition:enter-start="opacity-0 transform scale-95"
+x-transition:enter-end="opacity-100 transform scale-100"
+x-transition:leave="transition ease-in duration-200"
+x-transition:leave-start="opacity-100 transform scale-100"
+x-transition:leave-end="opacity-0 transform scale-95"
+class="relative bg-white w-full max-w-md p-6 rounded-2xl shadow-xl"> <!-- rounded-2xl is 16px, close to 20px -->
+
+<!-- Modal Header -->
+<div class="flex items-center justify-between pb-3 border-b border-gray-200">
+<h3 class="text-xl font-semibold font-heading text-gray-900">Manage Fest Users</h3>
+<button @click="$store.app.isModalOpen = false"
+class="p-1 text-gray-400 rounded-full hover:bg-gray-100 hover:text-gray-600">
+<span class="iconify w-6 h-6" data-icon="iconamoon:close-light"></span>
+</button>
+</div>
+
+<!-- Modal Body -->
+<div class="mt-6 space-y-4">
+<form action="#" id="manage-user-form">
+<!-- Current User (Example) -->
+<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-full bg-brand-indigo-50 flex items-center justify-center
+font-semibold text-brand-indigo-600 border border-brand-indigo-200 uppercase">
+S
+</span>
+<div>
+<span class="font-semibold text-sm text-gray-800">suhail</span>
+<span class="block text-xs text-gray-500">user1@gmail.com</span>
+</div>
+</div>
+<span class="text-sm font-medium text-gray-600">Owner</span>
+</div>
+
+<!-- Add/Edit User Form -->
+<div class="pt-4 space-y-4">
+<div>
+<label for="user-name" class="block text-sm font-medium text-gray-700 mb-1">User Name</label>
+<input type="text" id="user-name" placeholder="Enter full name"
+class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo-600 focus:border-transparent">
+</div>
+<div>
+<label for="user-role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+<select id="user-role"
+class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-indigo-600 focus:border-transparent">
+<option value="owner">Owner</option>
+<option value="admin">Admin</option>
+<option value="editor">Editor</option>
+<option value="viewer">Viewer</option>
+</select>
+</div>
+</div>
+</form>
+</div>
+
+<!-- Modal Footer -->
+<div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+<button @click="$store.app.isModalOpen = false"
+class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+Cancel
+</button>
+<button type="submit" form="manage-user-form"
+class="px-4 py-2 text-sm font-medium text-white bg-brand-indigo-600 border border-transparent rounded-lg hover:bg-brand-indigo-600/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-indigo-600">
+Save Changes
+</button>
+</div>
+</div>
+</div>
+
+<!-- End of File 1 Content -->
+
+</div>
 
 
-    <script>
-        // --- Get Element References ---
-        const loginPage = document.getElementById("loginPage");
-        const dashboardPage = document.getElementById("dashboardPage");
-        
-        const pwd = document.getElementById("passwordField");
-        const toggle = document.getElementById("togglePassword");
-        const icon = document.getElementById("eyeIcon");
-        
-        let visible = false;
+<!-- Firebase SDKs (UPDATED to 12.6.0 and NEW config) -->
+<script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+import {
+getAuth,
+signInAnonymously,
+signInWithCustomToken,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import {
+getFirestore,
+collection,
+onSnapshot,
+setLogLevel
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-        // --- Password Visibility Toggle ---
-        toggle.addEventListener("click", () => {
-            visible = !visible;
-            pwd.type = visible ? "text" : "password";
+// --- Firebase Configuration (NEW) ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE",
+  authDomain: "dtbase-fest1.firebaseapp.com",
+  projectId: "dtbase-fest1",
+  storageBucket: "dtbase-fest1.firebasestorage.app",
+  messagingSenderId: "761020619162",
+  appId: "1:761020619162:web:4982fc6db9a80c25808223",
+  measurementId: "G-WKGSBNZ672"
+};
 
-            icon.classList.remove("show");
-            setTimeout(() => {
-                icon.setAttribute("icon", visible ? "fluent:eye-off-16-filled" : "fluent:eye-16-filled");
-                icon.classList.add("show");
-            }, 80);
-        });
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app); // Initialize analytics
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        // --- Page Navigation Functions ---
+// Enable Firebase logging for debugging
+setLogLevel('Debug');
 
-        /**
-         * Hides the login page and shows the dashboard page.
-         */
-        function loginUser() {
-            // Hide login
-            loginPage.classList.add("hidden-page");
-            loginPage.classList.remove("flex"); // remove flex display
+// --- Alpine.js Global State ---
+document.addEventListener('alpine:init', () => {
+// Store for general app state (like modals)
+Alpine.store('app', {
+isModalOpen: false,
+userId: null,
+isAuthReady: false
+});
 
-            // Show dashboard
-            dashboardPage.classList.remove("hidden-page");
-            dashboardPage.classList.add("flex"); // add flex display
-        }
+// Store for dashboard statistics
+Alpine.store('stats', {
+candidateCount: 0,
+programCount: 0,
+contentCount: 0,
+resultCount: 0
+});
 
-        /**
-         * Hides the dashboard page and shows the login page.
-         */
-        function logoutUser() {
-            // Hide dashboard
-            dashboardPage.classList.add("hidden-page");
-            dashboardPage.classList.remove("flex");
+// Initialize Firebase Auth and Firestore listeners
+// This will run when Alpine initializes, which happens AFTER login
+// We will call this function *after* successful login instead.
+// initializeAppLogic();
+});
 
-            // Show login
-            loginPage.classList.remove("hidden-page");
-            loginPage.classList.add("flex"); // Re-add flex for centering
-        }
-    </script>
+// --- Application Logic ---
+async function initializeAppLogic() {
+// 1. Sign in the user (for Firestore data access)
+try {
+  // Use anonymous sign-in for simplicity, as dashboard data is public
+  await signInAnonymously(auth);
+  console.log("Signed in anonymously for data fetching.");
+  
+  // Note: The __initial_auth_token logic is removed as we are using the new config
+  // and a simple username/password login for page access.
+  
+} catch (error) {
+  console.error("Firebase auth error:", error);
+}
+
+// 2. Listen for auth state changes
+onAuthStateChanged(auth, (user) => {
+if (user) {
+  console.log("Auth state ready. User ID:", user.uid);
+  Alpine.store('app').userId = user.uid;
+  Alpine.store('app').isAuthReady = true;
+  
+  // 3. Once auth is ready, set up Firestore listeners
+  setupFirestoreListeners(user.uid); // Pass uid
+} else {
+  console.log("User is signed out.");
+  Alpine.store('app').userId = null;
+  Alpine.store('app').isAuthReady = false;
+}
+});
+}
+
+// --- Firestore Real-time Listeners ---
+function setupFirestoreListeners(userId) {
+// This app's ID. We'll use the projectId as a stable appId
+const appId = firebaseConfig.projectId || 'default-app-id';
+
+// Base path for public festival data
+const basePath = `/artifacts/${appId}/public/data`;
+console.log(`Setting up listeners for path: ${basePath}`);
+
+// Listen for 'candidates' count
+const candidatesRef = collection(db, `${basePath}/candidates`);
+onSnapshot(candidatesRef, (snapshot) => {
+  console.log("Candidates snapshot:", snapshot.size);
+  Alpine.store('stats').candidateCount = snapshot.size;
+}, (error) => console.error("Error fetching candidates:", error));
+
+// Listen for 'programs' count
+const programsRef = collection(db, `${basePath}/programs`);
+onSnapshot(programsRef, (snapshot) => {
+  console.log("Programs snapshot:", snapshot.size);
+  Alpine.store('stats').programCount = snapshot.size;
+}, (error) => console.error("Error fetching programs:", error));
+
+// Listen for 'content' count
+const contentRef = collection(db, `${basePath}/content`);
+onSnapshot(contentRef, (snapshot) => {
+  console.log("Content snapshot:", snapshot.size);
+  Alpine.store('stats').contentCount = snapshot.size;
+}, (error) => console.error("Error fetching content:", error));
+
+// Listen for 'results' count
+const resultsRef = collection(db, `${basePath}/results`);
+onSnapshot(resultsRef, (snapshot) => {
+  console.log("Results snapshot:", snapshot.size);
+  Alpine.store('stats').resultCount = snapshot.size;
+}, (error) => console.error("Error fetching results:", error));
+}
+
+// --- Make loginUser and logoutUser globally accessible ---
+// This is necessary because the module script is separate from the inline script
+window.loginUser = loginUser;
+window.logoutUser = logoutUser;
+</script>
+
+
+<!-- Main app script for login, logout, and sidebar -->
+<script>
+// --- Get Element References ---
+const loginPage = document.getElementById("loginPage");
+const dashboardPage = document.getElementById("dashboardPage");
+
+const usernameInput = document.getElementById("username");
+const pwd = document.getElementById("passwordField");
+const toggle = document.getElementById("togglePassword");
+const icon = document.getElementById("eyeIcon");
+
+let visible = false;
+
+// --- Password Visibility Toggle ---
+toggle.addEventListener("click", () => {
+visible = !visible;
+pwd.type = visible ? "text" : "password";
+const iconEl = document.getElementById("eyeIcon"); // Re-select for safety
+
+iconEl.classList.remove("show");
+setTimeout(() => {
+iconEl.setAttribute("data-icon", visible ? "fluent:eye-off-16-filled" : "fluent:eye-16-filled");
+iconEl.classList.add("show");
+}, 80);
+});
+
+// --- Page Navigation Functions ---
+
+/**
+* Hides the login page and shows the dashboard page.
+*/
+function loginUser() {
+const user = usernameInput.value;
+const pass = pwd.value;
+
+if (user === "su" && pass === "340") {
+// --- Login Success ---
+Toastify({
+  text: "Login Successful! Welcome.",
+  duration: 3000,
+  gravity: "top", // `top` or `bottom`
+  position: "right", // `left`, `center` or `right`
+  style: {
+    background: "linear-gradient(to right, #00b09b, #96c93d)",
+  },
+  stopOnFocus: true, // Prevents dismissing of toast on hover
+}).showToast();
+
+// Hide login
+loginPage.classList.add("hidden-page");
+loginPage.classList.remove("flex"); // remove flex display
+
+// Show dashboard
+dashboardPage.classList.remove("hidden-page");
+
+// --- IMPORTANT ---
+// Now that we are logged in, initialize the Firebase app logic
+// This will sign in anonymously and set up the Firestore listeners
+if (typeof initializeAppLogic === "function") {
+  initializeAppLogic();
+}
+
+} else {
+// --- Login Failure ---
+Toastify({
+  text: "Invalid username or password",
+  duration: 3000,
+  gravity: "top",
+  position: "right",
+  style: {
+    background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+  },
+  stopOnFocus: true,
+}).showToast();
+}
+}
+
+/**
+* Hides the dashboard page and shows the login page.
+*/
+function logoutUser() {
+// Hide dashboard
+dashboardPage.classList.add("hidden-page");
+
+// Show login
+loginPage.classList.remove("hidden-page");
+loginPage.classList.add("flex"); // Re-add flex for centering
+
+// Optional: You might want to sign out the anonymous user
+// if (typeof auth !== 'undefined' && auth.currentUser) {
+//   auth.signOut();
+//   console.log("Anonymous user signed out.");
+// }
+}
+
+// --- JavaScript for Mobile Sidebar Toggle ---
+document.addEventListener('DOMContentLoaded', () => {
+// We need to select these elements *after* the DOM is loaded
+// because the dashboard page is initially hidden.
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+const openBtn = document.getElementById('sidebar-open-btn');
+const closeBtn = document.getElementById('sidebar-close-btn');
+
+// Check if elements exist before adding listeners (prevents errors on login page)
+if (sidebar && overlay && openBtn && closeBtn) {
+function openSidebar() {
+  sidebar.classList.remove('-translate-x-full');
+  overlay.classList.remove('hidden');
+}
+
+function closeSidebar() {
+  sidebar.classList.add('-translate-x-full');
+  overlay.classList.add('hidden');
+}
+
+openBtn.addEventListener('click', openSidebar);
+closeBtn.addEventListener('click', closeSidebar);
+overlay.addEventListener('click', closeSidebar);
+}
+});
+</script>
 
 </body>
 </html>
