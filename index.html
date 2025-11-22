@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Festival Dashboard</title>
+    <title id="page-title">Festival Dashboard</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -20,6 +20,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
                     },
                     colors: {
                         brand: {
@@ -28,6 +29,20 @@
                             grayBg: '#F9FAFB',
                             card: '#FFFFFF',
                         }
+                    },
+                    keyframes: {
+                        'scale-up': {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        'fade-in-down': {
+                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    },
+                    animation: {
+                        'scale-up': 'scale-up 0.2s ease-out',
+                        'fade-in-down': 'fade-in-down 0.2s ease-out',
                     }
                 }
             }
@@ -35,488 +50,578 @@
     </script>
 
     <style>
-        /* Custom Scrollbar for neatness */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        .page-hidden { display: none !important; opacity: 0; }
+        .page-visible { display: flex !important; opacity: 1; transition: opacity 0.3s ease-in-out; }
+        
+        .loader {
+            border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #FCD34D;
+            width: 20px; height: 20px; animation: spin 1s linear infinite;
         }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94A3B8;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .toggle-checkbox:checked { right: 0; border-color: #FCD34D; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #FCD34D; }
     </style>
 </head>
 <body class="bg-brand-grayBg font-sans text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- Sidebar Overlay (Mobile) -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-3 items-center pointer-events-none"></div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="bg-white w-64 flex-shrink-0 border-r border-gray-200 flex flex-col h-full fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-30">
-        <!-- Sidebar Header -->
-        <div class="h-16 flex items-center px-6 border-b border-gray-100">
-            <div class="h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center text-xs font-bold text-white mr-3 uppercase">
-                md
-            </div>
+    <!-- ERROR BANNER -->
+    <div id="db-error-banner" class="hidden fixed bottom-0 left-0 right-0 bg-red-600 text-white p-4 z-[200] shadow-lg">
+        <div class="max-w-4xl mx-auto flex items-start justify-between">
             <div>
-                <h1 class="text-sm font-bold text-gray-900 leading-tight">mvs designs</h1>
-                <span class="text-xs text-green-500 font-medium">active</span>
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Database Access Denied</h3>
+                <p class="text-sm mt-1 opacity-90">Check Firebase Console > Firestore Database > Rules.</p>
             </div>
-            <button class="ml-auto text-gray-400 hover:text-gray-600 lg:hidden">
-                <i class="fa-solid fa-chevron-down"></i>
-            </button>
+            <button onclick="document.getElementById('db-error-banner').classList.add('hidden')" class="text-white hover:text-red-200"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
-            
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group">
-                <i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>
-                Dashboard
-            </a>
-
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-regular fa-user w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Candidate
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-regular fa-calendar-check w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Programme
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-regular fa-calendar w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Schedule
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-solid fa-trophy w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Result
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-regular fa-image w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Content
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-
-            <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-solid fa-chart-simple w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Analytics
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-            
-             <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                <div class="flex items-center">
-                    <i class="fa-regular fa-file-lines w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                    Reports
-                </div>
-                <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-            </a>
-
-            <div class="pt-4">
-                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Public Pages</p>
-                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between">
-                    <div class="flex items-center">
-                        <i class="fa-solid fa-globe w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>
-                        Website
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
-                </a>
-            </div>
-        </nav>
-
-        <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-gray-200">
-            <a href="#" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
-                <i class="fa-solid fa-gear w-5 text-center mr-2 text-gray-400"></i>
-                Go to Settings
-            </a>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        
-        <!-- Top Header -->
-        <header class="h-16 bg-white lg:bg-transparent lg:px-8 px-4 flex items-center justify-between border-b lg:border-b-0 border-gray-200">
-            <div class="flex items-center">
-                <!-- Mobile Menu Button -->
-                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none mr-2">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-                <div class="hidden lg:flex items-center text-gray-400 text-sm">
-                    <i class="fa-solid fa-columns mr-2"></i>
-                    <span class="mr-2">/</span>
-                    <span class="font-medium text-gray-600">Admin</span>
-                </div>
-                 <!-- Mobile Title showing context -->
-                 <span class="lg:hidden font-semibold text-gray-700 ml-2">Admin</span>
-            </div>
-
-            <!-- User Profile Section with Dropdown -->
-            <div class="relative" id="userMenuContainer">
-                <!-- Trigger Button -->
-                <button onclick="toggleUserMenu()" class="flex items-center space-x-2 focus:outline-none hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
-                    <div class="h-9 w-9 rounded-full bg-yellow-200 flex items-center justify-center text-sm font-bold text-yellow-800 cursor-pointer uppercase">
-                        s
-                    </div>
-                    <span class="hidden lg:block text-sm font-medium text-gray-700">suhail</span>
-                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 hidden lg:block ml-1 transition-transform duration-200" id="userMenuChevron"></i>
-                </button>
-
-                <!-- Dropdown Menu -->
-                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-50 transform origin-top-right transition-all duration-200">
-                    
-                    <!-- User Info Header -->
-                    <div class="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
-                        <div class="h-10 w-10 rounded-full bg-yellow-400 flex items-center justify-center text-lg font-bold text-gray-900 flex-shrink-0 uppercase">
-                            s
-                        </div>
-                        <div class="flex flex-col min-w-0">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="font-bold text-gray-900 text-sm">suhail</span>
-                                <span class="px-1.5 py-[1px] rounded border border-gray-300 text-[10px] font-bold text-gray-500 tracking-wider uppercase">Trial</span>
-                            </div>
-                            <span class="text-xs text-gray-500 truncate">user1@gmail.com</span>
-                        </div>
-                    </div>
-
-                    <!-- Menu Items -->
-                    <div class="py-2">
-                        <a href="#" class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
-                            <i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i> 
-                            Manage Account
-                        </a>
-                        <a href="#" class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
-                            <i class="fa-solid fa-database w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i> 
-                            Database
-                        </a>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="border-t border-gray-100 mt-1 py-2">
-                        <a href="#" class="flex items-center px-5 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-                            <i class="fa-solid fa-arrow-right-from-bracket w-5 mr-3 text-center"></i> 
-                            Signout
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Scrollable Content -->
-        <main class="flex-1 overflow-y-auto p-4 lg:p-8">
-            
-            <!-- Grid Wrapper for Top Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                
-                <!-- Welcome Card (Spans 2 columns on desktop) -->
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden flex flex-col justify-center min-h-[240px]">
-                    <div class="relative z-10 max-w-md">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2">
-                            Welcome to <br/> Your Festival Dashboard
-                        </h2>
-                        <p class="text-gray-500 text-sm leading-relaxed mb-4">
-                            Manage your events, track participants, and monitor results all in one place.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Stats Grid (2x2) -->
-                <div class="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-                    
-                    <!-- Stat Card 1 -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Candidates</span>
-                            <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                                <i class="fa-solid fa-user-group text-xs"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text-2xl font-bold text-gray-900">0</span>
-                            <p class="text-xs text-gray-400 mt-1">Registered participants</p>
-                        </div>
-                    </div>
-
-                    <!-- Stat Card 2 -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Programs</span>
-                            <div class="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center text-green-600">
-                                <i class="fa-regular fa-calendar text-xs"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text-2xl font-bold text-gray-900">0</span>
-                            <p class="text-xs text-gray-400 mt-1">Active events</p>
-                        </div>
-                    </div>
-
-                    <!-- Stat Card 3 -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Published Content</span>
-                            <div class="h-8 w-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
-                                <i class="fa-regular fa-file-lines text-xs"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text-2xl font-bold text-gray-900">0</span>
-                            <p class="text-xs text-gray-400 mt-1">Public announcements</p>
-                        </div>
-                    </div>
-
-                    <!-- Stat Card 4 -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Results Uploaded</span>
-                            <div class="h-8 w-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
-                                <i class="fa-solid fa-trophy text-xs"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text-2xl font-bold text-gray-900">0</span>
-                            <p class="text-xs text-gray-400 mt-1">Completed evaluations</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Bottom Section Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Quick Access Grid (Spans 2 cols) -->
-                <div class="lg:col-span-2">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Quick Access</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        
-                        <!-- Button 1 -->
-                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                                <i class="fa-solid fa-user-plus"></i>
-                            </div>
-                            <span class="font-semibold text-gray-700 text-sm">Add Candidates</span>
-                        </button>
-
-                        <!-- Button 2 -->
-                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-green-50 group-hover:text-green-600 transition-colors">
-                                <i class="fa-solid fa-plus-square"></i>
-                            </div>
-                            <span class="font-semibold text-gray-700 text-sm">Add Programs</span>
-                        </button>
-
-                        <!-- Button 3 -->
-                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">
-                                <i class="fa-solid fa-award"></i>
-                            </div>
-                            <span class="font-semibold text-gray-700 text-sm">Publish Results</span>
-                        </button>
-
-                        <!-- Button 4 -->
-                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
-                                <i class="fa-regular fa-calendar-alt"></i>
-                            </div>
-                            <span class="font-semibold text-gray-700 text-sm">Manage Schedules</span>
-                        </button>
-
-                        <!-- Button 5 -->
-                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-                                <i class="fa-regular fa-images"></i>
-                            </div>
-                            <span class="font-semibold text-gray-700 text-sm">Manage Gallery</span>
-                        </button>
-
-                        <!-- Button 6 -->
-                        <button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group">
-                            <div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-red-50 group-hover:text-red-600 transition-colors">
-                                <i class="fa-regular fa-folder-open"></i>
-                            </div>
-                            <span class="font-semibold text-gray-700 text-sm">Manage Downloads</span>
-                        </button>
-
-                    </div>
-                </div>
-
-                <!-- Fest Users Card -->
-                <div class="lg:col-span-1">
-                    <div class="flex justify-between items-end mb-4">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Fest Users</h3>
-                        <button onclick="openManageModal()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold px-3 py-1 rounded-full transition-colors flex items-center">
-                            <i class="fa-solid fa-user-plus mr-1"></i> Manage
-                        </button>
-                    </div>
-                    
-                    <!-- Added ID 'usersContainer' and flex-wrap for multiple users -->
-                    <div id="usersContainer" class="bg-white rounded-2xl shadow-sm p-6 h-auto flex flex-wrap gap-4">
-                         <!-- User Item -->
-                         <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group">
-                            <div class="h-12 w-12 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center text-lg font-bold text-gray-800 mb-2 uppercase">
-                                s
-                            </div>
-                            <span class="font-bold text-sm text-gray-900 truncate w-full text-center">suhail</span>
-                            <span class="text-xs text-gray-500 truncate w-full text-center">Owner</span>
-                         </div>
-                    </div>
-                </div>
-
-            </div>
-            
-            <!-- Spacer for bottom scrolling on mobile -->
-            <div class="h-8 lg:hidden"></div>
-        </main>
     </div>
 
-    <!-- Manage Users Modal (Popup) -->
-    <div id="manageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
-            <!-- Modal Header -->
-            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800">Add New User</h3>
-                <button onclick="closeManageModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
+    <!-- =========================== LOGIN PAGE =========================== -->
+    <div id="login-page" class="page-visible fixed inset-0 z-50 bg-gray-50 flex items-center justify-center p-4 overflow-y-auto font-poppins w-full h-full">
+        <div class="w-full max-w-[400px] bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10 space-y-8 relative">
+            <div class="flex flex-col items-center text-center space-y-1">
+                <h1 id="login-festival-name" class="text-3xl font-bold text-black tracking-tight">Kauthukam.47</h1>
+                <h2 id="login-festival-motto" class="text-base font-bold text-gray-900">Refusing to beIgnored</h2>
             </div>
-            
-            <!-- Modal Body -->
+            <form id="login-form" class="space-y-5" onsubmit="window.handleLogin(event)">
+                <div class="space-y-1.5">
+                    <label for="username" class="block text-sm font-bold text-gray-900 ml-1">Username</label>
+                    <div class="relative">
+                        <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-600 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition-all duration-200 text-sm" required>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label for="password" class="block text-sm font-bold text-gray-900 ml-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-600 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition-all duration-200 text-sm pr-10" required>
+                        <button type="button" onclick="window.togglePassword()" class="absolute inset-y-0 right-3 flex items-center text-gray-900 hover:text-gray-600 focus:outline-none"><i id="eye-icon" class="fa-regular fa-eye text-sm"></i></button>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <label class="flex items-center cursor-pointer group select-none">
+                        <input type="checkbox" class="peer hidden">
+                        <div class="w-5 h-5 border-[1.5px] border-yellow-400 rounded-full flex items-center justify-center mr-2.5 transition-all bg-white peer-checked:bg-yellow-400 peer-checked:border-yellow-400 relative"><i class="fa-solid fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100 absolute inset-0 m-auto flex items-center justify-center"></i></div>
+                        <span class="text-sm font-bold text-gray-800">Remember me</span>
+                    </label>
+                </div>
+                <button id="login-btn" type="submit" class="w-full bg-[#FCD34D] hover:bg-[#fbbf24] text-black font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all duration-200 transform active:scale-[0.98] text-sm flex justify-center items-center gap-2">
+                    <span>Login</span><div id="login-loader" class="loader hidden"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================== DASHBOARD PAGE =========================== -->
+    <div id="dashboard-page" class="page-hidden h-full w-full flex overflow-hidden">
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="window.toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 flex-shrink-0 border-r border-gray-200 flex flex-col h-full fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-30">
+            <div class="h-16 flex items-center px-6 border-b border-gray-100">
+                <div id="sidebar-festival-logo" class="h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center text-xs font-bold text-white mr-3 uppercase flex-shrink-0">M</div>
+                <div class="overflow-hidden">
+                    <h1 id="sidebar-festival-name" class="text-sm font-bold text-gray-900 leading-tight truncate">mvs designs</h1>
+                    <span id="sidebar-active-status" class="text-xs text-green-500 font-medium">active</span>
+                </div>
+                <button class="ml-auto text-gray-400 hover:text-gray-600 lg:hidden" onclick="window.toggleSidebar()"><i class="fa-solid fa-chevron-left"></i></button>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
+                <!-- Injected via JS based on Role -->
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <a href="#" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"><i class="fa-solid fa-gear w-5 text-center mr-2 text-gray-400"></i>Go to Settings</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden relative">
+            <header class="h-16 bg-white lg:bg-transparent lg:px-8 px-4 flex items-center justify-between border-b lg:border-b-0 border-gray-200 flex-shrink-0">
+                <div class="flex items-center">
+                    <button onclick="window.toggleSidebar()" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none mr-2"><i class="fa-solid fa-bars text-xl"></i></button>
+                    <div class="hidden lg:flex items-center text-gray-400 text-sm">
+                        <i class="fa-solid fa-columns mr-2"></i><span class="mr-2">/</span><span class="font-medium text-gray-600" id="header-role-text">Administrator</span>
+                    </div>
+                    <span class="lg:hidden font-semibold text-gray-700 ml-2">Dashboard</span>
+                </div>
+                <div class="relative" id="userMenuContainer">
+                    <button onclick="window.toggleUserMenu()" class="flex items-center space-x-2 focus:outline-none hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
+                        <div id="header-avatar" class="h-9 w-9 rounded-full bg-yellow-200 flex items-center justify-center text-sm font-bold text-yellow-800 cursor-pointer uppercase">A</div>
+                        <span id="header-username" class="hidden lg:block text-sm font-medium text-gray-700">Administrator</span>
+                        <i class="fa-solid fa-chevron-down text-xs text-gray-400 hidden lg:block ml-1 transition-transform duration-200" id="userMenuChevron"></i>
+                    </button>
+                    <div id="userDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-50 transform origin-top-right">
+                        <div class="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
+                            <div id="dropdown-avatar" class="h-10 w-10 rounded-full bg-yellow-400 flex items-center justify-center text-lg font-bold text-gray-900 flex-shrink-0 uppercase">A</div>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span id="dropdown-username" class="font-bold text-gray-900 text-sm">Administrator</span>
+                                    <span id="dropdown-role" class="px-1.5 py-[1px] rounded border border-gray-300 text-[10px] font-bold text-gray-500 tracking-wider uppercase">Owner</span>
+                                </div>
+                                <span class="text-xs text-gray-500 truncate">kauthukam.47</span>
+                            </div>
+                        </div>
+                        <div class="py-2" id="dropdown-actions">
+                            <!-- Injected via JS -->
+                        </div>
+                        <div class="border-t border-gray-100 mt-1 py-2">
+                            <button onclick="window.handleLogout()" class="w-full flex items-center px-5 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"><i class="fa-solid fa-arrow-right-from-bracket w-5 mr-3 text-center"></i>Signout</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main id="main-content-area" class="flex-1 overflow-y-auto p-4 lg:p-8">
+                <!-- VIEW: DASHBOARD HOME -->
+                <div id="view-home" class="block">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden flex flex-col justify-center min-h-[240px]">
+                            <div class="relative z-10 max-w-md">
+                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome to <br/> <span id="dashboard-welcome-name">Your Festival Dashboard</span></h2>
+                                <p class="text-gray-500 text-sm leading-relaxed mb-4">Manage your events, track participants, and monitor results all in one place.</p>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4" id="stats-container">
+                            <!-- Stats Injected -->
+                        </div>
+                    </div>
+
+                    <!-- Bottom Section (Hidden for Team Managers) -->
+                    <div id="admin-bottom-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Quick Access</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="quick-access-container"></div>
+                        </div>
+                        <div class="lg:col-span-1">
+                            <div class="flex justify-between items-end mb-4">
+                                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Fest Users</h3>
+                                <button onclick="window.openManageModal()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold px-3 py-1 rounded-full transition-colors flex items-center shadow-sm"><i class="fa-solid fa-user-plus mr-1"></i>Manage</button>
+                            </div>
+                            <div id="usersContainer" class="bg-white rounded-2xl shadow-sm p-6 h-auto flex flex-wrap gap-4 min-h-[100px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: DATABASE / ADMIN PANEL -->
+                <div id="view-database" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Admin Panel</h2>
+                            <p class="text-sm text-gray-500">Manage system users and festival settings.</p>
+                        </div>
+                        <button onclick="window.switchView('home')" class="text-sm font-medium text-gray-600 hover:text-gray-900"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Dashboard</button>
+                    </div>
+                    <div class="flex space-x-6 border-b border-gray-200 mb-6">
+                        <button id="tab-users" onclick="window.switchAdminTab('users')" class="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors">Users Database</button>
+                        <button id="tab-settings" onclick="window.switchAdminTab('settings')" class="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">Festival Settings</button>
+                    </div>
+                    <div id="content-users" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-down">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                    <tr><th class="px-6 py-4">User</th><th class="px-6 py-4">Role / Team</th><th class="px-6 py-4">Credentials</th><th class="px-6 py-4 text-right">Actions</th></tr>
+                                </thead>
+                                <tbody id="database-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="content-settings" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 animate-fade-in-down">
+                        <h3 class="text-lg font-bold text-gray-900 mb-6">General Configuration</h3>
+                        <div class="max-w-xl space-y-6">
+                            <div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Festival Name</label><input type="text" id="setting-name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Motto / Tagline</label><input type="text" id="setting-motto" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none text-sm"></div>
+                            <div class="flex items-center justify-between border-t border-gray-100 pt-6">
+                                <div><h4 class="text-sm font-bold text-gray-900">Festival Status</h4><p class="text-xs text-gray-500 mt-0.5">Toggle festival visibility.</p></div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="setting-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="setting-active" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                            </div>
+                            <div class="pt-4"><button onclick="window.saveSettings()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors flex items-center"><i class="fa-regular fa-floppy-disk mr-2"></i> Save Changes</button></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="manageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Add New User</h3><button onclick="window.closeManageModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
             <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Name</label>
-                    <input type="text" id="inputName" placeholder="e.g. John Doe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all text-sm">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Letter</label>
-                        <input type="text" id="inputLetter" maxlength="1" placeholder="J" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all text-sm uppercase text-center">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Position</label>
-                        <input type="text" id="inputPosition" placeholder="Admin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all text-sm">
-                    </div>
-                </div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">Name</label><input type="text" id="inputName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">Position</label><select id="inputPosition" onchange="window.handlePositionChange()" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="" disabled selected>Select Role</option><option value="Admin">Admin</option><option value="Media">Media</option><option value="Team Manager">Team Manager</option></select></div>
+                <div id="teamSelectContainer" class="hidden"><label class="block text-xs font-bold text-gray-500 uppercase">Team</label><select id="inputTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="Team A">Team A</option><option value="Team B">Team B</option><option value="Team C">Team C</option><option value="Team D">Team D</option></select></div>
             </div>
-
-            <!-- Modal Footer -->
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
-                <button onclick="closeManageModal()" class="text-gray-500 font-medium text-sm px-4 py-2 hover:text-gray-700 mr-2">Cancel</button>
-                <button onclick="saveUser()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors">Save</button>
-            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeManageModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveUser()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg">Create User</button></div>
         </div>
     </div>
 
-    <script>
-        // Mobile Sidebar Toggle Logic
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
+    <!-- Edit User Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Edit Credentials</h3><button onclick="window.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+            <div class="p-6 space-y-4"><input type="hidden" id="editUserId"><div><label class="block text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="editUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-500 uppercase">Password</label><input type="text" id="editPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div></div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeEditModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveEdit()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Update</button></div>
+        </div>
+    </div>
 
-        function toggleSidebar() {
-            const isClosed = sidebar.classList.contains('-translate-x-full');
-            
-            if (isClosed) {
-                // Open sidebar
-                sidebar.classList.remove('-translate-x-full');
-                sidebarOverlay.classList.remove('hidden');
-            } else {
-                // Close sidebar
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
-            }
-        }
+    <!-- Manage Account Modal (Self Update) -->
+    <div id="manageAccountModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Manage Account</h3><button onclick="window.closeManageAccountModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">New Username</label><input type="text" id="myUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">New Password</label><input type="text" id="myPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeManageAccountModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveMyAccount()" class="bg-green-500 hover:bg-green-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Save Changes</button></div>
+        </div>
+    </div>
 
-        // User Dropdown Toggle Logic
-        function toggleUserMenu() {
-            const menu = document.getElementById('userDropdown');
-            const chevron = document.getElementById('userMenuChevron');
-            menu.classList.toggle('hidden');
-            
-            if (!menu.classList.contains('hidden')) {
-                chevron.classList.add('rotate-180');
-            } else {
-                chevron.classList.remove('rotate-180');
-            }
-        }
+    <!-- MODULE SCRIPT: FIREBASE & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const container = document.getElementById('userMenuContainer');
-            const menu = document.getElementById('userDropdown');
-            const chevron = document.getElementById('userMenuChevron');
-            
-            if (!container.contains(event.target)) {
-                menu.classList.add('hidden');
-                chevron.classList.remove('rotate-180');
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE",
+            authDomain: "dtbase-fest1.firebaseapp.com",
+            projectId: "dtbase-fest1",
+            storageBucket: "dtbase-fest1.firebasestorage.app",
+            messagingSenderId: "761020619162",
+            appId: "1:761020619162:web:4982fc6db9a80c25808223",
+            measurementId: "G-WKGSBNZ672"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let globalUsersList = []; 
+        let loggedInUserData = null; 
+
+        signInAnonymously(auth).catch((error) => {
+            if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
+                document.getElementById('db-error-banner').classList.remove('hidden');
             }
         });
 
-        // --- Manage Modal Logic ---
-
-        function openManageModal() {
-            document.getElementById('manageModal').classList.remove('hidden');
-        }
-
-        function closeManageModal() {
-            document.getElementById('manageModal').classList.add('hidden');
-            // Optional: Clear inputs on close
-            document.getElementById('inputName').value = '';
-            document.getElementById('inputLetter').value = '';
-            document.getElementById('inputPosition').value = '';
-        }
-
-        function saveUser() {
-            const name = document.getElementById('inputName').value;
-            const letter = document.getElementById('inputLetter').value;
-            const position = document.getElementById('inputPosition').value;
-
-            if (name && letter && position) {
-                const usersContainer = document.getElementById('usersContainer');
-                
-                // Create new user card HTML
-                const userCard = document.createElement('div');
-                userCard.className = 'border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group';
-                userCard.innerHTML = `
-                    <div class="h-12 w-12 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center text-lg font-bold text-gray-800 mb-2 uppercase">
-                        ${letter}
-                    </div>
-                    <span class="font-bold text-sm text-gray-900 truncate w-full text-center">${name}</span>
-                    <span class="text-xs text-gray-500 truncate w-full text-center">${position}</span>
-                `;
-
-                usersContainer.appendChild(userCard);
-                closeManageModal();
-            } else {
-                alert('Please fill in all fields');
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                subscribeToUsers();
+                subscribeToSettings();
             }
+        });
+
+        function subscribeToUsers() {
+            const q = collection(db, 'users');
+            let hasShownError = false;
+            onSnapshot(q, (snapshot) => {
+                globalUsersList = [];
+                snapshot.forEach((doc) => { globalUsersList.push({ id: doc.id, ...doc.data() }); });
+                renderUsersMini(globalUsersList);
+                renderDatabaseTable(globalUsersList);
+            }, (error) => {
+                if (!hasShownError && error.code === 'permission-denied') {
+                    document.getElementById('db-error-banner').classList.remove('hidden');
+                    hasShownError = true;
+                }
+            });
+        }
+
+        function subscribeToSettings() {
+            onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
+                if (docSnap.exists()) updateUIFromSettings(docSnap.data());
+            });
+        }
+
+        function updateUIFromSettings(data) {
+            const name = data.festivalName || "mvs designs";
+            const motto = data.motto || "active";
+            const isActive = data.isActive !== false; 
+
+            document.getElementById('page-title').textContent = `${name} - Dashboard`;
+            document.getElementById('login-festival-name').textContent = name;
+            document.getElementById('login-festival-motto').textContent = motto;
+            document.getElementById('sidebar-festival-name').textContent = name;
+            document.getElementById('sidebar-festival-logo').textContent = name.charAt(0).toUpperCase();
+            document.getElementById('dashboard-welcome-name').textContent = name;
+            
+            const statusEl = document.getElementById('sidebar-active-status');
+            if(isActive) {
+                statusEl.innerHTML = 'Active';
+                statusEl.className = "text-xs text-green-500 font-medium flex items-center";
+            } else {
+                statusEl.textContent = "Inactive";
+                statusEl.className = "text-xs text-red-500 font-medium";
+            }
+            document.getElementById('setting-name').value = name;
+            document.getElementById('setting-motto').value = motto;
+            document.getElementById('setting-active').checked = isActive;
+        }
+
+        // --- RENDER LOGIC ---
+        function renderUsersMini(users) {
+            const container = document.getElementById('usersContainer');
+            if (!container) return;
+            let html = `
+                <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group transition hover:border-yellow-400 bg-white">
+                    <div class="h-12 w-12 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center text-lg font-bold text-gray-800 mb-2 uppercase">A</div>
+                    <span class="font-bold text-sm text-gray-900 truncate w-full text-center">Admin</span>
+                    <span class="text-xs text-gray-500 truncate w-full text-center">Owner</span>
+                </div>
+            `;
+            users.forEach(user => {
+                html += `
+                    <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group transition hover:border-yellow-400 bg-white">
+                        <div class="h-12 w-12 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center text-lg font-bold text-gray-600 mb-2 uppercase">${user.avatarLetter}</div>
+                        <span class="font-bold text-sm text-gray-900 truncate w-full text-center">${user.name}</span>
+                        <span class="text-xs text-gray-500 truncate w-full text-center">${user.position === 'Team Manager' ? 'Manager' : user.position}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderDatabaseTable(users) {
+            const tbody = document.getElementById('database-table-body');
+            if (!tbody) return;
+            let html = `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="h-9 w-9 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-sm mr-3 uppercase">A</div>
+                            <div><div class="font-bold text-gray-900">Administrator</div><div class="text-xs text-gray-500">Owner</div></div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded-md bg-yellow-100 text-yellow-800 text-xs font-bold">Super Admin</span></td>
+                    <td class="px-6 py-4"><div class="flex flex-col text-xs"><span class="text-gray-500">User: <span class="font-mono text-gray-700 font-medium">administrator</span></span><span class="text-gray-500">Pass: <span class="font-mono text-gray-700 font-medium">81119</span></span></div></td>
+                    <td class="px-6 py-4 text-right"><span class="text-gray-400 text-xs italic">Protected</span></td>
+                </tr>
+            `;
+            users.forEach(user => {
+                let roleBadge = user.position === 'Admin' ? 'bg-purple-100 text-purple-800' : (user.position === 'Media' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800');
+                html += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm mr-3 uppercase">${user.avatarLetter}</div>
+                                <div><div class="font-bold text-gray-900">${user.name}</div><div class="text-xs text-gray-500">${user.position}</div></div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-md ${roleBadge} text-xs font-bold">${user.position}</span>${user.team ? `<div class="mt-1 text-xs text-gray-500 font-medium">${user.team}</div>` : ''}</td>
+                        <td class="px-6 py-4"><div class="flex flex-col text-xs bg-gray-50 p-2 rounded border border-gray-100 max-w-[150px]"><span class="text-gray-500 mb-0.5">U: <span class="font-mono text-gray-700 font-bold select-all">${user.username}</span></span><span class="text-gray-500">P: <span class="font-mono text-gray-700 font-bold select-all">${user.password}</span></span></div></td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="window.openEditModal('${user.id}', '${user.username}', '${user.password}')" class="text-gray-400 hover:text-blue-500 transition-colors mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="window.deleteUser('${user.id}')" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.renderSidebar = (role) => {
+            let menuItems = [];
+            if (role === 'Team Manager') {
+                menuItems = [
+                    { id: 'home', icon: 'fa-solid fa-house', label: 'Dashboard' },
+                    { id: 'topic', icon: 'fa-solid fa-pen-to-square', label: 'Topic Registration' },
+                    { id: 'program', icon: 'fa-solid fa-clipboard-list', label: 'Program Registration' }
+                ];
+            } else {
+                menuItems = [
+                    { id: 'candidate', icon: 'fa-regular fa-user', label: 'Candidate', items: ['All Candidates', 'Sections', 'Teams', 'Groups'] },
+                    { id: 'programme', icon: 'fa-regular fa-calendar-check', label: 'Programme', items: ['All Programmes', 'Registration', 'Categories', 'Rules', 'Substitutions'] },
+                    { id: 'schedule', icon: 'fa-regular fa-calendar', label: 'Schedule', items: ['All Schedules', 'Judges', 'Venues'] },
+                    { id: 'result', icon: 'fa-solid fa-trophy', label: 'Result', items: ['All Results', 'Negative Points'] },
+                    { id: 'content', icon: 'fa-regular fa-image', label: 'Content', items: ['Files', 'Gallery', 'Downloads'] },
+                    { id: 'analytics', icon: 'fa-solid fa-chart-simple', label: 'Analytics', items: ['Team Toppers', 'Candidate Toppers', 'Group Toppers'] },
+                    { id: 'reports', icon: 'fa-regular fa-file-lines', label: 'Reports', items: ['Rules Report', 'Program Results Report', 'Candidates Point Report'] },
+                ];
+            }
+
+            let html = `<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>`;
+            if (role === 'Team Manager') {
+                menuItems.forEach(item => { html += `<a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group mb-1 transition-colors"><i class="${item.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${item.label}</a>`; });
+            } else {
+                html += `<a href="#" onclick="window.switchView('home')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group mb-2"><i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>Dashboard</a>`;
+                menuItems.forEach(m => { html += `<div><button onclick="toggleSidebarSubmenu('${m.id}')" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between focus:outline-none transition-colors"><div class="flex items-center"><i class="${m.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${m.label}</div><i id="arrow-${m.id}" class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i></button><div id="submenu-${m.id}" class="hidden ml-[1.35rem] pl-4 border-l border-gray-200 space-y-1 mt-1">${m.items.map(i => `<a href="#" class="block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors">${i}</a>`).join('')}</div></div>`; });
+            }
+            html += `<div class="pt-4"><p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Public Pages</p><a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between"><div class="flex items-center"><i class="fa-solid fa-globe w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>Website</div><i class="fa-solid fa-chevron-right text-xs text-gray-300"></i></a></div>`;
+            document.getElementById('sidebar-nav').innerHTML = html;
+        };
+
+        window.renderUserDropdown = (role) => {
+            const container = document.getElementById('dropdown-actions');
+            if (role === 'Team Manager') {
+                container.innerHTML = `<button onclick="window.openManageAccountModal()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Manage Account</button>`;
+            } else {
+                container.innerHTML = `<button onclick="window.switchView('home')" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Manage Account</button><button onclick="window.openDatabaseView()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-solid fa-database w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Database</button>`;
+            }
+        };
+
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value.trim();
+            const btn = document.getElementById('login-btn');
+            const btnText = btn.querySelector('span');
+            const loader = document.getElementById('login-loader');
+
+            btn.disabled = true; btnText.textContent = "Verifying..."; loader.classList.remove('hidden'); btn.classList.add('opacity-80');
+
+            let matchedUser = null;
+            if (userIn === 'administrator' && passIn === '81119') {
+                matchedUser = { name: 'Administrator', position: 'Admin', avatarLetter: 'A', username: 'administrator' };
+            } else {
+                const found = globalUsersList.find(u => u.username === userIn && u.password === passIn);
+                if (found) matchedUser = found;
+            }
+
+            setTimeout(() => {
+                if (matchedUser) {
+                    loggedInUserData = matchedUser;
+                    showToast(`Welcome back, ${matchedUser.name}!`, 'success');
+                    document.getElementById('header-username').textContent = matchedUser.name;
+                    document.getElementById('header-avatar').textContent = matchedUser.avatarLetter;
+                    document.getElementById('header-role-text').textContent = matchedUser.position;
+                    document.getElementById('dropdown-username').textContent = matchedUser.name;
+                    document.getElementById('dropdown-avatar').textContent = matchedUser.avatarLetter;
+                    document.getElementById('dropdown-role').textContent = matchedUser.position;
+
+                    window.renderSidebar(matchedUser.position);
+                    window.renderUserDropdown(matchedUser.position);
+
+                    if (matchedUser.position === 'Team Manager') document.getElementById('admin-bottom-section').classList.add('hidden');
+                    else document.getElementById('admin-bottom-section').classList.remove('hidden');
+
+                    window.switchView('home');
+                    document.getElementById('login-form').reset();
+                    document.getElementById('login-page').classList.remove('page-visible'); document.getElementById('login-page').classList.add('page-hidden');
+                    document.getElementById('dashboard-page').classList.remove('page-hidden'); document.getElementById('dashboard-page').classList.add('page-visible');
+                } else {
+                    showToast('Invalid Username or Password', 'error');
+                }
+                btn.disabled = false; btnText.textContent = "Login"; loader.classList.add('hidden'); btn.classList.remove('opacity-80');
+            }, 1500);
+        };
+
+        window.openManageAccountModal = () => { window.toggleUserMenu(); document.getElementById('manageAccountModal').classList.remove('hidden'); document.getElementById('myUsername').value = loggedInUserData.username; document.getElementById('myPassword').value = loggedInUserData.password || ""; };
+        window.closeManageAccountModal = () => { document.getElementById('manageAccountModal').classList.add('hidden'); };
+        window.saveMyAccount = async () => {
+            const newUsername = document.getElementById('myUsername').value; const newPassword = document.getElementById('myPassword').value;
+            if (!newUsername || !newPassword) { showToast("Fields cannot be empty", "error"); return; }
+            if (!loggedInUserData.id) { showToast("Admin account cannot be edited here.", "error"); return; }
+            try {
+                await updateDoc(doc(db, 'users', loggedInUserData.id), { username: newUsername, password: newPassword });
+                loggedInUserData.username = newUsername; loggedInUserData.password = newPassword;
+                showToast("Account Updated Successfully!", "success"); window.closeManageAccountModal();
+            } catch(e) { showToast("Failed to update account", "error"); }
+        };
+
+        window.saveSettings = async () => { const name = document.getElementById('setting-name').value; const motto = document.getElementById('setting-motto').value; const isActive = document.getElementById('setting-active').checked; try { await setDoc(doc(db, 'settings', 'general'), { festivalName: name, motto: motto, isActive: isActive }); showToast("Settings Saved!", "success"); } catch (e) { showToast("Error saving", "error"); } };
+        window.switchAdminTab = (tab) => { if(tab==='users'){document.getElementById('tab-users').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-settings').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-users').classList.remove('hidden'); document.getElementById('content-settings').classList.add('hidden');} else{document.getElementById('tab-settings').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-users').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-settings').classList.remove('hidden'); document.getElementById('content-users').classList.add('hidden');} };
+        window.saveUser = async () => { const name = document.getElementById('inputName').value; const pos = document.getElementById('inputPosition').value; const team = document.getElementById('inputTeam').value; if(!name || !pos) { showToast("Fill details", "error"); return; } const u = name.split(' ')[0].toLowerCase() + Math.floor(Math.random()*999); const p = Math.random().toString(36).slice(-6); await addDoc(collection(db, 'users'), { name, position: pos, team: pos==='Team Manager'?team:null, avatarLetter: name[0].toUpperCase(), username: u, password: p }); showToast("User Created", "success"); window.closeManageModal(); };
+        window.openEditModal = (id, u, p) => { document.getElementById('editUserId').value=id; document.getElementById('editUsername').value=u; document.getElementById('editPassword').value=p; document.getElementById('editModal').classList.remove('hidden'); };
+        window.saveEdit = async () => { await updateDoc(doc(db, 'users', document.getElementById('editUserId').value), { username: document.getElementById('editUsername').value, password: document.getElementById('editPassword').value }); showToast("Updated", "success"); document.getElementById('editModal').classList.add('hidden'); };
+        window.deleteUser = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'users', id)); };
+        window.handlePositionChange = () => { const p=document.getElementById('inputPosition').value; document.getElementById('teamSelectContainer').style.display = p==='Team Manager'?'block':'none'; };
+        window.openDatabaseView = () => { window.toggleUserMenu(); window.switchView('database'); };
+    </script>
+
+    <script>
+        // --- VANILLA JS UI HELPERS ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? '#10B981' : '#EF4444';
+            const iconClass = type === 'success' ? 'fa-check' : 'fa-xmark';
+            toast.className = `bg-white text-gray-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] border border-gray-100 pointer-events-auto toast-enter`;
+            toast.innerHTML = `<div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${bgColor}"><i class="fa-solid ${iconClass} text-white text-xs"></i></div><span class="font-medium text-sm">${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => { if(container.contains(toast)) container.removeChild(toast); }, 300); }, 4000);
+        }
+
+        window.switchView = function(viewName) {
+            const homeView = document.getElementById('view-home');
+            const dbView = document.getElementById('view-database');
+            if (viewName === 'database') { homeView.classList.add('hidden'); dbView.classList.remove('hidden'); } 
+            else { dbView.classList.add('hidden'); homeView.classList.remove('hidden'); }
+        }
+
+        window.togglePassword = function() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === 'password') { input.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); } 
+            else { input.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        }
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar.classList.contains('-translate-x-full')) { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); } 
+            else { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); }
+        }
+
+        window.toggleUserMenu = function() {
+            const menu = document.getElementById('userDropdown');
+            const chevron = document.getElementById('userMenuChevron');
+            menu.classList.toggle('hidden');
+            if (!menu.classList.contains('hidden')) chevron.classList.add('rotate-180'); else chevron.classList.remove('rotate-180');
+        }
+
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('userMenuContainer');
+            if (!container.contains(event.target)) { document.getElementById('userDropdown').classList.add('hidden'); document.getElementById('userMenuChevron').classList.remove('rotate-180'); }
+        });
+
+        window.openManageModal = function() { document.getElementById('manageModal').classList.remove('hidden'); }
+        window.closeManageModal = function() { 
+            document.getElementById('manageModal').classList.add('hidden');
+            document.getElementById('inputName').value = ''; document.getElementById('inputPosition').value = ''; document.getElementById('inputTeam').value = 'Team A'; document.getElementById('teamSelectContainer').classList.add('hidden');
+        }
+
+        window.closeEditModal = () => { document.getElementById('editModal').classList.add('hidden'); };
+        window.closeManageAccountModal = () => { document.getElementById('manageAccountModal').classList.add('hidden'); };
+
+        window.handleLogout = function() {
+            window.toggleUserMenu();
+            showToast('Logged Out Successfully', 'success');
+            setTimeout(() => { window.switchView('home'); document.getElementById('login-page').classList.remove('page-hidden'); document.getElementById('login-page').classList.add('page-visible'); document.getElementById('dashboard-page').classList.remove('page-visible'); document.getElementById('dashboard-page').classList.add('page-hidden'); }, 1500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const stats = [
+                { title: 'Total Candidates', value: '0', icon: 'fa-solid fa-user-group', color: 'blue', sub: 'Registered' },
+                { title: 'Total Programs', value: '0', icon: 'fa-regular fa-calendar', color: 'green', sub: 'Active' },
+                { title: 'Published Content', value: '0', icon: 'fa-regular fa-file-lines', color: 'purple', sub: 'Public' },
+                { title: 'Results Uploaded', value: '0', icon: 'fa-solid fa-trophy', color: 'orange', sub: 'Completed' },
+            ];
+            document.getElementById('stats-container').innerHTML = stats.map(s => `<div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">${s.title}</span><div class="h-8 w-8 rounded-full bg-${s.color}-50 flex items-center justify-center text-${s.color}-600"><i class="${s.icon} text-xs"></i></div></div><div><span class="text-2xl font-bold text-gray-900">${s.value}</span><p class="text-xs text-gray-400 mt-1">${s.sub}</p></div></div>`).join('');
+
+            const btns = [
+                { icon: 'fa-solid fa-user-plus', label: 'Add Candidates', color: 'blue' },
+                { icon: 'fa-solid fa-plus-square', label: 'Add Programs', color: 'green' },
+                { icon: 'fa-solid fa-award', label: 'Publish Results', color: 'orange' },
+                { icon: 'fa-regular fa-calendar-alt', label: 'Manage Schedules', color: 'purple' },
+                { icon: 'fa-regular fa-images', label: 'Manage Gallery', color: 'teal' },
+                { icon: 'fa-regular fa-folder-open', label: 'Manage Downloads', color: 'red' },
+            ];
+            document.getElementById('quick-access-container').innerHTML = btns.map(b => `<button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group"><div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-${b.color}-50 group-hover:text-${b.color}-600 transition-colors"><i class="${b.icon}"></i></div><span class="font-semibold text-gray-700 text-sm">${b.label}</span></button>`).join('');
+        });
+
+        window.toggleSidebarSubmenu = function(id) {
+            const sub = document.getElementById(`submenu-${id}`);
+            const arrow = document.getElementById(`arrow-${id}`);
+            if(sub.classList.contains('hidden')) { sub.classList.remove('hidden'); arrow.classList.add('rotate-180'); } else { sub.classList.add('hidden'); arrow.classList.remove('rotate-180'); }
         }
     </script>
 </body>
