@@ -8,7 +8,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Font Awesome -->
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
@@ -18,13 +18,27 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], poppins: ['Poppins', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
                     colors: {
-                        brand: { yellow: '#FCD34D', yellowDark: '#F59E0B', grayBg: '#F9FAFB' }
+                        brand: {
+                            yellow: '#FCD34D', // Amber-300
+                            yellowDark: '#F59E0B', // Amber-500
+                            grayBg: '#F9FAFB',
+                            card: '#FFFFFF',
+                        }
                     },
                     keyframes: {
-                        'scale-up': { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
-                        'fade-in-down': { '0%': { opacity: '0', transform: 'translateY(-10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                        'scale-up': {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        'fade-in-down': {
+                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
                     },
                     animation: {
                         'scale-up': 'scale-up 0.2s ease-out',
@@ -51,22 +65,17 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #FCD34D; }
         .toggle-checkbox:checked + .toggle-label { background-color: #FCD34D; }
         
-        /* View Toggle Buttons */
-        .view-toggle-btn.active { background-color: #FCD34D; color: #111827; font-weight: 600; border-color: #FCD34D; }
-        .view-toggle-btn { color: #6B7280; background-color: transparent; font-weight: 500; }
-        .view-toggle-btn:hover:not(.active) { background-color: #F3F4F6; color: #374151; }
-        
-        /* Detail Tabs */
-        .detail-tab-btn.active { color: #F59E0B; border-bottom-color: #FCD34D; font-weight: 600; }
-        .detail-tab-btn { color: #6B7280; border-bottom: 2px solid transparent; padding-bottom: 1rem; transition: all 0.2s; }
-
-        /* Custom Checkbox */
-        .custom-checkbox input:checked + div { background-color: #FCD34D; border-color: #FCD34D; }
-        .custom-checkbox input:checked + div i { opacity: 1; }
+        /* Custom Checkbox for Table */
+        .custom-checkbox input:checked + div {
+            background-color: #FCD34D;
+            border-color: #FCD34D;
+        }
+        .custom-checkbox input:checked + div i {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-brand-grayBg font-sans text-slate-800 h-screen flex overflow-hidden">
@@ -77,9 +86,50 @@
     <!-- ERROR BANNER -->
     <div id="db-error-banner" class="hidden fixed bottom-0 left-0 right-0 bg-red-600 text-white p-4 z-[200] shadow-lg">
         <div class="max-w-4xl mx-auto flex items-start justify-between">
-            <div><h3 class="font-bold text-lg"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Database Access Denied</h3><p class="text-sm mt-1 opacity-90">Check Firebase Console Rules.</p></div>
+            <div>
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Database Access Denied</h3>
+                <p class="text-sm mt-1 opacity-90">Check Firebase Console > Firestore Database > Rules.</p>
+            </div>
             <button onclick="document.getElementById('db-error-banner').classList.add('hidden')" class="text-white hover:text-red-200"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
+    </div>
+
+    <!-- DELETE CONFIRMATION MODAL (New) -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up p-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-3">Are you sure you want to delete this candidate?</h3>
+            <p class="text-sm text-gray-500 leading-relaxed mb-8">This action cannot be undone. This will permanently delete the candidate and all associated data.</p>
+            <div class="flex justify-end gap-4">
+                <button onclick="window.closeDeleteConfirmModal()" class="px-6 py-2.5 bg-white border-2 border-yellow-400 text-gray-900 font-bold rounded-xl hover:bg-yellow-50 transition-colors focus:outline-none">Cancel</button>
+                <button onclick="window.confirmDeleteCandidate()" class="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-sm transition-colors focus:outline-none">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL FLOATING ACTION MENU (Candidates) -->
+    <div id="globalActionMenu" class="hidden fixed z-[9999] w-32 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-up origin-top-right">
+        <button id="btnView" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+            <i class="fa-solid fa-chart-simple text-gray-400 text-xs"></i> View
+        </button>
+        <button id="btnEdit" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+            <i class="fa-solid fa-pen text-gray-400 text-xs"></i> Edit
+        </button>
+        <button id="btnDelete" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 border-t border-gray-50 transition-colors">
+            <i class="fa-solid fa-trash text-red-400 text-xs"></i> Delete
+        </button>
+    </div>
+
+    <!-- GLOBAL FLOATING ACTION MENU (Sections & Teams) -->
+    <div id="sectionActionMenu" class="hidden fixed z-[9999] w-32 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-up origin-top-right">
+        <button id="btnSecView" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+            <i class="fa-solid fa-eye text-gray-400 text-xs"></i> View
+        </button>
+        <button id="btnSecEdit" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+            <i class="fa-solid fa-pen text-gray-400 text-xs"></i> Edit
+        </button>
+        <button id="btnSecDelete" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 border-t border-gray-50 transition-colors">
+            <i class="fa-solid fa-trash text-red-400 text-xs"></i> Delete
+        </button>
     </div>
 
     <!-- =========================== LOGIN PAGE =========================== -->
@@ -91,17 +141,26 @@
             </div>
             <form id="login-form" class="space-y-5" onsubmit="window.handleLogin(event)">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-bold text-gray-900 ml-1">Username</label>
-                    <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-600 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition-all text-sm" required>
-                </div>
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-bold text-gray-900 ml-1">Password</label>
+                    <label for="username" class="block text-sm font-bold text-gray-900 ml-1">Username</label>
                     <div class="relative">
-                        <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-600 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition-all text-sm pr-10" required>
-                        <button type="button" onclick="window.togglePassword()" class="absolute inset-y-0 right-3 flex items-center text-gray-900 hover:text-gray-600"><i id="eye-icon" class="fa-regular fa-eye text-sm"></i></button>
+                        <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-600 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition-all duration-200 text-sm" required>
                     </div>
                 </div>
-                <button id="login-btn" type="submit" class="w-full bg-[#FCD34D] hover:bg-[#fbbf24] text-black font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all transform active:scale-[0.98] text-sm flex justify-center items-center gap-2">
+                <div class="space-y-1.5">
+                    <label for="password" class="block text-sm font-bold text-gray-900 ml-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-600 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition-all duration-200 text-sm pr-10" required>
+                        <button type="button" onclick="window.togglePassword()" class="absolute inset-y-0 right-3 flex items-center text-gray-900 hover:text-gray-600 focus:outline-none"><i id="eye-icon" class="fa-regular fa-eye text-sm"></i></button>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <label class="flex items-center cursor-pointer group select-none">
+                        <input type="checkbox" class="peer hidden">
+                        <div class="w-5 h-5 border-[1.5px] border-yellow-400 rounded-full flex items-center justify-center mr-2.5 transition-all bg-white peer-checked:bg-yellow-400 peer-checked:border-yellow-400 relative"><i class="fa-solid fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100 absolute inset-0 m-auto flex items-center justify-center"></i></div>
+                        <span class="text-sm font-bold text-gray-800">Remember me</span>
+                    </label>
+                </div>
+                <button id="login-btn" type="submit" class="w-full bg-[#FCD34D] hover:bg-[#fbbf24] text-black font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all duration-200 transform active:scale-[0.98] text-sm flex justify-center items-center gap-2">
                     <span>Login</span><div id="login-loader" class="loader hidden"></div>
                 </button>
             </form>
@@ -125,6 +184,9 @@
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
                 <!-- Injected via JS based on Role -->
             </nav>
+            <div class="p-4 border-t border-gray-200">
+                <a href="#" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"><i class="fa-solid fa-gear w-5 text-center mr-2 text-gray-400"></i>Go to Settings</a>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -135,6 +197,7 @@
                     <div class="hidden lg:flex items-center text-gray-400 text-sm">
                         <i class="fa-solid fa-columns mr-2"></i><span class="mr-2">/</span><span class="font-medium text-gray-600" id="header-role-text">Administrator</span>
                     </div>
+                    <span class="lg:hidden font-semibold text-gray-700 ml-2">Dashboard</span>
                 </div>
                 <div class="relative" id="userMenuContainer">
                     <button onclick="window.toggleUserMenu()" class="flex items-center space-x-2 focus:outline-none hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
@@ -146,8 +209,11 @@
                         <div class="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
                             <div id="dropdown-avatar" class="h-10 w-10 rounded-full bg-yellow-400 flex items-center justify-center text-lg font-bold text-gray-900 flex-shrink-0 uppercase">A</div>
                             <div class="flex flex-col min-w-0">
-                                <span id="dropdown-username" class="font-bold text-gray-900 text-sm">Administrator</span>
-                                <span id="dropdown-role" class="text-[10px] font-bold text-gray-500 uppercase">Owner</span>
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span id="dropdown-username" class="font-bold text-gray-900 text-sm">Administrator</span>
+                                    <span id="dropdown-role" class="px-1.5 py-[1px] rounded border border-gray-300 text-[10px] font-bold text-gray-500 tracking-wider uppercase">Owner</span>
+                                </div>
+                                <span id="dropdown-festival-name" class="text-xs text-gray-500 truncate">kauthukam.47</span>
                             </div>
                         </div>
                         <div class="py-2" id="dropdown-actions">
@@ -164,16 +230,18 @@
                 <!-- VIEW: DASHBOARD HOME -->
                 <div id="view-home" class="block">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden flex flex-col justify-center min-h-[200px]">
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden flex flex-col justify-center min-h-[240px]">
                             <div class="relative z-10 max-w-md">
-                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome to <br/> <span id="dashboard-welcome-name">Your Festival</span></h2>
-                                <p class="text-gray-500 text-sm leading-relaxed mb-4">Manage your events and track participants.</p>
+                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome to <br/> <span id="dashboard-welcome-name">Your Festival Dashboard</span></h2>
+                                <p class="text-gray-500 text-sm leading-relaxed mb-4">Manage your events, track participants, and monitor results all in one place.</p>
                             </div>
                         </div>
-                        <div class="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 gap-4" id="stats-container">
+                        <div class="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4" id="stats-container">
                             <!-- Stats Injected -->
                         </div>
                     </div>
+
+                    <!-- Bottom Section (Hidden for Team Managers) -->
                     <div id="admin-bottom-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2">
                             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Quick Access</h3>
@@ -192,58 +260,101 @@
                 <!-- VIEW: DATABASE / ADMIN PANEL -->
                 <div id="view-database" class="hidden">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Admin Panel</h2>
-                        <button onclick="window.switchView('home')" class="text-sm font-medium text-gray-600 hover:text-gray-900"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Admin Panel</h2>
+                            <p class="text-sm text-gray-500">Manage system users and festival settings.</p>
+                        </div>
+                        <button onclick="window.switchView('home')" class="text-sm font-medium text-gray-600 hover:text-gray-900"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Dashboard</button>
                     </div>
                     <div class="flex space-x-6 border-b border-gray-200 mb-6">
-                        <button id="tab-users" onclick="window.switchAdminTab('users')" class="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors">Users</button>
-                        <button id="tab-settings" onclick="window.switchAdminTab('settings')" class="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">Settings</button>
+                        <button id="tab-users" onclick="window.switchAdminTab('users')" class="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors">Users Database</button>
+                        <button id="tab-settings" onclick="window.switchAdminTab('settings')" class="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">Festival Settings</button>
                     </div>
-                    <div id="content-users" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left text-sm text-gray-600"><thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider"><tr><th class="px-6 py-4">User</th><th class="px-6 py-4">Role</th><th class="px-6 py-4">Credentials</th><th class="px-6 py-4 text-right">Actions</th></tr></thead><tbody id="database-table-body" class="divide-y divide-gray-100"></tbody></table></div></div>
-                    <div id="content-settings" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                        <h3 class="text-lg font-bold text-gray-900 mb-6">Configuration</h3>
+                    <div id="content-users" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-down">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                    <tr><th class="px-6 py-4">User</th><th class="px-6 py-4">Role / Team</th><th class="px-6 py-4">Credentials</th><th class="px-6 py-4 text-right">Actions</th></tr>
+                                </thead>
+                                <tbody id="database-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="content-settings" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 animate-fade-in-down">
+                        <h3 class="text-lg font-bold text-gray-900 mb-6">General Configuration</h3>
                         <div class="max-w-xl space-y-6">
-                            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1.5">Name</label><input type="text" id="setting-name" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"></div>
-                            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1.5">Motto</label><input type="text" id="setting-motto" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"></div>
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-100"><div><h4 class="text-sm font-bold text-gray-900">Active Status</h4></div><div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="setting-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="setting-active" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div></div>
-                            <div class="pt-4"><button onclick="window.saveSettings()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors">Save Changes</button></div>
+                            <div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Festival Name</label><input type="text" id="setting-name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Motto / Tagline</label><input type="text" id="setting-motto" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none text-sm"></div>
+                            <div class="flex items-center justify-between border-t border-gray-100 pt-6">
+                                <div><h4 class="text-sm font-bold text-gray-900">Festival Status</h4><p class="text-xs text-gray-500 mt-0.5">Toggle festival visibility.</p></div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="setting-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="setting-active" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                            </div>
+                            <div class="pt-4"><button onclick="window.saveSettings()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors flex items-center"><i class="fa-regular fa-floppy-disk mr-2"></i> Save Changes</button></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- VIEW: CANDIDATES -->
+                <!-- VIEW: ALL CANDIDATES -->
                 <div id="view-candidates" class="hidden">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Candidates</h2>
-                        <button onclick="window.openCandidateModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center"><i class="fa-solid fa-plus mr-2"></i>Add</button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Candidates</h2>
+                            <p class="text-sm text-gray-500">Manage your candidates</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button onclick="window.openCandidateModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>Add Candidate</button>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[500px]">
-                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                    <button onclick="window.toggleCandidateView('table')" id="view-toggle-table" class="view-toggle-btn active px-3 py-1.5 rounded-md text-xs flex items-center gap-2"><i class="fa-solid fa-table"></i> Table</button>
-                                    <button onclick="window.toggleCandidateView('cards')" id="view-toggle-cards" class="view-toggle-btn px-3 py-1.5 rounded-md text-xs flex items-center gap-2"><i class="fa-solid fa-grip"></i> Cards</button>
-                                </div>
-                                <div class="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                    <button onclick="window.toggleStatusFilter('active')" id="status-toggle-active" class="view-toggle-btn active px-3 py-1.5 rounded-md text-xs">Active</button>
-                                    <button onclick="window.toggleStatusFilter('inactive')" id="status-toggle-inactive" class="view-toggle-btn px-3 py-1.5 rounded-md text-xs">Inactive</button>
-                                </div>
-                            </div>
-                            <div class="relative hidden md:block">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
-                                <input type="text" placeholder="Search..." class="pl-8 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-48">
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[300px]">
+                        <!-- Standard Toolbar -->
+                        <div id="candidates-toolbar" class="p-4 border-b border-gray-100 flex justify-end items-center">
+                            <div class="flex space-x-4 text-gray-400 items-center">
+                                <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-gray-600"></i>
+                                <i class="fa-solid fa-filter cursor-pointer hover:text-gray-600"></i>
                             </div>
                         </div>
-                        <div class="flex-1 overflow-auto bg-white">
-                            <div id="candidates-table-view" class="w-full">
-                                <table class="w-full text-left text-sm text-gray-600">
-                                    <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider sticky top-0 bg-gray-50 z-10"><tr><th class="px-6 py-4">Candidate</th><th class="px-6 py-4">Team</th><th class="px-6 py-4">Section</th><th class="px-6 py-4 text-right">Actions</th></tr></thead>
-                                    <tbody id="candidates-table-body" class="divide-y divide-gray-100"></tbody>
-                                </table>
+                        
+                        <!-- Bulk Actions Toolbar -->
+                        <div id="candidates-bulk-toolbar" class="hidden p-4 border-b border-gray-100 bg-white flex justify-between items-center">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center text-white">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                </div>
+                                <span class="text-sm font-bold text-gray-900"><span id="selected-count">0</span> selected</span>
                             </div>
-                            <div id="candidates-cards-view" class="hidden w-full p-6">
-                                <div id="candidates-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                            <div class="flex space-x-3">
+                                <button onclick="window.deleteSelectedCandidates()" class="px-4 py-1.5 bg-red-700 hover:bg-red-800 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                                    <i class="fa-solid fa-trash-can mr-2"></i>Delete
+                                </button>
                             </div>
+                        </div>
+
+                        <div class="overflow-x-auto pb-32">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 w-10 text-center">
+                                            <label class="custom-checkbox flex items-center cursor-pointer justify-center">
+                                                <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll()" class="hidden">
+                                                <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
+                                                    <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
+                                                </div>
+                                            </label>
+                                        </th>
+                                        <th class="px-6 py-4">Chest No</th>
+                                        <th class="px-6 py-4">Ad. No</th>
+                                        <th class="px-6 py-4">Name</th>
+                                        <th class="px-6 py-4">Class</th>
+                                        <th class="px-6 py-4">Team</th>
+                                        <th class="px-6 py-4">Section</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="candidates-table-body" class="divide-y divide-gray-100">
+                                    <tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">Loading candidates...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -251,64 +362,290 @@
                 <!-- VIEW: SECTIONS -->
                 <div id="view-sections" class="hidden">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Sections</h2>
-                        <button onclick="window.openSectionModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm"><i class="fa-solid fa-plus mr-2"></i>Add</button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Sections</h2>
+                            <p class="text-sm text-gray-500">Manage Candidate Groups</p>
+                        </div>
+                        <button onclick="window.openSectionModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>Add Section</button>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <table class="w-full text-left text-sm text-gray-600">
-                            <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider"><tr><th class="px-6 py-4">Name</th><th class="px-6 py-4">Status</th><th class="px-6 py-4 text-right">Actions</th></tr></thead>
-                            <tbody id="sections-table-body" class="divide-y divide-gray-100"></tbody>
+                            <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4">Section Name</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Created Time</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sections-table-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">Loading sections...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- VIEW: TEAMS -->
+                <!-- VIEW: TEAMS (New) -->
                 <div id="view-teams" class="hidden">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Teams</h2>
-                        <button onclick="window.openTeamModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm"><i class="fa-solid fa-plus mr-2"></i>Add</button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Teams</h2>
+                            <p class="text-sm text-gray-500">Manage candidate teams (4 total)</p>
+                        </div>
+                        <button onclick="window.openTeamModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>Add Team</button>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <table class="w-full text-left text-sm text-gray-600">
-                            <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider"><tr><th class="px-6 py-4">Name</th><th class="px-6 py-4">Color</th><th class="px-6 py-4">Status</th><th class="px-6 py-4 text-right">Actions</th></tr></thead>
-                            <tbody id="teams-table-body" class="divide-y divide-gray-100"></tbody>
+                            <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4">Team</th>
+                                    <th class="px-6 py-4">Color</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teams-table-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">Loading teams...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW: SECTION DETAILS -->
+                <div id="view-section-details" class="hidden">
+                     <!-- Header -->
+                     <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <button onclick="window.switchView('sections')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                            <div class="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 text-xl border border-yellow-100"><i class="fa-solid fa-chart-bar"></i></div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900" id="detail-sec-title">Senior</h1>
+                                <p class="text-xs text-gray-500">Section analytics and candidate overview</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm" id="detail-sec-status">Active</span>
+                     </div>
+
+                     <!-- Stats Cards -->
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div><p class="text-[10px] font-bold text-gray-400 uppercase mb-1">TOTAL CANDIDATES</p><h3 class="text-2xl font-bold text-gray-900" id="stat-sec-cand">0</h3></div>
+                            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                        <!-- ... other stats ... -->
+                     </div>
+
+                     <!-- Content Grid -->
+                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left Column: Tabs & List -->
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                            <div class="flex border-b border-gray-100">
+                                <button class="flex-1 py-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 bg-yellow-50/30"><i class="fa-regular fa-user mr-2"></i>Candidates</button>
+                                <button class="flex-1 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-trophy mr-2"></i>Programs</button>
+                            </div>
+                            <div class="p-4 flex justify-between items-center border-b border-gray-50">
+                                <h3 class="font-bold text-gray-900">Section Candidates</h3>
+                                <div class="flex gap-2">
+                                    <i class="fa-solid fa-magnifying-glass text-gray-400 p-2"></i>
+                                    <button class="px-3 py-1 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-50"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> View All</button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-gray-600">
+                                    <thead class="bg-gray-50 text-xs font-bold text-gray-500">
+                                        <tr><th class="px-6 py-3">Chest No</th><th class="px-6 py-3">Candidate</th><th class="px-6 py-3">Team</th><th class="px-6 py-3">Gender</th><th class="px-6 py-3">Status</th></tr>
+                                    </thead>
+                                    <tbody id="sec-detail-table-body">
+                                        <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="p-4 border-t border-gray-100 flex justify-between items-center">
+                                <span class="text-xs text-gray-500">Showing 1 to 5 of 0 results</span>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                    <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Top Performers -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
+                            <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6"><i class="fa-solid fa-medal mr-2"></i>Top Performers</h3>
+                            <div class="flex flex-col items-center justify-center py-10 text-center">
+                                <div class="text-gray-300 text-4xl mb-3"><i class="fa-solid fa-medal"></i></div>
+                                <span class="text-gray-500 text-sm">No toppers yet</span>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+
+                <!-- VIEW: TEAM DETAILS (New) -->
+                <div id="view-team-details" class="hidden">
+                     <!-- Header -->
+                     <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <button onclick="window.switchView('teams')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                            <div class="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 text-xl border border-yellow-100"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900" id="detail-team-title">Red Team</h1>
+                                <p class="text-xs text-gray-500">Team analytics and candidate overview</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm" id="detail-team-status">Active</span>
+                     </div>
+
+                     <!-- Stats Cards -->
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div><p class="text-[10px] font-bold text-gray-400 uppercase mb-1">TOTAL CANDIDATES</p><h3 class="text-2xl font-bold text-gray-900" id="stat-team-cand">0</h3></div>
+                            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div><p class="text-[10px] font-bold text-gray-400 uppercase mb-1">PUBLISHED POINTS</p><h3 class="text-2xl font-bold text-gray-900" id="stat-team-points">0</h3></div>
+                            <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-trophy"></i></div>
+                        </div>
+                        <!-- ... -->
+                     </div>
+
+                     <!-- Content Grid -->
+                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left Column: Tabs & List -->
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                            <div class="flex border-b border-gray-100">
+                                <button class="flex-1 py-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 bg-yellow-50/30"><i class="fa-regular fa-user mr-2"></i>Candidates</button>
+                                <button class="flex-1 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-trophy mr-2"></i>Programs</button>
+                            </div>
+                            <div class="p-4 flex justify-between items-center border-b border-gray-50">
+                                <h3 class="font-bold text-gray-900">Team Candidates</h3>
+                                <div class="flex gap-2">
+                                    <i class="fa-solid fa-magnifying-glass text-gray-400 p-2"></i>
+                                    <button class="px-3 py-1 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-50"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> View All</button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-gray-600">
+                                    <thead class="bg-gray-50 text-xs font-bold text-gray-500">
+                                        <tr><th class="px-6 py-3">Chest No</th><th class="px-6 py-3">Candidate</th><th class="px-6 py-3">Section</th><th class="px-6 py-3">Gender</th><th class="px-6 py-3">Status</th></tr>
+                                    </thead>
+                                    <tbody id="team-detail-table-body">
+                                        <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Team Details & Toppers -->
+                        <div class="space-y-6">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
+                                <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6"><i class="fa-regular fa-user mr-2"></i>Team Details</h3>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex justify-between items-center"><span class="text-gray-500">Color:</span><div class="flex items-center"><div id="detail-team-color-box" class="w-4 h-4 rounded mr-2"></div><span id="detail-team-color-hex" class="font-mono text-gray-900 font-bold">#000000</span></div></div>
+                                    <div class="flex justify-between items-center"><span class="text-gray-500">Created:</span><span id="detail-team-created" class="text-gray-900 font-medium">-</span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
+                                <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6"><i class="fa-solid fa-medal mr-2"></i>Top Performers</h3>
+                                <div class="flex flex-col items-center justify-center py-6 text-center">
+                                    <div class="text-gray-300 text-4xl mb-3"><i class="fa-solid fa-medal"></i></div>
+                                    <span class="text-gray-500 text-sm">No toppers yet</span>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+
+                <!-- VIEW: TEAM MANAGER STUDENTS (New) -->
+                <div id="view-team-students" class="hidden">
+                    <!-- Header -->
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">My Students <span id="my-students-team-label" class="text-gray-400 text-lg font-normal"></span></h2>
+                            <p class="text-sm text-gray-500">Manage students in your team</p>
+                        </div>
+                    </div>
+                    <!-- Table -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <table class="w-full text-left text-sm text-gray-600">
+                            <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4">Si No</th>
+                                    <th class="px-6 py-4">Chest No</th>
+                                    <th class="px-6 py-4">Name</th>
+                                    <th class="px-6 py-4">Class</th>
+                                    <th class="px-6 py-4">Ad No</th>
+                                    <th class="px-6 py-4">Section</th>
+                                </tr>
+                            </thead>
+                            <tbody id="team-students-table-body" class="divide-y divide-gray-100">
+                                <!-- Rows -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
 
                 <!-- VIEW: CANDIDATE DETAILS -->
                 <div id="view-candidate-details" class="hidden">
-                    <div class="flex items-center gap-3 mb-6">
-                        <button onclick="window.switchView('candidates')" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm"><i class="fa-solid fa-arrow-left text-sm"></i></button>
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-lg uppercase" id="detail-avatar">S</div>
-                            <div><div class="flex items-center gap-2"><h1 class="text-xl font-bold text-gray-900 uppercase" id="detail-cand-name">Name</h1><span class="px-2 py-0.5 bg-yellow-400 text-gray-900 text-[10px] font-bold rounded uppercase">Active</span></div><div class="flex items-center gap-2 text-xs text-gray-500"><span id="detail-cand-team-sub" class="font-medium">Team</span></div></div>
+                    <!-- Breadcrumb & Header -->
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <span onclick="window.switchView('candidates')" class="hover:text-gray-900 cursor-pointer">Candidates</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                        <span class="text-gray-900 font-medium" id="detail-cand-name-crumb">Suhail</span>
+                    </div>
+
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="h-16 w-16 rounded-2xl bg-yellow-100 flex items-center justify-center text-yellow-600 text-2xl font-bold" id="detail-avatar">S</div>
+                            <div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <h1 class="text-2xl font-bold text-gray-900" id="detail-cand-name">Suhail</h1>
+                                    <span class="px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded uppercase">Active</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm text-gray-500">
+                                    <span id="detail-cand-gender" class="uppercase bg-gray-100 px-2 rounded text-xs font-bold text-gray-600">MALE</span>
+                                    <span class="text-gray-300">•</span>
+                                    <span id="detail-cand-chest" class="font-mono font-medium text-gray-700">#001</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fa-solid fa-download mr-2"></i>Export Registrations</button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-2xl border border-gray-100 p-6 h-fit shadow-sm">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">Details</h3>
-                            <div class="space-y-5 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-500">Team</span><span class="font-medium text-gray-900 text-right" id="detail-team">-</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Section</span><span class="font-medium text-gray-900 text-right" id="detail-section">-</span></div>
-                                <div class="h-px bg-gray-100 my-2"></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Chest No</span><span class="font-medium text-gray-900 text-right" id="detail-chest-no">-</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Ad. No</span><span class="font-medium text-gray-900 text-right" id="detail-ad-no">-</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Class</span><span class="font-medium text-gray-900 text-right" id="detail-class-val">-</span></div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Points</p><h3 class="text-2xl font-bold text-gray-900">0 pts</h3></div>
+                                <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-medal"></i></div>
                             </div>
                         </div>
-                        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden min-h-[400px] shadow-sm">
-                            <div class="flex border-b border-gray-100 px-6 pt-4">
-                                <button onclick="window.switchDetailTab('participations')" id="tab-btn-participations" class="detail-tab-btn flex-1 text-center mr-4">Participations</button>
-                                <button onclick="window.switchDetailTab('results')" id="tab-btn-results" class="detail-tab-btn flex-1 text-center mr-4">Results</button>
-                                <button onclick="window.switchDetailTab('negative')" id="tab-btn-negative" class="detail-tab-btn flex-1 text-center active">Negative Points</button>
+                        <!-- More stats... -->
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-6">
+                        <!-- Personal Details -->
+                        <div class="col-span-1 bg-white rounded-2xl border border-gray-100 p-6 h-fit">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">Personal Details</h3>
+                            <div class="space-y-4 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-500">Team</span><span class="font-medium text-gray-900" id="detail-team">Blue Team</span></div>
+                                <div class="flex justify-between"><span class="text-gray-500">Section</span><span class="font-medium text-gray-900" id="detail-section">Bidāya</span></div>
+                                <div class="flex justify-between"><span class="text-gray-500">Chest Number</span><span class="font-medium text-gray-900" id="detail-chest-no">#001</span></div>
+                                <div class="flex justify-between"><span class="text-gray-500">Ad. No</span><span class="font-medium text-gray-900" id="detail-ad-no">1234</span></div>
+                                <div class="flex justify-between"><span class="text-gray-500">Class</span><span class="font-medium text-gray-900" id="detail-class">10A</span></div>
                             </div>
-                            <div class="p-6">
-                                <div id="tab-content-participations" class="hidden text-gray-500 text-sm">No participations yet</div>
-                                <div id="tab-content-results" class="hidden text-gray-500 text-sm">No results yet</div>
-                                <div id="tab-content-negative" class="block">
-                                    <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-900">Negative Points</h4><span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">0 Points</span></div>
-                                </div>
+                        </div>
+                        <!-- Tabs & Content -->
+                        <div class="col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden min-h-[400px]">
+                            <div class="flex border-b border-gray-100">
+                                <button class="flex-1 py-4 text-sm font-medium text-yellow-600 border-b-2 border-yellow-400 bg-yellow-50/50"><i class="fa-regular fa-user mr-2"></i>Participations</button>
+                                <button class="flex-1 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-trophy mr-2"></i>Results</button>
+                            </div>
+                            <div class="p-8 flex flex-col items-center justify-center h-64 text-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-gray-300"><i class="fa-regular fa-folder-open text-xl"></i></div>
+                                <h4 class="text-gray-900 font-medium">No participations found</h4>
                             </div>
                         </div>
                     </div>
@@ -317,82 +654,146 @@
         </div>
     </div>
 
-    <!-- MODALS -->
-    <!-- User Modal -->
+    <!-- Add User Modal -->
     <div id="manageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Add New User</h3><button onclick="window.closeManageModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
             <div class="p-6 space-y-4">
                 <div><label class="block text-xs font-bold text-gray-500 uppercase">Name</label><input type="text" id="inputName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
                 <div><label class="block text-xs font-bold text-gray-500 uppercase">Position</label><select id="inputPosition" onchange="window.handlePositionChange()" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"><option value="" disabled selected>Select Role</option><option value="Admin">Admin</option><option value="Media">Media</option><option value="Team Manager">Team Manager</option></select></div>
-                <div id="teamSelectContainer" class="hidden"><label class="block text-xs font-bold text-gray-500 uppercase">Team</label><select id="inputTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"></select></div>
+                <div id="teamSelectContainer" class="hidden">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Team</label>
+                    <select id="inputTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="" disabled selected>Select Team</option>
+                        <!-- Populated Dynamically -->
+                    </select>
+                </div>
             </div>
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeManageModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveUser()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg">Create User</button></div>
         </div>
     </div>
 
-    <!-- Candidate Modal -->
+    <!-- Add Section Modal -->
+    <div id="sectionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800" id="secModalTitle">Add Section</h3>
+                <button onclick="window.closeSectionModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="secId">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section Name</label><input type="text" id="secName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="e.g. Senior"></div>
+                <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                    <div><h4 class="text-sm font-bold text-gray-900">Active Status</h4><p class="text-xs text-gray-500 mt-0.5">Enable or disable this section</p></div>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="secActive" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="secActive" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="window.closeSectionModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button onclick="window.saveSection()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                    <i class="fa-solid fa-check mr-2"></i>Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Team Modal -->
+    <div id="teamModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800" id="teamModalTitle">Add Team</h3>
+                <button onclick="window.closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="teamId">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Team Name</label><input type="text" id="teamName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="e.g. Red Team"></div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Team Color</label>
+                    <div class="flex gap-2">
+                        <input type="color" id="teamColorPicker" class="h-10 w-12 p-0 border border-gray-300 rounded-lg cursor-pointer" value="#FF0000" oninput="document.getElementById('teamColorHex').value = this.value">
+                        <input type="text" id="teamColorHex" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-yellow-400 outline-none" value="#FF0000" oninput="document.getElementById('teamColorPicker').value = this.value">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                    <div><h4 class="text-sm font-bold text-gray-900">Active Status</h4><p class="text-xs text-gray-500 mt-0.5">Show in candidate dropdowns</p></div>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="teamActive" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="teamActive" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="window.closeTeamModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button onclick="window.saveTeam()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                    <i class="fa-solid fa-check mr-2"></i>Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Candidate Modal -->
     <div id="candidateModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-up">
-            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800" id="candModalTitle">Add Candidate</h3><button onclick="window.closeCandidateModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800" id="candModalTitle">Add Candidate</h3>
+                <button onclick="window.closeCandidateModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="candId">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Chest No</label><input type="text" id="candChest" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ad. No</label><input type="text" id="candAdNo" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Chest No</label><input type="text" id="candChest" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ad. No</label><input type="text" id="candAdNo" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
                 </div>
-                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Name</label><input type="text" id="candName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Name</label><input type="text" id="candName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Class</label><input type="text" id="candClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Team</label><select id="candTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"></select></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Class</label><input type="text" id="candClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
+                    <!-- Team Dropdown -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Team</label>
+                        <select id="candTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                            <option value="" disabled selected>Select Team</option>
+                            <!-- Populated Dynamically -->
+                        </select>
+                    </div>
                 </div>
-                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section</label><select id="candSection" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"></select></div>
-                <div class="flex items-center justify-between border-t border-gray-100 pt-4 mt-2"><div><label class="block text-xs font-bold text-gray-500 uppercase">Status</label></div><div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" id="candStatus" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="candStatus" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div></div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section</label>
+                    <select id="candSection" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <option value="" disabled selected>Select Section</option>
+                        <!-- Populated Dynamically -->
+                    </select>
+                </div>
             </div>
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeCandidateModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveCandidate()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm">Save</button></div>
-        </div>
-    </div>
-
-    <!-- Section Modal -->
-    <div id="sectionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
-            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Add Section</h3><button onclick="window.closeSectionModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
-            <div class="p-6 space-y-4">
-                <input type="hidden" id="sectionId">
-                <div><label class="block text-xs font-bold text-gray-500 uppercase">Name</label><input type="text" id="sectionName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
-                <div class="flex items-center justify-between border-t border-gray-100 pt-4"><div><label class="block text-xs font-bold text-gray-500 uppercase">Status</label></div><div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" id="sectionStatus" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="sectionStatus" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div></div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="window.closeCandidateModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button id="candSubmitBtn" onclick="window.saveCandidate()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                    <i class="fa-solid fa-file-import mr-2"></i>Import
+                </button>
             </div>
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeSectionModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveSection()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg">Save</button></div>
-        </div>
-    </div>
-
-    <!-- Team Modal -->
-    <div id="teamModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
-            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Add Team</h3><button onclick="window.closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
-            <div class="p-6 space-y-4">
-                <input type="hidden" id="teamId">
-                <div><label class="block text-xs font-bold text-gray-500 uppercase">Name</label><input type="text" id="teamName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
-                <div><label class="block text-xs font-bold text-gray-500 uppercase">Color</label><div class="flex items-center gap-2 mt-1"><input type="color" id="teamColor" class="h-10 w-14 rounded cursor-pointer border border-gray-300 p-1" value="#000000"><input type="text" id="teamColorHex" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm uppercase font-mono" value="#000000" readonly></div></div>
-                <div class="flex items-center justify-between border-t border-gray-100 pt-4"><div><label class="block text-xs font-bold text-gray-500 uppercase">Status</label></div><div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" id="teamStatus" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="teamStatus" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div></div>
-            </div>
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeTeamModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveTeam()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg">Save</button></div>
         </div>
     </div>
 
     <!-- Edit User Modal -->
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"><div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Edit Credentials</h3><button onclick="window.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="p-6 space-y-4"><input type="hidden" id="editUserId"><div><label class="block text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="editUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-500 uppercase">Password</label><input type="text" id="editPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div></div><div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeEditModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveEdit()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Update</button></div></div>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Edit Credentials</h3><button onclick="window.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+            <div class="p-6 space-y-4"><input type="hidden" id="editUserId"><div><label class="block text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="editUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-500 uppercase">Password</label><input type="text" id="editPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div></div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeEditModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveEdit()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Update</button></div>
+        </div>
     </div>
 
-    <!-- Manage Account Modal -->
+    <!-- Manage Account Modal (Self Update) -->
     <div id="manageAccountModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"><div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Manage Account</h3><button onclick="window.closeManageAccountModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="p-6 space-y-4"><div><label class="block text-xs font-bold text-gray-500 uppercase">New Username</label><input type="text" id="myUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-500 uppercase">New Password</label><input type="text" id="myPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div></div><div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeManageAccountModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveMyAccount()" class="bg-green-500 hover:bg-green-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Save Changes</button></div></div>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Manage Account</h3><button onclick="window.closeManageAccountModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">New Username</label><input type="text" id="myUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">New Password</label><input type="text" id="myPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeManageAccountModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveMyAccount()" class="bg-green-500 hover:bg-green-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Save Changes</button></div>
+        </div>
     </div>
 
     <!-- SCRIPTS -->
     <script>
-        // UI Helpers
+        // --- VANILLA JS UI HELPERS ---
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -401,21 +802,25 @@
             toast.className = `bg-white text-gray-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] border border-gray-100 pointer-events-auto toast-enter`;
             toast.innerHTML = `<div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${bgColor}"><i class="fa-solid ${iconClass} text-white text-xs"></i></div><span class="font-medium text-sm">${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2', 'transition-all'); setTimeout(() => { if(container.contains(toast)) container.removeChild(toast); }, 300); }, 3000);
+            setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => { if(container.contains(toast)) container.removeChild(toast); }, 300); }, 4000);
         }
 
         window.switchView = function(viewName) {
-            const views = ['view-home', 'view-database', 'view-candidates', 'view-candidate-details', 'view-sections', 'view-teams'];
+            const views = ['view-home', 'view-database', 'view-candidates', 'view-candidate-details', 'view-sections', 'view-section-details', 'view-teams', 'view-team-details', 'view-team-students'];
             views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
+            
             const target = document.getElementById('view-' + viewName);
-            if(target) target.classList.remove('hidden');
+            if(target) {
+                target.classList.remove('hidden');
+                if(viewName === 'team-students') renderTeamStudentsTable();
+            }
         }
 
         window.togglePassword = function() {
             const input = document.getElementById('password');
             const icon = document.getElementById('eye-icon');
-            if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash'); } 
-            else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
+            if (input.type === 'password') { input.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); } 
+            else { input.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
         }
 
         window.toggleSidebar = function() {
@@ -431,344 +836,1094 @@
             menu.classList.toggle('hidden');
             if (!menu.classList.contains('hidden')) chevron.classList.add('rotate-180'); else chevron.classList.remove('rotate-180');
         }
-
-        // Modal Controls
-        const modalIds = ['manageModal', 'candidateModal', 'sectionModal', 'teamModal', 'editModal', 'manageAccountModal'];
-        modalIds.forEach(id => {
-            window['open' + id.charAt(0).toUpperCase() + id.slice(1)] = () => {
-                document.getElementById(id).classList.remove('hidden');
-                // Reset fields logic based on ID can be added here or in specific open functions
-            };
-            window['close' + id.charAt(0).toUpperCase() + id.slice(1)] = () => document.getElementById(id).classList.add('hidden');
-        });
-
-        // Specific Open Logic Overrides
-        window.openCandidateModal = () => {
-            document.getElementById('candModalTitle').textContent="Add Candidate";
-            document.getElementById('candId').value='';
-            ['candChest','candAdNo','candName','candClass'].forEach(id => document.getElementById(id).value='');
-            document.getElementById('candidateModal').classList.remove('hidden');
-        };
-        window.openSectionModal = () => { document.getElementById('sectionName').value=''; document.getElementById('sectionId').value=''; document.getElementById('sectionModal').classList.remove('hidden'); };
-        window.openTeamModal = () => { document.getElementById('teamName').value=''; document.getElementById('teamColor').value='#000000'; document.getElementById('teamId').value=''; document.getElementById('teamModal').classList.remove('hidden'); };
         
-        // Color Picker Sync
-        document.getElementById('teamColor').addEventListener('input', (e) => document.getElementById('teamColorHex').value = e.target.value);
+        // ACTION MENU LOGIC (Floating)
+        let activeActionBtn = null;
+        let activeCandidateId = null;
+        let activeCandidateData = null;
+        let activeSectionId = null;
+        let activeSectionData = null;
+        let activeTeamId = null;
+        let activeTeamData = null;
 
-        // Handle Logout
-        window.handleLogout = function() {
-            window.toggleUserMenu();
-            window.showToast('Logged Out Successfully');
-            setTimeout(() => { 
-                window.switchView('home'); 
-                document.getElementById('login-page').classList.remove('page-hidden'); 
-                document.getElementById('login-page').classList.add('page-visible');
-                document.getElementById('dashboard-page').classList.add('page-hidden');
-                document.getElementById('dashboard-page').classList.remove('page-visible');
-            }, 1000);
+        window.toggleActionMenu = function(btn, id, ...data) {
+            const menu = document.getElementById('globalActionMenu');
+            
+            if (activeActionBtn === btn && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                activeActionBtn = null;
+                return;
+            }
+
+            activeActionBtn = btn;
+            activeCandidateId = id;
+            activeCandidateData = {
+                chest: data[0], ad: data[1], name: data[2], cls: data[3], team: data[4], sec: data[5]
+            };
+
+            const rect = btn.getBoundingClientRect();
+            menu.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            menu.style.left = `${rect.right - 128}px`; 
+            menu.classList.remove('hidden');
+
+            document.getElementById('btnView').onclick = () => window.viewCandidate(activeCandidateId);
+            document.getElementById('btnEdit').onclick = () => window.openEditCandidateModal(activeCandidateId, ...Object.values(activeCandidateData));
+            document.getElementById('btnDelete').onclick = () => window.deleteCandidate(activeCandidateId);
+            
+            // Hide other menus
+            document.getElementById('sectionActionMenu').classList.add('hidden');
         }
 
-        // Sidebar Logic
+        // Reusing same menu HTML for Sections and Teams since actions are similar (View, Edit, Delete)
+        // But handlers will differ.
+        window.toggleSectionActionMenu = function(btn, id, name, active, created, type = 'section', color = null) {
+            const menu = document.getElementById('sectionActionMenu');
+            
+            if (activeActionBtn === btn && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                activeActionBtn = null;
+                return;
+            }
+
+            activeActionBtn = btn;
+            const rect = btn.getBoundingClientRect();
+            menu.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            menu.style.left = `${rect.right - 128}px`; 
+            menu.classList.remove('hidden');
+
+            if (type === 'section') {
+                activeSectionId = id;
+                activeSectionData = { name, active: active === 'true' };
+                document.getElementById('btnSecView').onclick = () => window.viewSection(activeSectionId);
+                document.getElementById('btnSecEdit').onclick = () => window.openEditSectionModal(activeSectionId, activeSectionData.name, activeSectionData.active);
+                document.getElementById('btnSecDelete').onclick = () => window.deleteSection(activeSectionId);
+            } else if (type === 'team') {
+                activeTeamId = id;
+                activeTeamData = { name, active: active === 'true', color };
+                document.getElementById('btnSecView').onclick = () => window.viewTeam(activeTeamId);
+                document.getElementById('btnSecEdit').onclick = () => window.openEditTeamModal(activeTeamId, activeTeamData.name, activeTeamData.color, activeTeamData.active);
+                document.getElementById('btnSecDelete').onclick = () => window.deleteTeam(activeTeamId);
+            }
+
+             // Hide other menus
+             document.getElementById('globalActionMenu').classList.add('hidden');
+        }
+
+
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('userMenuContainer');
+            if (!container.contains(event.target)) { document.getElementById('userDropdown').classList.add('hidden'); document.getElementById('userMenuChevron').classList.remove('rotate-180'); }
+            
+            // Close global action menu if clicking outside
+            const menu = document.getElementById('globalActionMenu');
+            if (!menu.classList.contains('hidden') && !event.target.closest('.action-cell') && !event.target.closest('#globalActionMenu')) {
+                menu.classList.add('hidden');
+                activeActionBtn = null;
+            }
+
+            // Close section action menu
+            const secMenu = document.getElementById('sectionActionMenu');
+             if (!secMenu.classList.contains('hidden') && !event.target.closest('.action-cell') && !event.target.closest('#sectionActionMenu')) {
+                secMenu.classList.add('hidden');
+                activeActionBtn = null;
+            }
+        });
+
+        window.openManageModal = function() { document.getElementById('manageModal').classList.remove('hidden'); }
+        window.closeManageModal = function() { 
+            document.getElementById('manageModal').classList.add('hidden');
+            document.getElementById('inputName').value = ''; document.getElementById('inputPosition').value = ''; document.getElementById('inputTeam').value = 'Team A'; document.getElementById('teamSelectContainer').classList.add('hidden');
+        }
+
+        window.closeEditModal = () => { document.getElementById('editModal').classList.add('hidden'); };
+        window.closeManageAccountModal = () => { document.getElementById('manageAccountModal').classList.add('hidden'); };
+
+        // Candidate Modal
+        window.openCandidateModal = function() { 
+            document.getElementById('candModalTitle').textContent = "Add Candidate";
+            document.getElementById('candSubmitBtn').innerHTML = '<i class="fa-solid fa-file-import mr-2"></i>Import';
+            document.getElementById('candSubmitBtn').onclick = window.saveCandidate;
+            document.getElementById('candId').value = '';
+            
+            ['candChest', 'candAdNo', 'candName', 'candClass'].forEach(id => document.getElementById(id).value = '');
+            
+            // Trigger population of dropdowns from Global data
+            window.populateSectionDropdown();
+            window.populateTeamDropdown();
+
+            document.getElementById('candidateModal').classList.remove('hidden'); 
+        }
+        
+        window.openEditCandidateModal = function(id, chest, ad, name, cls, team, sec) {
+            document.getElementById('globalActionActionMenu').classList.add('hidden');
+
+            document.getElementById('candModalTitle').textContent = "Edit Candidate";
+            document.getElementById('candSubmitBtn').innerHTML = '<i class="fa-solid fa-check mr-2"></i>Update';
+            document.getElementById('candSubmitBtn').onclick = window.saveCandidate;
+            
+            document.getElementById('candId').value = id;
+            document.getElementById('candChest').value = chest;
+            document.getElementById('candAdNo').value = ad;
+            document.getElementById('candName').value = name;
+            document.getElementById('candClass').value = cls;
+            
+            window.populateSectionDropdown(sec);
+            window.populateTeamDropdown(team);
+            
+            document.getElementById('candidateModal').classList.remove('hidden');
+        }
+        
+        window.closeCandidateModal = function() { 
+            document.getElementById('candidateModal').classList.add('hidden');
+        }
+
+        // Section Modal
+        window.openSectionModal = function() {
+            document.getElementById('secModalTitle').textContent = "Add Section";
+            document.getElementById('secId').value = '';
+            document.getElementById('secName').value = '';
+            document.getElementById('secActive').checked = true;
+            document.getElementById('sectionModal').classList.remove('hidden');
+        }
+
+        window.openEditSectionModal = function(id, name, active) {
+            document.getElementById('sectionActionMenu').classList.add('hidden');
+            document.getElementById('secModalTitle').textContent = "Edit Section";
+            document.getElementById('secId').value = id;
+            document.getElementById('secName').value = name;
+            document.getElementById('secActive').checked = active;
+            document.getElementById('sectionModal').classList.remove('hidden');
+        }
+
+        window.closeSectionModal = function() {
+            document.getElementById('sectionModal').classList.add('hidden');
+        }
+
+        // Team Modal
+        window.openTeamModal = function() {
+            document.getElementById('teamModalTitle').textContent = "Add Team";
+            document.getElementById('teamId').value = '';
+            document.getElementById('teamName').value = '';
+            document.getElementById('teamColorPicker').value = '#FF0000';
+            document.getElementById('teamColorHex').value = '#FF0000';
+            document.getElementById('teamActive').checked = true;
+            document.getElementById('teamModal').classList.remove('hidden');
+        }
+
+        window.openEditTeamModal = function(id, name, color, active) {
+            document.getElementById('sectionActionMenu').classList.add('hidden');
+            document.getElementById('teamModalTitle').textContent = "Edit Team";
+            document.getElementById('teamId').value = id;
+            document.getElementById('teamName').value = name;
+            document.getElementById('teamColorPicker').value = color || '#000000';
+            document.getElementById('teamColorHex').value = color || '#000000';
+            document.getElementById('teamActive').checked = active;
+            document.getElementById('teamModal').classList.remove('hidden');
+        }
+
+        window.closeTeamModal = function() {
+            document.getElementById('teamModal').classList.add('hidden');
+        }
+
+        window.handleLogout = function() {
+            window.toggleUserMenu();
+            showToast('Logged Out Successfully', 'success');
+            setTimeout(() => { window.switchView('home'); document.getElementById('login-page').classList.remove('page-hidden'); document.getElementById('login-page').classList.add('page-visible'); document.getElementById('dashboard-page').classList.remove('page-visible'); document.getElementById('dashboard-page').classList.add('page-hidden'); }, 1500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const stats = [
+                { title: 'Total Candidates', value: '0', icon: 'fa-solid fa-user-group', color: 'blue', sub: 'Registered' },
+                { title: 'Total Programs', value: '0', icon: 'fa-regular fa-calendar', color: 'green', sub: 'Active' },
+                { title: 'Published Content', value: '0', icon: 'fa-regular fa-file-lines', color: 'purple', sub: 'Public' },
+                { title: 'Results Uploaded', value: '0', icon: 'fa-solid fa-trophy', color: 'orange', sub: 'Completed' },
+            ];
+            document.getElementById('stats-container').innerHTML = stats.map(s => `<div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">${s.title}</span><div class="h-8 w-8 rounded-full bg-${s.color}-50 flex items-center justify-center text-${s.color}-600"><i class="${s.icon} text-xs"></i></div></div><div><span class="text-2xl font-bold text-gray-900">${s.value}</span><p class="text-xs text-gray-400 mt-1">${s.sub}</p></div></div>`).join('');
+
+            const btns = [
+                { icon: 'fa-solid fa-user-plus', label: 'Add Candidates', color: 'blue' },
+                { icon: 'fa-solid fa-plus-square', label: 'Add Programs', color: 'green' },
+                { icon: 'fa-solid fa-award', label: 'Publish Results', color: 'orange' },
+                { icon: 'fa-regular fa-calendar-alt', label: 'Manage Schedules', color: 'purple' },
+                { icon: 'fa-regular fa-images', label: 'Manage Gallery', color: 'teal' },
+                { icon: 'fa-regular fa-folder-open', label: 'Manage Downloads', color: 'red' },
+            ];
+            document.getElementById('quick-access-container').innerHTML = btns.map(b => `<button class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group"><div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-${b.color}-50 group-hover:text-${b.color}-600 transition-colors"><i class="${b.icon}"></i></div><span class="font-semibold text-gray-700 text-sm">${b.label}</span></button>`).join('');
+        });
+
         window.toggleSidebarSubmenu = function(id) {
             const sub = document.getElementById(`submenu-${id}`);
             const arrow = document.getElementById(`arrow-${id}`);
             if(sub.classList.contains('hidden')) { sub.classList.remove('hidden'); arrow.classList.add('rotate-180'); } else { sub.classList.add('hidden'); arrow.classList.remove('rotate-180'); }
         }
-
-        // Candidate View Toggles
-        window.currentCandidateView = 'table';
-        window.currentCandidateFilter = 'active';
-        window.toggleCandidateView = (mode) => {
-            window.currentCandidateView = mode;
-            document.getElementById('candidates-table-view').className = mode === 'table' ? 'w-full' : 'hidden';
-            document.getElementById('candidates-cards-view').className = mode === 'cards' ? 'w-full p-6' : 'hidden';
-            document.getElementById('view-toggle-table').classList.toggle('active', mode === 'table');
-            document.getElementById('view-toggle-cards').classList.toggle('active', mode === 'cards');
-            if(window.renderCandidatesGlobal) window.renderCandidatesGlobal();
-        }
-        window.toggleStatusFilter = (status) => {
-            window.currentCandidateFilter = status;
-            document.getElementById('status-toggle-active').classList.toggle('active', status === 'active');
-            document.getElementById('status-toggle-inactive').classList.toggle('active', status === 'inactive');
-            if(window.renderCandidatesGlobal) window.renderCandidatesGlobal();
-        }
-
-        // Tab Logic
-        window.switchDetailTab = (tabName) => {
-            ['participations', 'results', 'negative'].forEach(t => {
-                document.getElementById('tab-btn-' + t).classList.toggle('active', t === tabName);
-                const content = document.getElementById('tab-content-' + t);
-                if (t === tabName) { content.classList.remove('hidden'); content.classList.add('block'); } 
-                else { content.classList.add('hidden'); content.classList.remove('block'); }
-            });
-        };
-        window.switchAdminTab = (tab) => {
-            document.getElementById('tab-users').className = tab==='users' ? "pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors" : "pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors";
-            document.getElementById('tab-settings').className = tab==='settings' ? "pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors" : "pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors";
-            document.getElementById('content-users').classList.toggle('hidden', tab!=='users');
-            document.getElementById('content-settings').classList.toggle('hidden', tab!=='settings');
-        };
     </script>
 
-    <!-- FIREBASE MODULE -->
+    <!-- MODULE SCRIPT: FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE", authDomain: "dtbase-fest1.firebaseapp.com", projectId: "dtbase-fest1", storageBucket: "dtbase-fest1.firebasestorage.app", messagingSenderId: "761020619162", appId: "1:761020619162:web:4982fc6db9a80c25808223", measurementId: "G-WKGSBNZ672" };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE",
+            authDomain: "dtbase-fest1.firebaseapp.com",
+            projectId: "dtbase-fest1",
+            storageBucket: "dtbase-fest1.firebasestorage.app",
+            messagingSenderId: "761020619162",
+            appId: "1:761020619162:web:4982fc6db9a80c25808223",
+            measurementId: "G-WKGSBNZ672"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        let globalUsersList = []; 
+        let loggedInUserData = null; 
+        let candidatesList = [];
+        let sectionsList = [];
+        let teamsList = [];
+        // Bulk Selection State
+        let selectedCandidates = new Set();
 
-        let globalUsersList=[], loggedInUserData=null, candidatesList=[], sectionsList=[], teamsList=[];
-
-        // Auth Logic
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try { await signInWithCustomToken(auth, __initial_auth_token); } 
-                catch (e) { await signInAnonymously(auth); }
-            } else { await signInAnonymously(auth); }
-        };
-        initAuth();
-
-        onAuthStateChanged(auth, (user) => { 
-            if (user) { 
-                subscribeToUsers(); 
-                subscribeToSettings(); 
-                subscribeToCandidates(); 
-                subscribeToSections(); 
-                subscribeToTeams(); 
-            } 
+        signInAnonymously(auth).catch((error) => {
+            if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
+                document.getElementById('db-error-banner').classList.remove('hidden');
+            }
         });
 
-        // Subscriptions
-        function subscribeToUsers() { onSnapshot(collection(db, 'users'), (s) => { globalUsersList=[]; s.forEach((d) => globalUsersList.push({ id: d.id, ...d.data() })); renderUsersMini(globalUsersList); renderDatabaseTable(globalUsersList); }); }
-        function subscribeToSettings() { onSnapshot(doc(db, 'settings', 'general'), (d) => { if (d.exists()) updateUIFromSettings(d.data()); }); }
-        function subscribeToCandidates() { onSnapshot(collection(db, 'candidates'), (s) => { candidatesList=[]; s.forEach(d => candidatesList.push({id: d.id, ...d.data()})); renderCandidates(); }); }
-        function subscribeToSections() { onSnapshot(collection(db, 'sections'), (s) => { sectionsList=[]; s.forEach(d => sectionsList.push({id: d.id, ...d.data()})); renderSections(); updateDropdowns(); }); }
-        function subscribeToTeams() { onSnapshot(collection(db, 'teams'), (s) => { teamsList=[]; s.forEach(d => teamsList.push({id: d.id, ...d.data()})); renderTeams(); updateDropdowns(); }); }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                subscribeToUsers();
+                subscribeToSettings();
+                subscribeToCandidates();
+                subscribeToSections();
+                subscribeToTeams();
+            }
+        });
 
-        // Global access for render updates
-        window.renderCandidatesGlobal = () => renderCandidates();
+        function subscribeToUsers() {
+            const q = collection(db, 'users');
+            let hasShownError = false;
+            onSnapshot(q, (snapshot) => {
+                globalUsersList = [];
+                snapshot.forEach((doc) => { globalUsersList.push({ id: doc.id, ...doc.data() }); });
+                renderUsersMini(globalUsersList);
+                renderDatabaseTable(globalUsersList);
+            }, (error) => {
+                if (!hasShownError && error.code === 'permission-denied') {
+                    document.getElementById('db-error-banner').classList.remove('hidden');
+                    hasShownError = true;
+                }
+            });
+        }
 
-        // UI Renderers
+        function subscribeToSettings() {
+            onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
+                if (docSnap.exists()) updateUIFromSettings(docSnap.data());
+            });
+        }
+        
+        function subscribeToCandidates() {
+            onSnapshot(collection(db, 'candidates'), (snapshot) => {
+                candidatesList = [];
+                snapshot.forEach(doc => candidatesList.push({id: doc.id, ...doc.data()}));
+                renderCandidatesTable(candidatesList);
+                selectedCandidates.clear();
+                updateBulkToolbar();
+                renderTeamStudentsTable();
+            });
+        }
+
+        function subscribeToSections() {
+            onSnapshot(collection(db, 'sections'), (snapshot) => {
+                sectionsList = [];
+                snapshot.forEach(doc => sectionsList.push({id: doc.id, ...doc.data()}));
+                renderSectionsTable(sectionsList);
+            });
+        }
+
+        function subscribeToTeams() {
+            onSnapshot(collection(db, 'teams'), (snapshot) => {
+                teamsList = [];
+                snapshot.forEach(doc => teamsList.push({id: doc.id, ...doc.data()}));
+                renderTeamsTable(teamsList);
+                // Re-render candidates to update team colors if teams load after candidates
+                if(candidatesList.length > 0) renderCandidatesTable(candidatesList);
+                
+                // Also populate the user dropdown if it exists
+                populateUserTeamDropdown();
+            });
+        }
+
         function updateUIFromSettings(data) {
             const name = data.festivalName || "mvs designs";
+            const motto = data.motto || "active";
+            const isActive = data.isActive !== false; 
+
             document.getElementById('page-title').textContent = `${name} - Dashboard`;
             document.getElementById('login-festival-name').textContent = name;
+            document.getElementById('login-festival-motto').textContent = motto;
             document.getElementById('sidebar-festival-name').textContent = name;
             document.getElementById('sidebar-festival-logo').textContent = name.charAt(0).toUpperCase();
             document.getElementById('dashboard-welcome-name').textContent = name;
-            document.getElementById('setting-name').value = name;
-            document.getElementById('setting-motto').value = data.motto || "active";
-            document.getElementById('setting-active').checked = data.isActive !== false;
+            document.getElementById('dropdown-festival-name').textContent = name;
             
             const statusEl = document.getElementById('sidebar-active-status');
-            statusEl.textContent = data.isActive !== false ? 'Active' : 'Inactive';
-            statusEl.className = data.isActive !== false ? "text-xs text-green-500 font-medium" : "text-xs text-red-500 font-medium";
+            if(isActive) {
+                statusEl.innerHTML = 'active <i class="fa-solid fa-wand-magic-sparkles ml-1"></i>';
+                statusEl.className = "text-xs text-green-500 font-medium flex items-center";
+            } else {
+                statusEl.textContent = "inactive";
+                statusEl.className = "text-xs text-red-500 font-medium";
+            }
+            document.getElementById('setting-name').value = name;
+            document.getElementById('setting-motto').value = motto;
+            document.getElementById('setting-active').checked = isActive;
         }
 
-        function updateDropdowns() {
-            const cTeam = document.getElementById('candTeam'); 
-            const uTeam = document.getElementById('inputTeam');
-            const cSec = document.getElementById('candSection');
-            const teamsOptions = '<option value="">Select Team</option>' + teamsList.filter(t=>t.status==='active').map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
-            if(cTeam) cTeam.innerHTML = teamsOptions;
-            if(uTeam) uTeam.innerHTML = teamsOptions;
-            if(cSec) cSec.innerHTML = '<option value="">Select Section</option>' + sectionsList.filter(s=>s.status==='active').map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+        // --- RENDER LOGIC ---
+        function renderUsersMini(users) {
+            const container = document.getElementById('usersContainer');
+            if (!container) return;
+            let html = `
+                <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group transition hover:border-yellow-400 bg-white">
+                    <div class="h-12 w-12 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center text-lg font-bold text-gray-800 mb-2 uppercase">A</div>
+                    <span class="font-bold text-sm text-gray-900 truncate w-full text-center">Admin</span>
+                    <span class="text-xs text-gray-500 truncate w-full text-center">Owner</span>
+                </div>
+            `;
+            users.forEach(user => {
+                html += `
+                    <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group transition hover:border-yellow-400 bg-white">
+                        <div class="h-12 w-12 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center text-lg font-bold text-gray-600 mb-2 uppercase">${user.avatarLetter}</div>
+                        <span class="font-bold text-sm text-gray-900 truncate w-full text-center">${user.name}</span>
+                        <span class="text-xs text-gray-500 truncate w-full text-center">${user.position === 'Team Manager' ? 'Manager' : user.position}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
-        function renderUsersMini(users) { document.getElementById('usersContainer').innerHTML = users.map(u => `<div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group bg-white"><div class="h-12 w-12 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center text-lg font-bold text-gray-600 mb-2 uppercase">${u.avatarLetter}</div><span class="font-bold text-sm text-gray-900 truncate w-full text-center">${u.name}</span><span class="text-xs text-gray-500 truncate w-full text-center">${u.position}</span></div>`).join(''); }
-        
-        function renderDatabaseTable(users) { 
-            document.getElementById('database-table-body').innerHTML = users.map(u => 
-                `<tr class="hover:bg-gray-50"><td class="px-6 py-4"><div class="flex items-center"><div class="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm mr-3 uppercase">${u.avatarLetter}</div><div><div class="font-bold text-gray-900">${u.name}</div><div class="text-xs text-gray-500">${u.position}</div></div></div></td><td class="px-6 py-4"><span class="px-2 py-1 rounded-md bg-gray-100 text-gray-800 text-xs font-bold">${u.position}</span><div class="text-xs text-gray-500 mt-1">${u.team||'-'}</div></td><td class="px-6 py-4"><span class="text-gray-500 text-xs font-mono">U: ${u.username}</span></td><td class="px-6 py-4 text-right"><button onclick="window.deleteUser('${u.id}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`
-            ).join(''); 
+        function renderDatabaseTable(users) {
+            const tbody = document.getElementById('database-table-body');
+            if (!tbody) return;
+            let html = `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="h-9 w-9 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-sm mr-3 uppercase">A</div>
+                            <div><div class="font-bold text-gray-900">Administrator</div><div class="text-xs text-gray-500">Owner</div></div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded-md bg-yellow-100 text-yellow-800 text-xs font-bold">Super Admin</span></td>
+                    <td class="px-6 py-4"><div class="flex flex-col text-xs"><span class="text-gray-500">User: <span class="font-mono text-gray-700 font-medium">administrator</span></span><span class="text-gray-500">Pass: <span class="font-mono text-gray-700 font-medium">81119</span></span></div></td>
+                    <td class="px-6 py-4 text-right"><span class="text-gray-400 text-xs italic">Protected</span></td>
+                </tr>
+            `;
+            users.forEach(user => {
+                let roleBadge = user.position === 'Admin' ? 'bg-purple-100 text-purple-800' : (user.position === 'Media' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800');
+                html += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm mr-3 uppercase">${user.avatarLetter}</div>
+                                <div><div class="font-bold text-gray-900">${user.name}</div><div class="text-xs text-gray-500">${user.position}</div></div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-md ${roleBadge} text-xs font-bold">${user.position}</span>${user.team ? `<div class="mt-1 text-xs text-gray-500 font-medium">${user.team}</div>` : ''}</td>
+                        <td class="px-6 py-4"><div class="flex flex-col text-xs bg-gray-50 p-2 rounded border border-gray-100 max-w-[150px]"><span class="text-gray-500 mb-0.5">U: <span class="font-mono text-gray-700 font-bold select-all">${user.username}</span></span><span class="text-gray-500">P: <span class="font-mono text-gray-700 font-bold select-all">${user.password}</span></span></div></td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="window.openEditModal('${user.id}', '${user.username}', '${user.password}')" class="text-gray-400 hover:text-blue-500 transition-colors mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="window.deleteUser('${user.id}')" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
         }
 
-        function renderSections() {
-            document.getElementById('sections-table-body').innerHTML = sectionsList.length ? sectionsList.map(s => `<tr class="hover:bg-gray-50"><td class="px-6 py-4 font-medium text-gray-900">${s.name}</td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold ${s.status==='active'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}">${s.status}</span></td><td class="px-6 py-4 text-right"><button onclick="window.deleteSection('${s.id}')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400">No sections found</td></tr>';
-        }
-
-        function renderTeams() {
-            document.getElementById('teams-table-body').innerHTML = teamsList.length ? teamsList.map(t => `<tr class="hover:bg-gray-50"><td class="px-6 py-4 font-medium text-gray-900">${t.name}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded border border-gray-200" style="background-color:${t.color}"></div><span class="text-xs text-gray-500 font-mono">${t.color}</span></div></td><td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold ${t.status==='active'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}">${t.status}</span></td><td class="px-6 py-4 text-right"><button onclick="window.deleteTeam('${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400">No teams found</td></tr>';
-        }
-
-        function renderCandidates() {
-            const list = candidatesList.filter(c => window.currentCandidateFilter === 'active' ? c.status !== 'inactive' : c.status === 'inactive');
-            const tableBody = document.getElementById('candidates-table-body');
-            const gridBody = document.getElementById('candidates-cards-grid');
-            
-            if (!list.length) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400 text-sm">No candidates found</td></tr>`;
-                gridBody.innerHTML = `<div class="col-span-full text-center text-gray-400 py-12">No candidates found</div>`;
-                return;
+        window.renderSidebar = (role) => {
+            let menuItems = [];
+            if (role === 'Team Manager') {
+                menuItems = [
+                    { id: 'home', icon: 'fa-solid fa-house', label: 'Dashboard' },
+                    { id: 'students', icon: 'fa-solid fa-users', label: 'Students', action: 'team-students' },
+                    { id: 'topic', icon: 'fa-solid fa-pen-to-square', label: 'Topic Registration' },
+                    { id: 'program', icon: 'fa-solid fa-clipboard-list', label: 'Program Registration' }
+                ];
+            } else {
+                menuItems = [
+                    { id: 'candidate', icon: 'fa-regular fa-user', label: 'Candidate', items: [{label: 'All Candidates', action: 'candidates'}, {label: 'Sections', action: 'sections'}, {label: 'Teams', action: 'teams'}, {label: 'Groups', action: ''}] },
+                    { id: 'programme', icon: 'fa-regular fa-calendar-check', label: 'Programme', items: [{label: 'All Programmes'}, {label: 'Registration'}] },
+                    { id: 'result', icon: 'fa-solid fa-trophy', label: 'Result', items: [{label: 'All Results'}] },
+                ];
             }
 
-            const teamColorMap = {}; teamsList.forEach(t => teamColorMap[t.name] = t.color);
-
-            // Render Table
-            tableBody.innerHTML = list.map(c => {
-                const color = teamColorMap[c.team] || '#9CA3AF';
-                return `<tr class="hover:bg-gray-50 border-b border-gray-50"><td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 rounded-full bg-yellow-50 border border-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs uppercase">${c.name.charAt(0)}</div><div><span class="font-bold text-gray-900 text-sm uppercase">${c.name}</span><div class="text-xs text-gray-400">#${c.chestNo}</div></div></div></td><td class="px-6 py-4"><div class="flex items-center"><div class="w-2 h-2 rounded-full mr-2" style="background-color:${color}"></div><span class="text-sm text-gray-700 font-medium">${c.team}</span></div></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600 bg-white">${c.section}</span></td><td class="px-6 py-4 text-right"><button onclick="window.viewCandidate('${c.id}')" class="text-gray-400 hover:text-blue-600 mr-2"><i class="fa-regular fa-eye"></i></button><button onclick="window.deleteCandidate('${c.id}')" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-            }).join('');
-
-            // Render Cards
-            gridBody.innerHTML = list.map(c => {
-                const color = teamColorMap[c.team] || '#9CA3AF';
-                return `<div class="border rounded-2xl p-4 relative transition-all hover:shadow-md bg-white group cursor-pointer" onclick="window.viewCandidate('${c.id}')"><div class="flex items-start gap-4"><div class="h-14 w-14 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-xl border-4 border-white shadow-sm">${c.name.charAt(0)}</div><div class="flex-1 min-w-0 pt-1"><h3 class="font-bold text-gray-900 truncate uppercase text-sm">${c.name}</h3><p class="text-xs text-gray-400 font-mono mb-2">#${c.chestNo}</p><div class="flex flex-wrap gap-2 mb-1"><span class="px-2 py-0.5 rounded border border-gray-200 text-[10px] font-bold text-gray-600 bg-gray-50">${c.section}</span></div><div class="flex items-center mt-2 gap-2"><div class="w-2 h-2 rounded-full" style="background-color:${color}"></div><span class="text-xs text-gray-600 font-medium truncate">${c.team}</span></div></div></div></div>`;
-            }).join('');
-        }
-
-        // Sidebar Menu Generator
-        window.renderSidebar = (role) => {
-            const nav = document.getElementById('sidebar-nav');
             let html = `<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>`;
-            html += `<a href="#" onclick="window.switchView('home')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group mb-2"><i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>Dashboard</a>`;
+            if (role === 'Team Manager') {
+                menuItems.forEach(item => { 
+                    const action = item.action || (item.id === 'home' ? 'home' : item.id);
+                    html += `<a href="#" onclick="window.switchView('${action}')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group mb-1 transition-colors"><i class="${item.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${item.label}</a>`; 
+                });
+            } else {
+                html += `<a href="#" onclick="window.switchView('home')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group mb-2"><i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>Dashboard</a>`;
+                menuItems.forEach(m => { 
+                    let subLinks = m.items.map(i => `<a href="#" onclick="${i.action ? `window.switchView('${i.action}')` : ''}" class="block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors">${i.label}</a>`).join('');
+                    
+                    html += `<div><button onclick="toggleSidebarSubmenu('${m.id}')" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between focus:outline-none transition-colors"><div class="flex items-center"><i class="${m.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${m.label}</div><i id="arrow-${m.id}" class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i></button><div id="submenu-${m.id}" class="hidden ml-[1.35rem] pl-4 border-l border-gray-200 space-y-1 mt-1">${subLinks}</div></div>`; 
+                });
+            }
             
-            const menuItems = [
-                { id: 'candidate', icon: 'fa-regular fa-user', label: 'Candidate', items: [
-                    {label: 'All Candidates', act: "window.switchView('candidates')"},
-                    {label: 'Sections', act: "window.switchView('sections')"},
-                    {label: 'Teams', act: "window.switchView('teams')"}
-                ]},
-                { id: 'programme', icon: 'fa-regular fa-calendar-check', label: 'Programme', items: [{label: 'All Programmes'}] },
-                { id: 'schedule', icon: 'fa-regular fa-calendar', label: 'Schedule', items: [{label: 'All Schedules'}] }
-            ];
-
-            menuItems.forEach(m => {
-                let sub = '';
-                m.items.forEach(s => { sub += `<a href="#" onclick="${s.act || '#'}" class="block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors">${s.label}</a>`; });
-                html += `<div><button onclick="toggleSidebarSubmenu('${m.id}')" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between focus:outline-none transition-colors"><div class="flex items-center"><i class="${m.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${m.label}</div><i id="arrow-${m.id}" class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i></button><div id="submenu-${m.id}" class="hidden ml-[1.35rem] pl-4 border-l border-gray-200 space-y-1 mt-1">${sub}</div></div>`;
-            });
-            nav.innerHTML = html;
-        }
+            // REMOVED PUBLIC PAGES SECTION HERE
+            // html += `<div class="pt-4"><p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Public Pages</p>...</div>`;
+            
+            document.getElementById('sidebar-nav').innerHTML = html;
+        };
 
         window.renderUserDropdown = (role) => {
             const container = document.getElementById('dropdown-actions');
-            container.innerHTML = `<button onclick="window.openManageAccountModal()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Manage Account</button>`;
-            if (role !== 'Team Manager') {
-                container.innerHTML += `<button onclick="window.switchView('database'); window.toggleUserMenu();" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-solid fa-database w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Database</button>`;
+            if (role === 'Team Manager') {
+                container.innerHTML = `<button onclick="window.openManageAccountModal()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Manage Account</button>`;
+            } else {
+                container.innerHTML = `<button onclick="window.openDatabaseView()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-solid fa-database w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Database</button>`;
             }
         };
 
-        // User Actions
+        // New Render function
+        function renderTeamStudentsTable() {
+            const tbody = document.getElementById('team-students-table-body');
+            const headerLabel = document.getElementById('my-students-team-label');
+            
+            if (!tbody || !loggedInUserData || loggedInUserData.position !== 'Team Manager') return;
+
+            // Set header label to confirm which team is being viewed
+            if(headerLabel) headerLabel.textContent = `(${loggedInUserData.team})`;
+
+            // Filter based on EXACT string match from user.team to candidate.team
+            const myTeamCandidates = candidatesList.filter(c => c.team === loggedInUserData.team);
+            
+            if(myTeamCandidates.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${loggedInUserData.team}"</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            myTeamCandidates.forEach((cand, index) => {
+                html += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-50">
+                        <td class="px-6 py-4 text-gray-500 font-mono text-xs">${index + 1}</td>
+                        <td class="px-6 py-4 font-medium text-gray-900">#${cand.chestNo}</td>
+                        <td class="px-6 py-4 font-bold text-gray-800">${cand.name}</td>
+                        <td class="px-6 py-4 text-gray-600">${cand.class || '-'}</td>
+                        <td class="px-6 py-4 text-gray-600">${cand.adNo || '-'}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">${cand.section}</span></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
         window.handleLogin = async (e) => {
             e.preventDefault();
-            const u = document.getElementById('username').value, p = document.getElementById('password').value;
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value.trim();
             const btn = document.getElementById('login-btn');
+            const btnText = btn.querySelector('span');
             const loader = document.getElementById('login-loader');
-            btn.disabled=true; loader.classList.remove('hidden');
 
-            const user = (u==='administrator' && p==='81119') ? {name:'Administrator', position:'Admin', avatarLetter:'A', username:'administrator'} : globalUsersList.find(x=>x.username===u && x.password===p);
-            
+            btn.disabled = true; btnText.textContent = "Verifying..."; loader.classList.remove('hidden'); btn.classList.add('opacity-80');
+
+            let matchedUser = null;
+            if (userIn === 'administrator' && passIn === '81119') {
+                matchedUser = { name: 'Administrator', position: 'Admin', avatarLetter: 'A', username: 'administrator' };
+            } else {
+                const found = globalUsersList.find(u => u.username === userIn && u.password === passIn);
+                if (found) matchedUser = found;
+            }
+
             setTimeout(() => {
-                if(user) {
-                    loggedInUserData = user; 
-                    window.renderSidebar(user.position); 
-                    window.renderUserDropdown(user.position);
-                    document.getElementById('header-username').textContent = user.name;
-                    document.getElementById('header-avatar').textContent = user.avatarLetter;
-                    document.getElementById('header-role-text').textContent = user.position;
-                    document.getElementById('admin-bottom-section').classList.toggle('hidden', user.position === 'Team Manager');
-                    window.switchView('home'); 
-                    document.getElementById('login-page').classList.remove('page-visible');
-                    document.getElementById('login-page').classList.add('page-hidden');
-                    document.getElementById('dashboard-page').classList.remove('page-hidden');
-                    document.getElementById('dashboard-page').classList.add('page-visible');
-                } else window.showToast('Invalid Credentials', 'error');
-                btn.disabled=false; loader.classList.add('hidden');
-            }, 800);
+                if (matchedUser) {
+                    loggedInUserData = matchedUser;
+                    window.showToast(`Welcome back, ${matchedUser.name}!`, 'success');
+                    document.getElementById('header-username').textContent = matchedUser.name;
+                    document.getElementById('header-avatar').textContent = matchedUser.avatarLetter;
+                    document.getElementById('header-role-text').textContent = matchedUser.position;
+                    document.getElementById('dropdown-username').textContent = matchedUser.name;
+                    document.getElementById('dropdown-avatar').textContent = matchedUser.avatarLetter;
+                    document.getElementById('dropdown-role').textContent = matchedUser.position;
+
+                    window.renderSidebar(matchedUser.position);
+                    window.renderUserDropdown(matchedUser.position);
+
+                    if (matchedUser.position === 'Team Manager') document.getElementById('admin-bottom-section').classList.add('hidden');
+                    else document.getElementById('admin-bottom-section').classList.remove('hidden');
+
+                    window.switchView('home');
+                    document.getElementById('login-form').reset();
+                    document.getElementById('login-page').classList.remove('page-visible'); document.getElementById('login-page').classList.add('page-hidden');
+                    document.getElementById('dashboard-page').classList.remove('page-hidden'); document.getElementById('dashboard-page').classList.add('page-visible');
+                } else {
+                    window.showToast('Invalid Username or Password', 'error');
+                }
+                btn.disabled = false; btnText.textContent = "Login"; loader.classList.add('hidden'); btn.classList.remove('opacity-80');
+            }, 1500);
         };
 
-        window.saveUser = async () => { 
-            const name = document.getElementById('inputName').value; 
-            const pos = document.getElementById('inputPosition').value; 
-            if(!name || !pos) { window.showToast("Fill details", "error"); return; } 
-            const u = name.split(' ')[0].toLowerCase() + Math.floor(Math.random()*999); 
-            const p = Math.random().toString(36).slice(-6); 
-            await addDoc(collection(db, 'users'), { name, position: pos, team: document.getElementById('inputTeam').value, avatarLetter: name[0].toUpperCase(), username: u, password: p }); 
-            window.showToast("User Created"); window.closeManageModal(); 
+        window.openManageAccountModal = () => { window.toggleUserMenu(); document.getElementById('manageAccountModal').classList.remove('hidden'); document.getElementById('myUsername').value = loggedInUserData.username; document.getElementById('myPassword').value = loggedInUserData.password || ""; };
+        window.closeManageAccountModal = () => { document.getElementById('manageAccountModal').classList.add('hidden'); };
+        window.saveMyAccount = async () => {
+            const newUsername = document.getElementById('myUsername').value; const newPassword = document.getElementById('myPassword').value;
+            if (!newUsername || !newPassword) { window.showToast("Fields cannot be empty", "error"); return; }
+            if (!loggedInUserData.id) { window.showToast("Admin account cannot be edited here.", "error"); return; }
+            try {
+                await updateDoc(doc(db, 'users', loggedInUserData.id), { username: newUsername, password: newPassword });
+                loggedInUserData.username = newUsername; loggedInUserData.password = newPassword;
+                window.showToast("Account Updated Successfully!", "success"); window.closeManageAccountModal();
+            } catch(e) { window.showToast("Failed to update account", "error"); }
         };
+
+        window.saveSettings = async () => { const name = document.getElementById('setting-name').value; const motto = document.getElementById('setting-motto').value; const isActive = document.getElementById('setting-active').checked; try { await setDoc(doc(db, 'settings', 'general'), { festivalName: name, motto: motto, isActive: isActive }); window.showToast("Settings Saved!", "success"); } catch (e) { window.showToast("Error saving", "error"); } };
+        window.switchAdminTab = (tab) => { if(tab==='users'){document.getElementById('tab-users').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-settings').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-users').classList.remove('hidden'); document.getElementById('content-settings').classList.add('hidden');} else{document.getElementById('tab-settings').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-users').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-settings').classList.remove('hidden'); document.getElementById('content-users').classList.add('hidden');} };
+        window.saveUser = async () => { const name = document.getElementById('inputName').value; const pos = document.getElementById('inputPosition').value; const team = document.getElementById('inputTeam').value; if(!name || !pos) { window.showToast("Fill details", "error"); return; } 
         
+        // Check if team is selected for Team Manager
+        if(pos === 'Team Manager' && (!team || team === 'Select Team')) {
+             window.showToast("Please select a valid Team", "error");
+             return;
+        }
+
+        const u = name.split(' ')[0].toLowerCase() + Math.floor(Math.random()*999); const p = Math.random().toString(36).slice(-6); await addDoc(collection(db, 'users'), { name, position: pos, team: pos==='Team Manager'?team:null, avatarLetter: name[0].toUpperCase(), username: u, password: p }); window.showToast("User Created", "success"); window.closeManageModal(); };
+        
+        window.openEditModal = (id, u, p) => { document.getElementById('editUserId').value=id; document.getElementById('editUsername').value=u; document.getElementById('editPassword').value=p; document.getElementById('editModal').classList.remove('hidden'); };
+        window.saveEdit = async () => { await updateDoc(doc(db, 'users', document.getElementById('editUserId').value), { username: document.getElementById('editUsername').value, password: document.getElementById('editPassword').value }); window.showToast("Updated", "success"); document.getElementById('editModal').classList.add('hidden'); };
         window.deleteUser = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'users', id)); };
+        window.handlePositionChange = () => { const p=document.getElementById('inputPosition').value; document.getElementById('teamSelectContainer').style.display = p==='Team Manager'?'block':'none'; };
+        window.openDatabaseView = () => { window.toggleUserMenu(); window.switchView('database'); };
         
-        window.handlePositionChange = () => { document.getElementById('teamSelectContainer').classList.toggle('hidden', document.getElementById('inputPosition').value !== 'Team Manager'); };
+        window.renderUsersMini = renderUsersMini; window.renderDatabaseTable = renderDatabaseTable;
 
-        // CRUD Operations
+        // --- Candidate Handlers ---
+        window.populateSectionDropdown = function(selectedVal = null) {
+            const select = document.getElementById('candSection');
+            select.innerHTML = '<option value="" disabled selected>Select Section</option>';
+            
+            // Filter only active sections
+            const activeSections = sectionsList.filter(s => s.isActive !== false);
+            
+            activeSections.forEach(sec => {
+                const option = document.createElement('option');
+                option.value = sec.name;
+                option.textContent = sec.name;
+                if(selectedVal && sec.name === selectedVal) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+
+        window.populateTeamDropdown = function(selectedVal = null) {
+            const select = document.getElementById('candTeam');
+            select.innerHTML = '<option value="" disabled selected>Select Team</option>';
+            
+            const activeTeams = teamsList.filter(t => t.isActive !== false);
+            
+            activeTeams.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.name;
+                option.textContent = t.name;
+                if(selectedVal && t.name === selectedVal) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+
+        window.populateUserTeamDropdown = function() {
+            const select = document.getElementById('inputTeam');
+            const currentVal = select.value; // Keep existing selection if possible
+            select.innerHTML = '<option value="" disabled selected>Select Team</option>';
+            
+            const activeTeams = teamsList.filter(t => t.isActive !== false);
+            
+            activeTeams.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.name;
+                option.textContent = t.name;
+                if(t.name === currentVal) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+
         window.saveCandidate = async () => {
+            const chest = document.getElementById('candChest').value;
+            const adNo = document.getElementById('candAdNo').value;
+            const name = document.getElementById('candName').value;
+            const candClass = document.getElementById('candClass').value;
+            const team = document.getElementById('candTeam').value;
+            const section = document.getElementById('candSection').value;
+            const id = document.getElementById('candId').value;
+
+            if(!chest || !name || !team || !section) {
+                window.showToast("Please fill required fields (including Section & Team)", "error");
+                return;
+            }
+
             const data = {
-                chestNo: document.getElementById('candChest').value,
-                adNo: document.getElementById('candAdNo').value,
-                name: document.getElementById('candName').value,
-                class: document.getElementById('candClass').value,
-                team: document.getElementById('candTeam').value,
-                section: document.getElementById('candSection').value,
-                status: document.getElementById('candStatus').checked ? 'active' : 'inactive',
+                chestNo: chest,
+                adNo,
+                name,
+                class: candClass,
+                team,
+                section,
                 createdAt: new Date().toISOString()
             };
-            if(!data.name || !data.chestNo) return window.showToast("Required fields missing", "error");
-            await addDoc(collection(db, 'candidates'), data);
-            window.showToast("Candidate added"); window.closeCandidateModal();
-        };
-        window.deleteCandidate = async (id) => { if(confirm("Delete Candidate?")) { await deleteDoc(doc(db, 'candidates', id)); window.showToast("Deleted"); }};
-        
+
+            try {
+                if(id) {
+                    await updateDoc(doc(db, 'candidates', id), data);
+                    window.showToast("Candidate Updated!", "success");
+                } else {
+                    await addDoc(collection(db, 'candidates'), data);
+                    window.showToast("Candidate Added!", "success");
+                }
+                window.closeCandidateModal();
+                window.switchView('candidates');
+            } catch(e) {
+                console.error(e);
+                window.showToast("Error saving candidate", "error");
+            }
+        }
+
+        // --- Section Handlers ---
+        window.saveSection = async () => {
+            const name = document.getElementById('secName').value;
+            const active = document.getElementById('secActive').checked;
+            const id = document.getElementById('secId').value;
+
+            if(!name) {
+                window.showToast("Section Name is required", "error");
+                return;
+            }
+
+            const data = {
+                name: name,
+                isActive: active,
+                createdAt: id ? undefined : new Date().toISOString() // Don't overwrite date on edit
+            };
+            // remove undefined keys
+            Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
+
+
+            try {
+                if(id) {
+                    await updateDoc(doc(db, 'sections', id), data);
+                    window.showToast("Section Updated!", "success");
+                } else {
+                    await addDoc(collection(db, 'sections'), data);
+                    window.showToast("Section Created!", "success");
+                }
+                window.closeSectionModal();
+            } catch(e) {
+                console.error(e);
+                window.showToast("Error saving section", "error");
+            }
+        }
+
+        window.deleteSection = async (id) => {
+             // Close menu
+             document.getElementById('sectionActionMenu').classList.add('hidden');
+             
+            if(confirm("Delete this section? This will not delete associated candidates.")) {
+                await deleteDoc(doc(db, 'sections', id));
+                window.showToast("Section Deleted", "success");
+            }
+        }
+
+        // --- Team Handlers ---
+        window.saveTeam = async () => {
+            const name = document.getElementById('teamName').value;
+            const color = document.getElementById('teamColorHex').value;
+            const active = document.getElementById('teamActive').checked;
+            const id = document.getElementById('teamId').value;
+
+            if(!name || !color) {
+                window.showToast("Team Name and Color are required", "error");
+                return;
+            }
+
+            const data = {
+                name: name,
+                color: color,
+                isActive: active,
+                createdAt: id ? undefined : new Date().toISOString()
+            };
+            Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
+
+            try {
+                if(id) {
+                    await updateDoc(doc(db, 'teams', id), data);
+                    window.showToast("Team Updated!", "success");
+                } else {
+                    await addDoc(collection(db, 'teams'), data);
+                    window.showToast("Team Created!", "success");
+                }
+                window.closeTeamModal();
+            } catch(e) {
+                console.error(e);
+                window.showToast("Error saving team", "error");
+            }
+        }
+
+        window.deleteTeam = async (id) => {
+             document.getElementById('sectionActionMenu').classList.add('hidden');
+            if(confirm("Delete this team?")) {
+                await deleteDoc(doc(db, 'teams', id));
+                window.showToast("Team Deleted", "success");
+            }
+        }
+
+        function renderSectionsTable(list) {
+            const tbody = document.getElementById('sections-table-body');
+            if(!tbody) return;
+            
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">No sections found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(sec => {
+                const dateStr = sec.createdAt ? new Date(sec.createdAt).toLocaleDateString() : '-';
+                const statusBadge = sec.isActive !== false 
+                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>'
+                    : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
+
+                html += `
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                        <td class="px-6 py-4 font-bold text-gray-900 text-sm">${sec.name}</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-gray-500 text-xs">${dateStr}</td>
+                        <td class="px-6 py-4 text-right action-cell">
+                            <button onclick="window.toggleSectionActionMenu(this, '${sec.id}', '${sec.name}', '${sec.isActive !== false}', '${dateStr}', 'section')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderTeamsTable(list) {
+            const tbody = document.getElementById('teams-table-body');
+            if(!tbody) return;
+            
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">No teams found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(t => {
+                const statusBadge = t.isActive !== false 
+                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>'
+                    : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
+
+                html += `
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm" style="background-color: ${t.color || '#000'}"><i class="fa-solid fa-shield-halved"></i></div>
+                                <span class="font-bold text-gray-900 text-sm">${t.name}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full border border-gray-200" style="background-color: ${t.color || '#000'}"></div>
+                                <span class="font-mono text-xs text-gray-500">${t.color || '#000000'}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-right action-cell">
+                            <button onclick="window.toggleSectionActionMenu(this, '${t.id}', '${t.name}', '${t.isActive !== false}', '', 'team', '${t.color}')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.viewSection = (id) => {
+             // Close menu
+             document.getElementById('sectionActionMenu').classList.add('hidden');
+
+             const sec = sectionsList.find(s => s.id === id);
+             if(!sec) return;
+
+             // Populate Header
+             document.getElementById('detail-sec-title').textContent = sec.name;
+             const statusEl = document.getElementById('detail-sec-status');
+             if(sec.isActive !== false) {
+                 statusEl.textContent = "Active"; statusEl.className = "px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm";
+             } else {
+                 statusEl.textContent = "Inactive"; statusEl.className = "px-3 py-1 bg-gray-200 text-gray-500 text-xs font-bold rounded-full shadow-sm";
+             }
+
+             // Calculate Stats (Mock + Real)
+             const secCandidates = candidatesList.filter(c => c.section === sec.name);
+             document.getElementById('stat-sec-cand').textContent = secCandidates.length;
+             // Mock data
+             document.getElementById('stat-sec-prog').textContent = "0"; 
+             document.getElementById('stat-sec-points').textContent = "0";
+
+             // Render Candidate Table for Section
+             const tbody = document.getElementById('sec-detail-table-body');
+             if(secCandidates.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>`;
+             } else {
+                 let html = '';
+                 secCandidates.forEach(c => {
+                     html += `
+                        <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
+                            <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
+                            <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
+                            <td class="px-6 py-3 text-gray-600">${c.team}</td>
+                            <td class="px-6 py-3 text-gray-400">-</td>
+                            <td class="px-6 py-3 text-green-600 font-bold">Active</td>
+                        </tr>
+                     `;
+                 });
+                 tbody.innerHTML = html;
+             }
+
+             window.switchView('section-details');
+        }
+
+        window.viewTeam = (id) => {
+             // Close menu
+             document.getElementById('sectionActionMenu').classList.add('hidden');
+
+             const team = teamsList.find(t => t.id === id);
+             if(!team) return;
+
+             // Populate Header
+             document.getElementById('detail-team-title').textContent = team.name;
+             const statusEl = document.getElementById('detail-team-status');
+             if(team.isActive !== false) {
+                 statusEl.textContent = "Active"; statusEl.className = "px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm";
+             } else {
+                 statusEl.textContent = "Inactive"; statusEl.className = "px-3 py-1 bg-gray-200 text-gray-500 text-xs font-bold rounded-full shadow-sm";
+             }
+
+             // Team Details Panel
+             document.getElementById('detail-team-color-box').style.backgroundColor = team.color;
+             document.getElementById('detail-team-color-hex').textContent = team.color;
+             document.getElementById('detail-team-created').textContent = team.createdAt ? new Date(team.createdAt).toLocaleDateString() : '-';
+
+             // Calculate Stats (Mock + Real)
+             const teamCandidates = candidatesList.filter(c => c.team === team.name);
+             document.getElementById('stat-team-cand').textContent = teamCandidates.length;
+             // Mock data
+             document.getElementById('stat-team-points').textContent = "0";
+
+             // Render Candidate Table for Team
+             const tbody = document.getElementById('team-detail-table-body');
+             if(teamCandidates.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>`;
+             } else {
+                 let html = '';
+                 teamCandidates.forEach(c => {
+                     html += `
+                        <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
+                            <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
+                            <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
+                            <td class="px-6 py-3 text-gray-600">${c.section || '-'}</td>
+                            <td class="px-6 py-3 text-gray-400">-</td>
+                            <td class="px-6 py-3 text-green-600 font-bold">Active</td>
+                        </tr>
+                     `;
+                 });
+                 tbody.innerHTML = html;
+             }
+
+             window.switchView('team-details');
+        }
+
+        // --- BULK ACTIONS ---
+        window.toggleSelectAll = () => {
+            const mainCheckbox = document.getElementById('selectAllCheckbox');
+            if (mainCheckbox.checked) {
+                candidatesList.forEach(c => selectedCandidates.add(c.id));
+            } else {
+                selectedCandidates.clear();
+            }
+            renderCandidatesTable(candidatesList);
+            updateBulkToolbar();
+        }
+
+        window.toggleSelectCandidate = (id) => {
+            if (selectedCandidates.has(id)) {
+                selectedCandidates.delete(id);
+            } else {
+                selectedCandidates.add(id);
+            }
+            renderCandidatesTable(candidatesList); // Re-render to update visuals
+            updateBulkToolbar();
+        }
+
+        function updateBulkToolbar() {
+            const toolbar = document.getElementById('candidates-toolbar');
+            const bulkToolbar = document.getElementById('candidates-bulk-toolbar');
+            const countSpan = document.getElementById('selected-count');
+            const mainCheckbox = document.getElementById('selectAllCheckbox');
+
+            if(candidatesList.length > 0 && selectedCandidates.size === candidatesList.length) {
+                mainCheckbox.checked = true;
+            } else {
+                mainCheckbox.checked = false;
+            }
+
+            if (selectedCandidates.size > 0) {
+                toolbar.classList.add('hidden');
+                bulkToolbar.classList.remove('hidden');
+                countSpan.textContent = selectedCandidates.size;
+            } else {
+                toolbar.classList.remove('hidden');
+                bulkToolbar.classList.add('hidden');
+            }
+        }
+
+        window.deleteSelectedCandidates = async () => {
+            if(confirm(`Are you sure you want to delete ${selectedCandidates.size} candidates?`)) {
+                const promises = Array.from(selectedCandidates).map(id => deleteDoc(doc(db, 'candidates', id)));
+                
+                try {
+                    await Promise.all(promises);
+                    window.showToast(`${selectedCandidates.size} Candidates Deleted`, "success");
+                    selectedCandidates.clear();
+                    updateBulkToolbar();
+                } catch(e) {
+                    console.error(e);
+                    window.showToast("Error deleting candidates", "error");
+                }
+            }
+        }
+
+
+        function renderCandidatesTable(list) {
+            const tbody = document.getElementById('candidates-table-body');
+            if(!tbody) return;
+
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">No candidates found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(cand => {
+                const initial = cand.name.charAt(0).toUpperCase();
+                const isSelected = selectedCandidates.has(cand.id);
+                const teamObj = teamsList.find(t => t.name === cand.team);
+                const dotColor = teamObj ? teamObj.color : '#cbd5e1'; // Default to slate-300
+                
+                // Determine row style based on selection
+                const rowClass = isSelected ? 'bg-yellow-50' : 'hover:bg-gray-50';
+                const checkboxState = isSelected ? 'checked' : '';
+                
+                html += `
+                    <tr class="${rowClass} transition-colors group border-b border-gray-50">
+                        <td class="px-6 py-4 w-10 text-center action-cell">
+                             <label class="custom-checkbox flex items-center cursor-pointer justify-center">
+                                <input type="checkbox" class="hidden" ${checkboxState} onchange="window.toggleSelectCandidate('${cand.id}')">
+                                <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
+                                    <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
+                                </div>
+                            </label>
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 font-medium text-sm">#${cand.chestNo}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">${cand.adNo || '-'}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full bg-yellow-50 border border-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs mr-3 uppercase">${initial}</div>
+                                <span class="font-bold text-gray-900 text-sm">${cand.name}</span>
+                            </div>
+                        </td>
+                         <td class="px-6 py-4 text-gray-500 text-sm">${cand.class || '-'}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full mr-2" style="background-color: ${dotColor}"></div>
+                                <span class="text-sm text-gray-700 font-medium">${cand.team}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600 bg-white">${cand.section}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right relative action-cell">
+                            <button onclick="window.toggleActionMenu(this, '${cand.id}', '${cand.chestNo}', '${cand.adNo}', '${cand.name}', '${cand.class}', '${cand.team}', '${cand.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // --- Candidate Actions ---
         window.viewCandidate = async (id) => {
-            const d = await getDoc(doc(db, 'candidates', id));
-            if(d.exists()) {
-                const data = d.data();
+            // Close menu
+            document.getElementById('globalActionMenu').classList.add('hidden');
+            
+            const docSnap = await getDoc(doc(db, 'candidates', id));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Populate Details View
                 document.getElementById('detail-cand-name').textContent = data.name;
-                document.getElementById('detail-avatar').textContent = data.name.charAt(0);
-                document.getElementById('detail-cand-team-sub').textContent = data.team;
+                document.getElementById('detail-cand-name-crumb').textContent = data.name;
+                document.getElementById('detail-avatar').textContent = data.name.charAt(0).toUpperCase();
+                document.getElementById('detail-cand-chest').textContent = `#${data.chestNo}`;
+                
                 document.getElementById('detail-team').textContent = data.team;
                 document.getElementById('detail-section').textContent = data.section;
-                document.getElementById('detail-chest-no').textContent = "#"+data.chestNo;
+                document.getElementById('detail-chest-no').textContent = `#${data.chestNo}`;
                 document.getElementById('detail-ad-no').textContent = data.adNo;
-                document.getElementById('detail-class-val').textContent = data.class;
+                document.getElementById('detail-class').textContent = data.class;
+
                 window.switchView('candidate-details');
+            } else {
+                window.showToast("Candidate not found", "error");
             }
         };
 
-        window.saveSection = async () => { 
-            const name = document.getElementById('sectionName').value;
-            if(!name) return window.showToast("Name required", "error");
-            await addDoc(collection(db, 'sections'), { name, status: document.getElementById('sectionStatus').checked ? 'active' : 'inactive' });
-            window.showToast("Section added"); window.closeSectionModal();
-        };
-        window.deleteSection = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'sections', id)); };
+        // --- Delete Modal Logic ---
+        let deleteTargetId = null;
 
-        window.saveTeam = async () => {
-            const name = document.getElementById('teamName').value;
-            if(!name) return window.showToast("Name required", "error");
-            await addDoc(collection(db, 'teams'), { name, color: document.getElementById('teamColor').value, status: document.getElementById('teamStatus').checked ? 'active' : 'inactive' });
-            window.showToast("Team added"); window.closeTeamModal();
-        };
-        window.deleteTeam = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'teams', id)); };
-        
-        window.saveSettings = async () => {
-            try { await setDoc(doc(db, 'settings', 'general'), { festivalName: document.getElementById('setting-name').value, motto: document.getElementById('setting-motto').value, isActive: document.getElementById('setting-active').checked }); window.showToast("Settings Saved"); } catch(e) { window.showToast("Error", "error"); }
+        window.deleteCandidate = (id) => {
+            // Close menu
+            document.getElementById('globalActionMenu').classList.add('hidden');
+            deleteTargetId = id;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
         };
 
-        window.saveMyAccount = async () => {
-            if (!loggedInUserData?.id) return window.showToast("Admin cannot edit here", "error");
-            await updateDoc(doc(db, 'users', loggedInUserData.id), { username: document.getElementById('myUsername').value, password: document.getElementById('myPassword').value });
-            window.showToast("Account Updated"); window.closeManageAccountModal();
+        window.closeDeleteConfirmModal = () => {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            deleteTargetId = null;
         };
-        window.openEditModal = (id, u, p) => { document.getElementById('editUserId').value=id; document.getElementById('editUsername').value=u; document.getElementById('editPassword').value=p; document.getElementById('editModal').classList.remove('hidden'); };
-        window.saveEdit = async () => { await updateDoc(doc(db, 'users', document.getElementById('editUserId').value), { username: document.getElementById('editUsername').value, password: document.getElementById('editPassword').value }); window.showToast("Updated"); document.getElementById('editModal').classList.add('hidden'); };
 
-        // Init Stats
-        document.addEventListener('DOMContentLoaded', () => {
-            const stats = [
-                { title: 'Total Candidates', value: '0', icon: 'fa-solid fa-user-group', color: 'blue' },
-                { title: 'Total Programs', value: '0', icon: 'fa-regular fa-calendar', color: 'green' }
-            ];
-            document.getElementById('stats-container').innerHTML = stats.map(s => `<div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">${s.title}</span><div class="h-8 w-8 rounded-full bg-${s.color}-50 flex items-center justify-center text-${s.color}-600"><i class="${s.icon} text-xs"></i></div></div><div><span class="text-2xl font-bold text-gray-900">${s.value}</span></div></div>`).join('');
+        window.confirmDeleteCandidate = async () => {
+            if (!deleteTargetId) return;
             
-            const btns = [{ icon: 'fa-solid fa-user-plus', label: 'Add Candidate', onclick: 'window.openCandidateModal()' }, { icon: 'fa-solid fa-plus-square', label: 'Add Program', onclick: '' }];
-            document.getElementById('quick-access-container').innerHTML = btns.map(b => `<button onclick="${b.onclick}" class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center border border-transparent hover:border-gray-100 group"><div class="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 mb-3 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors"><i class="${b.icon}"></i></div><span class="font-semibold text-gray-700 text-sm">${b.label}</span></button>`).join('');
-        });
+            // Show loading state on button
+            const deleteBtn = document.querySelector('#deleteConfirmModal button.bg-red-700');
+            const originalText = deleteBtn.textContent;
+            deleteBtn.textContent = 'Deleting...';
+            deleteBtn.disabled = true;
+
+            try {
+                await deleteDoc(doc(db, 'candidates', deleteTargetId));
+                window.showToast("Candidate Deleted Successfully", "success");
+                window.closeDeleteConfirmModal();
+            } catch(e) {
+                console.error(e);
+                window.showToast("Delete failed", "error");
+            } finally {
+                deleteBtn.textContent = originalText;
+                deleteBtn.disabled = false;
+            }
+        };
     </script>
 </body>
 </html>
