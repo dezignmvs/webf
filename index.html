@@ -94,7 +94,7 @@
         </div>
     </div>
 
-    <!-- DELETE CONFIRMATION MODAL (New) -->
+    <!-- DELETE CONFIRMATION MODAL -->
     <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up p-8">
             <h3 class="text-xl font-bold text-gray-900 mb-3">Are you sure you want to delete this candidate?</h3>
@@ -184,9 +184,7 @@
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
                 <!-- Injected via JS based on Role -->
             </nav>
-            <div class="p-4 border-t border-gray-200">
-                <a href="#" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"><i class="fa-solid fa-gear w-5 text-center mr-2 text-gray-400"></i>Go to Settings</a>
-            </div>
+            <!-- Go to Settings removed -->
         </aside>
 
         <!-- Main Content -->
@@ -770,11 +768,24 @@
         </div>
     </div>
 
-    <!-- Edit User Modal -->
+    <!-- Edit User Modal (Updated to include Team Editing) -->
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
-            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Edit Credentials</h3><button onclick="window.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
-            <div class="p-6 space-y-4"><input type="hidden" id="editUserId"><div><label class="block text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="editUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-500 uppercase">Password</label><input type="text" id="editPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div></div>
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Edit User</h3><button onclick="window.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="editUserId">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="editUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase">Password</label><input type="text" id="editPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
+                
+                <!-- Hidden Team Dropdown for Managers -->
+                <div id="editTeamContainer" class="hidden">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Team</label>
+                    <select id="editTeam" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="" disabled>Select Team</option>
+                        <!-- Populated Dynamically -->
+                    </select>
+                </div>
+            </div>
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeEditModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveEdit()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm px-6 py-2 rounded-lg">Update</button></div>
         </div>
     </div>
@@ -812,7 +823,13 @@
             const target = document.getElementById('view-' + viewName);
             if(target) {
                 target.classList.remove('hidden');
-                if(viewName === 'team-students') renderTeamStudentsTable();
+                if(viewName === 'team-students') {
+                    if (window.renderTeamStudentsTable) {
+                        window.renderTeamStudentsTable();
+                    } else {
+                        console.error('renderTeamStudentsTable is not available');
+                    }
+                }
             }
         }
 
@@ -1151,8 +1168,9 @@
                 // Re-render candidates to update team colors if teams load after candidates
                 if(candidatesList.length > 0) renderCandidatesTable(candidatesList);
                 
-                // Also populate the user dropdown if it exists
+                // Also populate the user dropdowns
                 populateUserTeamDropdown();
+                populateEditTeamDropdown();
             });
         }
 
@@ -1171,10 +1189,10 @@
             
             const statusEl = document.getElementById('sidebar-active-status');
             if(isActive) {
-                statusEl.innerHTML = 'active <i class="fa-solid fa-wand-magic-sparkles ml-1"></i>';
+                statusEl.innerHTML = 'Active';
                 statusEl.className = "text-xs text-green-500 font-medium flex items-center";
             } else {
-                statusEl.textContent = "inactive";
+                statusEl.textContent = "Inactive";
                 statusEl.className = "text-xs text-red-500 font-medium";
             }
             document.getElementById('setting-name').value = name;
@@ -1234,7 +1252,7 @@
                         <td class="px-6 py-4"><span class="px-2 py-1 rounded-md ${roleBadge} text-xs font-bold">${user.position}</span>${user.team ? `<div class="mt-1 text-xs text-gray-500 font-medium">${user.team}</div>` : ''}</td>
                         <td class="px-6 py-4"><div class="flex flex-col text-xs bg-gray-50 p-2 rounded border border-gray-100 max-w-[150px]"><span class="text-gray-500 mb-0.5">U: <span class="font-mono text-gray-700 font-bold select-all">${user.username}</span></span><span class="text-gray-500">P: <span class="font-mono text-gray-700 font-bold select-all">${user.password}</span></span></div></td>
                         <td class="px-6 py-4 text-right">
-                            <button onclick="window.openEditModal('${user.id}', '${user.username}', '${user.password}')" class="text-gray-400 hover:text-blue-500 transition-colors mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="window.openEditModal('${user.id}', '${user.username}', '${user.password}', '${user.position}', '${user.team || ''}')" class="text-gray-400 hover:text-blue-500 transition-colors mr-3"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="window.deleteUser('${user.id}')" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
@@ -1275,9 +1293,6 @@
                 });
             }
             
-            // REMOVED PUBLIC PAGES SECTION HERE
-            // html += `<div class="pt-4"><p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Public Pages</p>...</div>`;
-            
             document.getElementById('sidebar-nav').innerHTML = html;
         };
 
@@ -1298,13 +1313,14 @@
             if (!tbody || !loggedInUserData || loggedInUserData.position !== 'Team Manager') return;
 
             // Set header label to confirm which team is being viewed
-            if(headerLabel) headerLabel.textContent = `(${loggedInUserData.team})`;
+            if(headerLabel) headerLabel.textContent = `(${loggedInUserData.team || 'No Team Assigned'})`;
 
-            // Filter based on EXACT string match from user.team to candidate.team
-            const myTeamCandidates = candidatesList.filter(c => c.team === loggedInUserData.team);
+            // Filter based on EXACT string match from user.team to candidate.team, with trimming
+            const managerTeam = (loggedInUserData.team || '').trim();
+            const myTeamCandidates = candidatesList.filter(c => (c.team || '').trim() === managerTeam);
             
             if(myTeamCandidates.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${loggedInUserData.team}"</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${managerTeam}"</td></tr>`;
                 return;
             }
 
@@ -1395,13 +1411,55 @@
 
         const u = name.split(' ')[0].toLowerCase() + Math.floor(Math.random()*999); const p = Math.random().toString(36).slice(-6); await addDoc(collection(db, 'users'), { name, position: pos, team: pos==='Team Manager'?team:null, avatarLetter: name[0].toUpperCase(), username: u, password: p }); window.showToast("User Created", "success"); window.closeManageModal(); };
         
-        window.openEditModal = (id, u, p) => { document.getElementById('editUserId').value=id; document.getElementById('editUsername').value=u; document.getElementById('editPassword').value=p; document.getElementById('editModal').classList.remove('hidden'); };
-        window.saveEdit = async () => { await updateDoc(doc(db, 'users', document.getElementById('editUserId').value), { username: document.getElementById('editUsername').value, password: document.getElementById('editPassword').value }); window.showToast("Updated", "success"); document.getElementById('editModal').classList.add('hidden'); };
+        // --- Updated Edit User Logic ---
+        window.openEditModal = (id, u, p, pos, team) => { 
+            document.getElementById('editUserId').value=id; 
+            document.getElementById('editUsername').value=u; 
+            document.getElementById('editPassword').value=p; 
+            
+            const teamContainer = document.getElementById('editTeamContainer');
+            const teamSelect = document.getElementById('editTeam');
+            
+            if (pos === 'Team Manager') {
+                teamContainer.classList.remove('hidden');
+                populateEditTeamDropdown(team); // Populate and set value
+            } else {
+                teamContainer.classList.add('hidden');
+            }
+            
+            document.getElementById('editModal').classList.remove('hidden'); 
+        };
+
+        window.saveEdit = async () => { 
+            const id = document.getElementById('editUserId').value;
+            const username = document.getElementById('editUsername').value;
+            const password = document.getElementById('editPassword').value;
+            const teamSelect = document.getElementById('editTeam');
+            const teamContainer = document.getElementById('editTeamContainer');
+            
+            const data = { username, password };
+            
+            // Update team only if visible (Team Manager)
+            if (!teamContainer.classList.contains('hidden')) {
+                data.team = teamSelect.value;
+            }
+
+            try {
+                await updateDoc(doc(db, 'users', id), data); 
+                window.showToast("Updated Successfully", "success"); 
+                document.getElementById('editModal').classList.add('hidden');
+            } catch(e) {
+                console.error(e);
+                window.showToast("Update Failed", "error");
+            }
+        };
+
         window.deleteUser = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'users', id)); };
         window.handlePositionChange = () => { const p=document.getElementById('inputPosition').value; document.getElementById('teamSelectContainer').style.display = p==='Team Manager'?'block':'none'; };
         window.openDatabaseView = () => { window.toggleUserMenu(); window.switchView('database'); };
         
         window.renderUsersMini = renderUsersMini; window.renderDatabaseTable = renderDatabaseTable;
+        window.renderTeamStudentsTable = renderTeamStudentsTable;
 
         // --- Candidate Handlers ---
         window.populateSectionDropdown = function(selectedVal = null) {
@@ -1447,6 +1505,21 @@
                 option.value = t.name;
                 option.textContent = t.name;
                 if(t.name === currentVal) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+
+        window.populateEditTeamDropdown = function(selectedVal = null) {
+            const select = document.getElementById('editTeam');
+            select.innerHTML = '<option value="" disabled selected>Select Team</option>';
+            
+            const activeTeams = teamsList.filter(t => t.isActive !== false);
+            
+            activeTeams.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.name;
+                option.textContent = t.name;
+                if(selectedVal && t.name === selectedVal) option.selected = true;
                 select.appendChild(option);
             });
         }
