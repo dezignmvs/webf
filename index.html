@@ -97,19 +97,19 @@
     <!-- DELETE CONFIRMATION MODAL -->
     <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up p-8">
-            <h3 class="text-xl font-bold text-gray-900 mb-3">Are you sure you want to delete this candidate?</h3>
-            <p class="text-sm text-gray-500 leading-relaxed mb-8">This action cannot be undone. This will permanently delete the candidate and all associated data.</p>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">Are you sure you want to delete this item?</h3>
+            <p class="text-sm text-gray-500 leading-relaxed mb-8">This action cannot be undone. This will permanently delete the selected item and all associated data.</p>
             <div class="flex justify-end gap-4">
                 <button onclick="window.closeDeleteConfirmModal()" class="px-6 py-2.5 bg-white border-2 border-yellow-400 text-gray-900 font-bold rounded-xl hover:bg-yellow-50 transition-colors focus:outline-none">Cancel</button>
-                <button onclick="window.confirmDeleteCandidate()" class="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-sm transition-colors focus:outline-none">Delete</button>
+                <button onclick="window.confirmDelete()" class="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-sm transition-colors focus:outline-none">Delete</button>
             </div>
         </div>
     </div>
 
-    <!-- GLOBAL FLOATING ACTION MENU (Candidates) -->
+    <!-- GLOBAL FLOATING ACTION MENU (Generic) -->
     <div id="globalActionMenu" class="hidden fixed z-[9999] w-32 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-up origin-top-right">
         <button id="btnView" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
-            <i class="fa-solid fa-chart-simple text-gray-400 text-xs"></i> View
+            <i class="fa-solid fa-eye text-gray-400 text-xs"></i> View
         </button>
         <button id="btnEdit" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
             <i class="fa-solid fa-pen text-gray-400 text-xs"></i> Edit
@@ -155,7 +155,7 @@
                 </div>
                 <div class="flex items-center">
                     <label class="flex items-center cursor-pointer group select-none">
-                        <input type="checkbox" class="peer hidden">
+                        <input type="checkbox" id="rememberMe" class="peer hidden">
                         <div class="w-5 h-5 border-[1.5px] border-yellow-400 rounded-full flex items-center justify-center mr-2.5 transition-all bg-white peer-checked:bg-yellow-400 peer-checked:border-yellow-400 relative"><i class="fa-solid fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100 absolute inset-0 m-auto flex items-center justify-center"></i></div>
                         <span class="text-sm font-bold text-gray-800">Remember me</span>
                     </label>
@@ -287,6 +287,10 @@
                                 <div><h4 class="text-sm font-bold text-gray-900">Festival Status</h4><p class="text-xs text-gray-500 mt-0.5">Toggle festival visibility.</p></div>
                                 <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="setting-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="setting-active" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
                             </div>
+                            <div class="flex items-center justify-between border-t border-gray-100 pt-6">
+                                <div><h4 class="text-sm font-bold text-gray-900">Enable Topic Registration</h4><p class="text-xs text-gray-500 mt-0.5">Allow Team Managers to submit topics.</p></div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="setting-topic-reg-open" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="setting-topic-reg-open" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                            </div>
                             <div class="pt-4"><button onclick="window.saveSettings()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors flex items-center"><i class="fa-regular fa-floppy-disk mr-2"></i> Save Changes</button></div>
                         </div>
                     </div>
@@ -306,11 +310,22 @@
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[300px]">
                         <!-- Standard Toolbar -->
-                        <div id="candidates-toolbar" class="p-4 border-b border-gray-100 flex justify-end items-center">
-                            <div class="flex space-x-4 text-gray-400 items-center">
-                                <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-gray-600"></i>
-                                <i class="fa-solid fa-filter cursor-pointer hover:text-gray-600"></i>
-                            </div>
+                        <div id="candidates-toolbar" class="p-4 border-b border-gray-100 flex justify-end items-center gap-3">
+                            <!-- Section Filter -->
+                             <div class="relative">
+                                 <select id="sectionFilter" onchange="window.filterCandidatesBySection()" class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-yellow-400 text-sm font-medium">
+                                     <option value="all">All Sections</option>
+                                     <!-- Dynamic Sections -->
+                                 </select>
+                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                     <i class="fa-solid fa-chevron-down text-xs"></i>
+                                 </div>
+                             </div>
+
+                             <div class="flex space-x-4 text-gray-400 items-center border-l border-gray-200 pl-4">
+                                 <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-gray-600"></i>
+                                 <i class="fa-solid fa-filter cursor-pointer hover:text-gray-600"></i>
+                             </div>
                         </div>
                         
                         <!-- Bulk Actions Toolbar -->
@@ -388,7 +403,7 @@
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h2 class="text-2xl font-bold text-gray-900">Teams</h2>
-                            <p class="text-sm text-gray-500">Manage candidate teams (4 total)</p>
+                            <p class="text-sm text-gray-500">Manage candidate teams</p>
                         </div>
                         <button onclick="window.openTeamModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>Add Team</button>
                     </div>
@@ -409,148 +424,238 @@
                     </div>
                 </div>
 
+                <!-- VIEW: PROGRAMS (Admin View - Simplified) -->
+                <div id="view-programs" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Programs</h2>
+                            <p class="text-sm text-gray-500">Manage all programs and events.</p>
+                        </div>
+                        <!-- Only Admin can add programs -->
+                        <button onclick="window.openProgramModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>Add Program</button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <!-- Simplified Toolbar -->
+                        <div class="p-4 border-b border-gray-100 flex justify-end items-center">
+                            <div class="flex space-x-4 text-gray-400 items-center">
+                                <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-gray-600"></i>
+                                <i class="fa-solid fa-filter cursor-pointer hover:text-gray-600"></i>
+                                <i class="fa-solid fa-arrow-down-short-wide cursor-pointer hover:text-gray-600"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto pb-8">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4">Code</th>
+                                        <th class="px-6 py-4">Program Name</th>
+                                        <th class="px-6 py-4">Type</th>
+                                        <th class="px-6 py-4">Section</th>
+                                        <th class="px-6 py-4">Min/Max</th>
+                                        <th class="px-6 py-4">Topic Reg</th>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="programs-table-body" class="divide-y divide-gray-100">
+                                    <tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">Loading programs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: PROGRAMS (Team Manager View - Read Only List) -->
+                <div id="view-team-programs" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Program List</h2>
+                            <p class="text-sm text-gray-500">View available programs and participation limits.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4">Code</th>
+                                        <th class="px-6 py-4">Program Name</th>
+                                        <th class="px-6 py-4">Type</th>
+                                        <th class="px-6 py-4">Section</th>
+                                        <th class="px-6 py-4">Min/Max</th>
+                                        <th class="px-6 py-4">Topic Reg</th>
+                                        <th class="px-6 py-4">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="team-programs-table-body" class="divide-y divide-gray-100">
+                                    <tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-sm">Loading programs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: TOPIC REGISTRATION (For Team Managers) -->
+                <div id="view-topic-registration" class="hidden">
+                     <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Topic Registration</h2>
+                            <p class="text-sm text-gray-500">Register candidates for programs</p>
+                        </div>
+                    </div>
+                    
+                    <div id="topic-reg-status-alert" class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-100 hidden" role="alert">
+                         <i class="fa-solid fa-circle-exclamation mr-2"></i>
+                         <span class="font-bold">Topic registration is currently closed by the administrator.</span>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                         <table class="w-full text-left text-sm text-gray-600">
+                            <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4">Code</th>
+                                    <th class="px-6 py-4">Program</th>
+                                    <th class="px-6 py-4">Section</th>
+                                    <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4">Limit</th>
+                                    <th class="px-6 py-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topic-reg-table-body" class="divide-y divide-gray-100">
+                                <!-- Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- VIEW: SECTION DETAILS -->
                 <div id="view-section-details" class="hidden">
                      <!-- Header -->
                      <div class="flex items-center justify-between mb-8">
                         <div class="flex items-center gap-4">
-                            <button onclick="window.switchView('sections')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                            <div class="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 text-xl border border-yellow-100"><i class="fa-solid fa-chart-bar"></i></div>
+                            <button onclick="window.switchView('sections')" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                            <div class="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 text-xl border border-yellow-100"><i class="fa-solid fa-chart-simple"></i></div>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-900" id="detail-sec-title">Senior</h1>
+                                <h1 class="text-2xl font-bold text-gray-900" id="detail-sec-title">Section Name</h1>
                                 <p class="text-xs text-gray-500">Section analytics and candidate overview</p>
                             </div>
                         </div>
                         <span class="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm" id="detail-sec-status">Active</span>
                      </div>
-
-                     <!-- Stats Cards -->
+                     <!-- Stats Cards Row -->
                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-                            <div><p class="text-[10px] font-bold text-gray-400 uppercase mb-1">TOTAL CANDIDATES</p><h3 class="text-2xl font-bold text-gray-900" id="stat-sec-cand">0</h3></div>
-                            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-users"></i></div>
-                        </div>
-                        <!-- ... other stats ... -->
+                         <!-- Card 1 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL CANDIDATES</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-sec-cand">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-users"></i></div>
+                         </div>
+                         <!-- Card 2 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL PROGRAMS</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-sec-prog">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-trophy"></i></div>
+                         </div>
+                         <!-- Card 3 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">MAX POINTS</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-sec-points">50</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><i class="fa-solid fa-medal"></i></div>
+                         </div>
+                         <!-- Card 4 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RESULTS PUBLISHED</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-sec-pub">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600"><i class="fa-solid fa-check-circle"></i></div>
+                         </div>
+                         <!-- Card 5 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RESULTS PENDING</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-sec-pend">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600"><i class="fa-regular fa-clock"></i></div>
+                         </div>
                      </div>
 
                      <!-- Content Grid -->
                      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Column: Tabs & List -->
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
-                            <div class="flex border-b border-gray-100">
-                                <button class="flex-1 py-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 bg-yellow-50/30"><i class="fa-regular fa-user mr-2"></i>Candidates</button>
-                                <button class="flex-1 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-trophy mr-2"></i>Programs</button>
-                            </div>
-                            <div class="p-4 flex justify-between items-center border-b border-gray-50">
-                                <h3 class="font-bold text-gray-900">Section Candidates</h3>
-                                <div class="flex gap-2">
-                                    <i class="fa-solid fa-magnifying-glass text-gray-400 p-2"></i>
-                                    <button class="px-3 py-1 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-50"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> View All</button>
-                                </div>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm text-gray-600">
-                                    <thead class="bg-gray-50 text-xs font-bold text-gray-500">
-                                        <tr><th class="px-6 py-3">Chest No</th><th class="px-6 py-3">Candidate</th><th class="px-6 py-3">Team</th><th class="px-6 py-3">Gender</th><th class="px-6 py-3">Status</th></tr>
-                                    </thead>
-                                    <tbody id="sec-detail-table-body">
-                                        <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="p-4 border-t border-gray-100 flex justify-between items-center">
-                                <span class="text-xs text-gray-500">Showing 1 to 5 of 0 results</span>
-                                <div class="flex gap-2">
-                                    <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                                    <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Column: Top Performers -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
-                            <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6"><i class="fa-solid fa-medal mr-2"></i>Top Performers</h3>
-                            <div class="flex flex-col items-center justify-center py-10 text-center">
-                                <div class="text-gray-300 text-4xl mb-3"><i class="fa-solid fa-medal"></i></div>
-                                <span class="text-gray-500 text-sm">No toppers yet</span>
-                            </div>
-                        </div>
-                     </div>
-                </div>
-
-                <!-- VIEW: TEAM DETAILS (New) -->
-                <div id="view-team-details" class="hidden">
-                     <!-- Header -->
-                     <div class="flex items-center justify-between mb-8">
-                        <div class="flex items-center gap-4">
-                            <button onclick="window.switchView('teams')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                            <div class="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 text-xl border border-yellow-100"><i class="fa-solid fa-shield-halved"></i></div>
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900" id="detail-team-title">Red Team</h1>
-                                <p class="text-xs text-gray-500">Team analytics and candidate overview</p>
-                            </div>
-                        </div>
-                        <span class="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm" id="detail-team-status">Active</span>
-                     </div>
-
-                     <!-- Stats Cards -->
-                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-                            <div><p class="text-[10px] font-bold text-gray-400 uppercase mb-1">TOTAL CANDIDATES</p><h3 class="text-2xl font-bold text-gray-900" id="stat-team-cand">0</h3></div>
-                            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-users"></i></div>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-                            <div><p class="text-[10px] font-bold text-gray-400 uppercase mb-1">PUBLISHED POINTS</p><h3 class="text-2xl font-bold text-gray-900" id="stat-team-points">0</h3></div>
-                            <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-trophy"></i></div>
-                        </div>
-                        <!-- ... -->
-                     </div>
-
-                     <!-- Content Grid -->
-                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Column: Tabs & List -->
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
-                            <div class="flex border-b border-gray-100">
-                                <button class="flex-1 py-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 bg-yellow-50/30"><i class="fa-regular fa-user mr-2"></i>Candidates</button>
-                                <button class="flex-1 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-trophy mr-2"></i>Programs</button>
-                            </div>
-                            <div class="p-4 flex justify-between items-center border-b border-gray-50">
-                                <h3 class="font-bold text-gray-900">Team Candidates</h3>
-                                <div class="flex gap-2">
-                                    <i class="fa-solid fa-magnifying-glass text-gray-400 p-2"></i>
-                                    <button class="px-3 py-1 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-50"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> View All</button>
-                                </div>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm text-gray-600">
-                                    <thead class="bg-gray-50 text-xs font-bold text-gray-500">
-                                        <tr><th class="px-6 py-3">Chest No</th><th class="px-6 py-3">Candidate</th><th class="px-6 py-3">Section</th><th class="px-6 py-3">Gender</th><th class="px-6 py-3">Status</th></tr>
-                                    </thead>
-                                    <tbody id="team-detail-table-body">
-                                        <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Right Column: Team Details & Toppers -->
-                        <div class="space-y-6">
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
-                                <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6"><i class="fa-regular fa-user mr-2"></i>Team Details</h3>
-                                <div class="space-y-3 text-sm">
-                                    <div class="flex justify-between items-center"><span class="text-gray-500">Color:</span><div class="flex items-center"><div id="detail-team-color-box" class="w-4 h-4 rounded mr-2"></div><span id="detail-team-color-hex" class="font-mono text-gray-900 font-bold">#000000</span></div></div>
-                                    <div class="flex justify-between items-center"><span class="text-gray-500">Created:</span><span id="detail-team-created" class="text-gray-900 font-medium">-</span></div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
-                                <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6"><i class="fa-solid fa-medal mr-2"></i>Top Performers</h3>
-                                <div class="flex flex-col items-center justify-center py-6 text-center">
-                                    <div class="text-gray-300 text-4xl mb-3"><i class="fa-solid fa-medal"></i></div>
-                                    <span class="text-gray-500 text-sm">No toppers yet</span>
-                                </div>
-                            </div>
-                        </div>
+                         <!-- Left Col -->
+                         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                              <!-- Tabs and content... -->
+                              <div class="flex border-b border-gray-100">
+                                 <button class="px-8 py-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400" id="sec-tab-candidates" onclick="window.switchSecTab('candidates')"><i class="fa-regular fa-user mr-2"></i>Candidates</button>
+                                 <button class="px-8 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" id="sec-tab-programs" onclick="window.switchSecTab('programs')"><i class="fa-solid fa-trophy mr-2"></i>Programs</button>
+                             </div>
+                              <!-- Candidates Content -->
+                             <div id="sec-content-candidates">
+                                 <div class="p-6 flex justify-between items-center border-b border-gray-50">
+                                     <h3 class="font-bold text-gray-900 text-lg">Section Candidates</h3>
+                                     <div class="flex gap-3">
+                                         <i class="fa-solid fa-magnifying-glass text-gray-400 p-2 text-lg"></i>
+                                         <button class="px-4 py-1.5 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 flex items-center shadow-sm"><i class="fa-solid fa-arrow-up-right-from-square mr-2 text-xs"></i> View All</button>
+                                     </div>
+                                 </div>
+                                  <div class="overflow-x-auto">
+                                     <table class="w-full text-left text-sm text-gray-600">
+                                         <thead class="bg-gray-50 text-xs font-bold text-gray-500 border-b border-gray-100">
+                                             <tr>
+                                                 <th class="px-6 py-4">Chest No</th>
+                                                 <th class="px-6 py-4">Candidate</th>
+                                                 <th class="px-6 py-4">Team</th>
+                                                 <th class="px-6 py-4">Gender</th>
+                                                 <th class="px-6 py-4">Status</th>
+                                                 <th class="px-6 py-4 text-right">Actions</th>
+                                             </tr>
+                                         </thead>
+                                         <tbody id="sec-detail-table-body">
+                                             <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>
+                                         </tbody>
+                                     </table>
+                                 </div>
+                                 <!-- Pagination -->
+                                 <div class="p-4 border-t border-gray-100 flex justify-between items-center">
+                                     <div class="flex items-center gap-3">
+                                         <span class="text-xs text-gray-500">Showing 1 to 0 of 0 results</span>
+                                         <div class="flex items-center gap-1">
+                                             <span class="text-xs text-gray-400">•</span>
+                                             <select class="text-xs font-bold text-gray-700 bg-transparent border border-gray-200 rounded px-2 py-1 outline-none">
+                                                 <option>10</option>
+                                             </select>
+                                             <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 -ml-4 pointer-events-none"></i>
+                                         </div>
+                                     </div>
+                                     <div class="flex gap-2">
+                                         <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                         <div class="flex items-center px-2 text-xs font-medium text-gray-500">Page 1 of 0</div>
+                                         <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                     </div>
+                                 </div>
+                             </div>
+                             <div id="sec-content-programs" class="hidden p-8 flex flex-col items-center justify-center h-64 text-center">
+                                 <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-gray-300"><i class="fa-solid fa-trophy text-xl"></i></div>
+                                 <h4 class="text-gray-900 font-medium">No programs available</h4>
+                             </div>
+                         </div>
+                         <!-- Right Col -->
+                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 h-fit">
+                             <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-8 flex items-center"><i class="fa-solid fa-medal mr-2"></i>Top Performers</h3>
+                             <div class="flex flex-col items-center justify-center py-12 text-center">
+                                 <div class="text-gray-300 text-5xl mb-4"><i class="fa-solid fa-medal"></i></div>
+                                 <span class="text-gray-400 text-sm font-medium">No toppers yet</span>
+                             </div>
+                         </div>
                      </div>
                 </div>
 
@@ -573,6 +678,7 @@
                                     <th class="px-6 py-4">Name</th>
                                     <th class="px-6 py-4">Class</th>
                                     <th class="px-6 py-4">Ad No</th>
+                                    <th class="px-6 py-4">Gender</th>
                                     <th class="px-6 py-4">Section</th>
                                 </tr>
                             </thead>
@@ -581,6 +687,158 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- VIEW: TEAM DETAILS (UPDATED) -->
+                <div id="view-team-details" class="hidden">
+                     <!-- Header -->
+                     <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <button onclick="window.switchView('teams')" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                            <div class="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 text-xl border border-yellow-100"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900" id="detail-team-title">Team Name</h1>
+                                <p class="text-xs text-gray-500">Team analytics and candidate overview</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm" id="detail-team-status">Active</span>
+                     </div>
+
+                     <!-- Stats Cards Row -->
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                         <!-- Card 1 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL CANDIDATES</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-team-cand">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-users"></i></div>
+                         </div>
+                         <!-- Card 2 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">PUBLISHED POINTS</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-team-points">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-trophy"></i></div>
+                         </div>
+                          <!-- Card 3 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL POINTS</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-team-total-points">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600"><i class="fa-solid fa-medal"></i></div>
+                         </div>
+                          <!-- Card 4 -->
+                         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                             <div>
+                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">UNPUBLISHED POINTS</p>
+                                 <h3 class="text-3xl font-bold text-gray-900" id="stat-team-unpublished">0</h3>
+                             </div>
+                             <div class="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600"><i class="fa-regular fa-clock"></i></div>
+                         </div>
+                     </div>
+
+                     <!-- Content Grid -->
+                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                         <!-- Left Column: Tabs & List -->
+                         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                             <div class="flex border-b border-gray-100">
+                                 <button class="px-8 py-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400" id="team-tab-candidates" onclick="window.switchTeamTab('candidates')"><i class="fa-regular fa-user mr-2"></i>Candidates</button>
+                                 <button class="px-8 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" id="team-tab-programs" onclick="window.switchTeamTab('programs')"><i class="fa-solid fa-trophy mr-2"></i>Programs</button>
+                             </div>
+                             
+                             <!-- Candidates Content -->
+                             <div id="team-content-candidates">
+                                 <div class="p-6 flex justify-between items-center border-b border-gray-50">
+                                     <h3 class="font-bold text-gray-900 text-lg">Team Candidates</h3>
+                                     <div class="flex gap-3">
+                                         <i class="fa-solid fa-magnifying-glass text-gray-400 p-2 text-lg"></i>
+                                         <button class="px-4 py-1.5 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 flex items-center shadow-sm"><i class="fa-solid fa-arrow-up-right-from-square mr-2 text-xs"></i> View All</button>
+                                     </div>
+                                 </div>
+                                 <div class="overflow-x-auto">
+                                     <table class="w-full text-left text-sm text-gray-600">
+                                         <thead class="bg-gray-50 text-xs font-bold text-gray-500 border-b border-gray-100">
+                                             <tr>
+                                                 <th class="px-6 py-4">Chest No</th>
+                                                 <th class="px-6 py-4">Candidate</th>
+                                                 <th class="px-6 py-4">Section</th>
+                                                 <th class="px-6 py-4">Gender</th>
+                                                 <th class="px-6 py-4">Status</th>
+                                                 <th class="px-6 py-4 text-right">Actions</th>
+                                             </tr>
+                                         </thead>
+                                         <tbody id="team-detail-table-body">
+                                             <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>
+                                         </tbody>
+                                     </table>
+                                 </div>
+                                 <!-- Pagination -->
+                                 <div class="p-4 border-t border-gray-100 flex justify-between items-center">
+                                     <div class="flex items-center gap-3">
+                                         <span class="text-xs text-gray-500">Showing 1 to 0 of 0 results</span>
+                                         <div class="flex items-center gap-1">
+                                             <span class="text-xs text-gray-400">•</span>
+                                             <select class="text-xs font-bold text-gray-700 bg-transparent border border-gray-200 rounded px-2 py-1 outline-none">
+                                                 <option>10</option>
+                                             </select>
+                                             <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 -ml-4 pointer-events-none"></i>
+                                         </div>
+                                     </div>
+                                     <div class="flex gap-2">
+                                         <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                         <div class="flex items-center px-2 text-xs font-medium text-gray-500">Page 1 of 0</div>
+                                         <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- Programs Content (Placeholder) -->
+                             <div id="team-content-programs" class="hidden p-8 flex flex-col items-center justify-center h-64 text-center">
+                                 <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-gray-300"><i class="fa-solid fa-trophy text-xl"></i></div>
+                                 <h4 class="text-gray-900 font-medium">No programs available</h4>
+                             </div>
+
+                         </div>
+
+                         <!-- Right Column: Team Details & Toppers -->
+                         <div class="space-y-6">
+                             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
+                                 <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-6 flex items-center"><i class="fa-regular fa-user mr-2"></i>Team Details</h3>
+                                 <div class="space-y-4 text-sm">
+                                     <div class="flex justify-between items-center">
+                                         <span class="text-gray-500">Color:</span>
+                                         <div class="flex items-center">
+                                             <div id="detail-team-color-box" class="w-5 h-5 rounded mr-3 shadow-sm border border-gray-100"></div>
+                                             <span id="detail-team-color-hex" class="font-mono text-gray-900 font-bold">#000000</span>
+                                         </div>
+                                     </div>
+                                     <div class="flex justify-between items-center border-t border-gray-50 pt-3">
+                                         <span class="text-gray-500">Display Order:</span>
+                                         <span class="text-gray-900 font-medium">-</span>
+                                     </div>
+                                     <div class="flex justify-between items-center border-t border-gray-50 pt-3">
+                                         <span class="text-gray-500">Created:</span>
+                                         <span id="detail-team-created" class="text-gray-900 font-medium">-</span>
+                                     </div>
+                                     <div class="flex justify-between items-center border-t border-gray-50 pt-3">
+                                         <span class="text-gray-500">Updated:</span>
+                                         <span id="detail-team-updated" class="text-gray-900 font-medium">-</span>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 h-fit">
+                                 <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-8 flex items-center"><i class="fa-solid fa-medal mr-2"></i>Top Performers</h3>
+                                 <div class="flex flex-col items-center justify-center py-12 text-center">
+                                     <div class="text-gray-300 text-5xl mb-4"><i class="fa-solid fa-medal"></i></div>
+                                     <span class="text-gray-400 text-sm font-medium">No toppers yet</span>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
                 </div>
 
                 <!-- VIEW: CANDIDATE DETAILS -->
@@ -652,9 +910,9 @@
         </div>
     </div>
 
-    <!-- Add User Modal -->
+    <!-- Add User Modal (Existing) -->
     <div id="manageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">Add New User</h3><button onclick="window.closeManageModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
             <div class="p-6 space-y-4">
                 <div><label class="block text-xs font-bold text-gray-500 uppercase">Name</label><input type="text" id="inputName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"></div>
@@ -740,6 +998,17 @@
                     <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ad. No</label><input type="text" id="candAdNo" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
                 </div>
                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Name</label><input type="text" id="candName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
+                
+                <!-- Gender Selection Added Here -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Gender</label>
+                    <select id="candGender" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Class</label><input type="text" id="candClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
                     <!-- Team Dropdown -->
@@ -802,6 +1071,138 @@
         </div>
     </div>
 
+    <!-- Add Program Modal (New) -->
+    <div id="programModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800" id="progModalTitle">Add New Program</h3>
+                <button onclick="window.closeProgramModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-6">
+                <input type="hidden" id="progId">
+                <!-- Basic Details -->
+                <div class="space-y-4 border-b border-gray-100 pb-6">
+                     <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Basic Details</h4>
+                     <div class="grid grid-cols-3 gap-4">
+                         <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Program Code *</label><input type="text" id="progCode" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" required></div>
+                         <div class="col-span-2"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Program Name *</label><input type="text" id="progName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" required></div>
+                     </div>
+                     <div class="grid grid-cols-2 gap-4">
+                         <div>
+                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section *</label>
+                             <select id="progSection" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none" required>
+                                 <option value="" disabled selected>Select Section</option>
+                                 <!-- Dynamic Sections -->
+                             </select>
+                         </div>
+                         <div>
+                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Program Type *</label>
+                             <select id="progType" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none" required>
+                                 <option value="Individual">Individual</option>
+                                 <option value="Group">Group</option>
+                                 <option value="General">General</option>
+                             </select>
+                         </div>
+                     </div>
+                     <div>
+                          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="progStatusToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="progStatusToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                            <span class="text-sm text-gray-600">Active</span>
+                     </div>
+                </div>
+
+                <!-- Participation Limits -->
+                 <div class="space-y-4 border-b border-gray-100 pb-6">
+                      <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Participation Limits & Restrictions</h4>
+                      <div class="grid grid-cols-2 gap-4">
+                          <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Min Participants per Team</label><input type="number" id="progMinPart" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" value="1" min="1" step="1"></div>
+                          <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Participants per Team</label><input type="number" id="progMaxPart" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" value="1" min="1" step="1"></div>
+                      </div>
+                 </div>
+
+                <!-- Registration Settings -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Registration Settings</h4>
+                    <div class="flex items-center justify-between">
+                          <div><h4 class="text-sm font-bold text-gray-900">Topic Registration Required</h4><p class="text-xs text-gray-500 mt-0.5">Does this program need a topic to be submitted?</p></div>
+                          <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="progTopicRegReq" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="progTopicRegReq" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                          <div><h4 class="text-sm font-bold text-gray-900">Make topic registration mandatory for participation</h4><p class="text-xs text-gray-500 mt-0.5">Participants cannot be registered without a topic.</p></div>
+                          <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="progTopicReg" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="progTopicReg" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                    </div>
+                    <!-- Assuming Candidate Registration toggle is already handled in old code, keeping clean inputs -->
+                </div>
+
+                <!-- Hidden inputs for data storage/retrieval -->
+                <input type="hidden" id="progStatus" value="Active">
+                <input type="hidden" id="progDesc" value="">
+                <input type="hidden" id="progCandReg" value="false">
+                <input type="hidden" id="progEnableGrading" value="true">
+                <input type="hidden" id="progEnablePosition" value="true">
+                <input type="hidden" id="progGradeTemplate" value="No Template">
+                <input type="hidden" id="progPosTemplate" value="No Template">
+
+
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="window.closeProgramModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button onclick="window.saveProgram()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                    <i class="fa-solid fa-plus mr-2"></i>Create Program
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Registration Modal (New) -->
+    <div id="topicRegistrationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-scale-up max-h-[90vh] flex flex-col">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800" id="topicRegModalTitle">Register Topic for Program Name</h3>
+                <button onclick="window.closeTopicRegistrationModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-6 flex-1 overflow-y-auto">
+                <input type="hidden" id="topicRegProgramId">
+                <input type="hidden" id="activeParticipantTab" value="0">
+                
+                <!-- Topic Details -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider border-b pb-2 mb-4">Topic/Submission Details</h4>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Author Name (Team Manager)</label><input type="text" id="topicAuthor" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-100" readonly></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Topic / Submission Title</label><input type="text" id="topicTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Supporting Link (Optional)</label><input type="url" id="topicLink" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="e.g. Google Drive Link, YouTube Link"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description / Notes</label><textarea id="topicNotes" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none h-20"></textarea></div>
+                </div>
+
+                <!-- Participants Tabs -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider border-b pb-2 mb-4 flex justify-between items-center">
+                        Participants <span id="maxParticipantsInfo" class="text-xs font-medium text-gray-500">Max: 1</span>
+                    </h4>
+                    
+                    <!-- Tabs -->
+                    <div id="participantTabs" class="flex border-b border-gray-200">
+                        <!-- Dynamic Tabs Here (e.g., Participant 1, Participant 2) -->
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div id="participantContent">
+                        <!-- Dynamic Content Here (Dropdowns for each participant slot) -->
+                    </div>
+
+                    <div id="topicRegError" class="text-red-500 text-xs font-medium hidden"></div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
+                <button onclick="window.closeTopicRegistrationModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button onclick="window.saveTopicRegistration()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                    <i class="fa-solid fa-upload mr-2"></i>Submit for Verification
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- SCRIPTS -->
     <script>
         // --- VANILLA JS UI HELPERS ---
@@ -813,11 +1214,11 @@
             toast.className = `bg-white text-gray-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] border border-gray-100 pointer-events-auto toast-enter`;
             toast.innerHTML = `<div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${bgColor}"><i class="fa-solid ${iconClass} text-white text-xs"></i></div><span class="font-medium text-sm">${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => { if(container.contains(toast)) container.removeChild(toast); }, 300); }, 4000);
+            setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => { if(container.contains(toast)) container.removeChild(toast); }, 4000); }, 4000);
         }
 
         window.switchView = function(viewName) {
-            const views = ['view-home', 'view-database', 'view-candidates', 'view-candidate-details', 'view-sections', 'view-section-details', 'view-teams', 'view-team-details', 'view-team-students'];
+            const views = ['view-home', 'view-database', 'view-candidates', 'view-candidate-details', 'view-sections', 'view-section-details', 'view-teams', 'view-team-details', 'view-team-students', 'view-programs', 'view-team-programs', 'view-topic-registration'];
             views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
             
             const target = document.getElementById('view-' + viewName);
@@ -826,12 +1227,72 @@
                 if(viewName === 'team-students') {
                     if (window.renderTeamStudentsTable) {
                         window.renderTeamStudentsTable();
-                    } else {
-                        console.error('renderTeamStudentsTable is not available');
+                    }
+                }
+                if(viewName === 'topic-registration') {
+                    if (window.renderTopicRegistrationTable) {
+                        window.renderTopicRegistrationTable();
+                    }
+                }
+                if(viewName === 'team-programs') {
+                    if (window.renderTeamProgramsTable) {
+                        window.renderTeamProgramsTable();
                     }
                 }
             }
         }
+
+        // Tab Switcher for Section Details & Team Details
+        window.switchSecTab = function(tab) {
+             const candidatesTab = document.getElementById('sec-tab-candidates');
+             const programsTab = document.getElementById('sec-tab-programs');
+             const contentCand = document.getElementById('sec-content-candidates');
+             const contentProg = document.getElementById('sec-content-programs');
+             
+             if(tab === 'candidates') {
+                 candidatesTab.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 candidatesTab.classList.remove('text-gray-500', 'font-medium');
+                 programsTab.classList.remove('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 programsTab.classList.add('text-gray-500', 'font-medium');
+                 
+                 contentCand.classList.remove('hidden');
+                 contentProg.classList.add('hidden');
+             } else {
+                 programsTab.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 programsTab.classList.remove('text-gray-500', 'font-medium');
+                 candidatesTab.classList.remove('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 candidatesTab.classList.add('text-gray-500', 'font-medium');
+                 
+                 contentProg.classList.remove('hidden');
+                 contentCand.classList.add('hidden');
+             }
+        }
+
+        window.switchTeamTab = function(tab) {
+             const candidatesTab = document.getElementById('team-tab-candidates');
+             const programsTab = document.getElementById('team-tab-programs');
+             const contentCand = document.getElementById('team-content-candidates');
+             const contentProg = document.getElementById('team-content-programs');
+             
+             if(tab === 'candidates') {
+                 candidatesTab.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 candidatesTab.classList.remove('text-gray-500', 'font-medium');
+                 programsTab.classList.remove('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 programsTab.classList.add('text-gray-500', 'font-medium');
+                 
+                 contentCand.classList.remove('hidden');
+                 contentProg.classList.add('hidden');
+             } else {
+                 programsTab.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 programsTab.classList.remove('text-gray-500', 'font-medium');
+                 candidatesTab.classList.remove('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 candidatesTab.classList.add('text-gray-500', 'font-medium');
+                 
+                 contentProg.classList.remove('hidden');
+                 contentCand.classList.add('hidden');
+             }
+        }
+
 
         window.togglePassword = function() {
             const input = document.getElementById('password');
@@ -875,7 +1336,7 @@
             activeActionBtn = btn;
             activeCandidateId = id;
             activeCandidateData = {
-                chest: data[0], ad: data[1], name: data[2], cls: data[3], team: data[4], sec: data[5]
+                chest: data[0], ad: data[1], name: data[2], cls: data[3], team: data[4], sec: data[5], gender: data[6]
             };
 
             const rect = btn.getBoundingClientRect();
@@ -949,7 +1410,7 @@
         window.openManageModal = function() { document.getElementById('manageModal').classList.remove('hidden'); }
         window.closeManageModal = function() { 
             document.getElementById('manageModal').classList.add('hidden');
-            document.getElementById('inputName').value = ''; document.getElementById('inputPosition').value = ''; document.getElementById('inputTeam').value = 'Team A'; document.getElementById('teamSelectContainer').classList.add('hidden');
+            document.getElementById('inputName').value = ''; document.getElementById('inputPosition').value = ''; document.getElementById('inputTeam').value = ''; document.getElementById('teamSelectContainer').classList.add('hidden');
         }
 
         window.closeEditModal = () => { document.getElementById('editModal').classList.add('hidden'); };
@@ -963,6 +1424,7 @@
             document.getElementById('candId').value = '';
             
             ['candChest', 'candAdNo', 'candName', 'candClass'].forEach(id => document.getElementById(id).value = '');
+             document.getElementById('candGender').value = ""; // Reset Gender
             
             // Trigger population of dropdowns from Global data
             window.populateSectionDropdown();
@@ -971,8 +1433,8 @@
             document.getElementById('candidateModal').classList.remove('hidden'); 
         }
         
-        window.openEditCandidateModal = function(id, chest, ad, name, cls, team, sec) {
-            document.getElementById('globalActionActionMenu').classList.add('hidden');
+        window.openEditCandidateModal = function(id, chest, ad, name, cls, team, sec, gender) {
+            document.getElementById('globalActionMenu').classList.add('hidden');
 
             document.getElementById('candModalTitle').textContent = "Edit Candidate";
             document.getElementById('candSubmitBtn').innerHTML = '<i class="fa-solid fa-check mr-2"></i>Update';
@@ -983,6 +1445,7 @@
             document.getElementById('candAdNo').value = ad;
             document.getElementById('candName').value = name;
             document.getElementById('candClass').value = cls;
+             document.getElementById('candGender').value = gender || "";
             
             window.populateSectionDropdown(sec);
             window.populateTeamDropdown(team);
@@ -1016,6 +1479,65 @@
             document.getElementById('sectionModal').classList.add('hidden');
         }
 
+        // Program Modal
+        window.openProgramModal = function(id = null) {
+            const modalTitle = document.getElementById('progModalTitle');
+            if (id) {
+                modalTitle.textContent = "Edit Program";
+                // In a real app, you would fetch and populate data for edit
+                window.showToast("Editing programs is not yet implemented.", "error");
+                return; 
+            } else {
+                 modalTitle.textContent = "Add New Program";
+                 document.getElementById('progId').value = '';
+            }
+
+             // Reset Fields
+             document.getElementById('progCode').value = '';
+             document.getElementById('progName').value = '';
+             document.getElementById('progDesc').value = '';
+             document.getElementById('progMinPart').value = '1';
+             document.getElementById('progMaxPart').value = '1';
+             document.getElementById('progTopicRegReq').checked = false;
+             document.getElementById('progTopicReg').checked = false;
+             document.getElementById('progStatusToggle').checked = true;
+
+             // Populate Sections Dropdown
+             const select = document.getElementById('progSection');
+             select.innerHTML = '<option value="" disabled selected>Select Section *</option>';
+             if(window.populateSectionDropdownForProgram) window.populateSectionDropdownForProgram();
+             
+             // Set default dropdown values
+             document.getElementById('progType').value = 'Individual';
+             document.getElementById('progGradeTemplate').value = 'No Template';
+             document.getElementById('progPosTemplate').value = 'No Template';
+
+
+             document.getElementById('programModal').classList.remove('hidden');
+        }
+        
+        window.closeProgramModal = function() {
+            document.getElementById('programModal').classList.add('hidden');
+        }
+
+        window.populateSectionDropdownForProgram = function() {
+            // Using global sectionsList
+             const select = document.getElementById('progSection');
+             const sectionsList = window.getSectionsList ? window.getSectionsList() : []; // Will define getter
+             
+             // Reset options, keeping the default placeholder
+             select.innerHTML = '<option value="" disabled selected>Select Section *</option>';
+             
+             sectionsList.forEach(sec => {
+                 if(sec.isActive !== false) {
+                    const option = document.createElement('option');
+                    option.value = sec.name;
+                    option.textContent = sec.name;
+                    select.appendChild(option);
+                 }
+             });
+        }
+        
         // Team Modal
         window.openTeamModal = function() {
             document.getElementById('teamModalTitle').textContent = "Add Team";
@@ -1043,6 +1565,7 @@
         }
 
         window.handleLogout = function() {
+            localStorage.removeItem('festival_user_auth');
             window.toggleUserMenu();
             showToast('Logged Out Successfully', 'success');
             setTimeout(() => { window.switchView('home'); document.getElementById('login-page').classList.remove('page-hidden'); document.getElementById('login-page').classList.add('page-visible'); document.getElementById('dashboard-page').classList.remove('page-visible'); document.getElementById('dashboard-page').classList.add('page-hidden'); }, 1500);
@@ -1055,7 +1578,7 @@
                 { title: 'Published Content', value: '0', icon: 'fa-regular fa-file-lines', color: 'purple', sub: 'Public' },
                 { title: 'Results Uploaded', value: '0', icon: 'fa-solid fa-trophy', color: 'orange', sub: 'Completed' },
             ];
-            document.getElementById('stats-container').innerHTML = stats.map(s => `<div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">${s.title}</span><div class="h-8 w-8 rounded-full bg-${s.color}-50 flex items-center justify-center text-${s.color}-600"><i class="${s.icon} text-xs"></i></div></div><div><span class="text-2xl font-bold text-gray-900">${s.value}</span><p class="text-xs text-gray-400 mt-1">${s.sub}</p></div></div>`).join('');
+            document.getElementById('stats-container').innerHTML = stats.map(s => `<div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">${s.title}</span><div class="h-8 w-8 rounded-full bg-${s.color}-50 flex items-center justify-center text-${s.color}-600"><i class="${s.icon} text-xs"></i></div></div><div><span class="text-2xl font-bold text-gray-900" id="stat-${s.title.toLowerCase().replace(/\s/g, '-')}">${s.value}</span><p class="text-xs text-gray-400 mt-1">${s.sub}</p></div></div>`).join('');
 
             const btns = [
                 { icon: 'fa-solid fa-user-plus', label: 'Add Candidates', color: 'blue' },
@@ -1073,25 +1596,55 @@
             const arrow = document.getElementById(`arrow-${id}`);
             if(sub.classList.contains('hidden')) { sub.classList.remove('hidden'); arrow.classList.add('rotate-180'); } else { sub.classList.add('hidden'); arrow.classList.remove('rotate-180'); }
         }
+        
+        // Simple popup for registration
+        window.openRegisterPopup = function() {
+            window.showToast("Registration coming soon", "error");
+        }
+        
+        // Participant Tab Switcher
+        window.switchParticipantTab = function(tabIndex) {
+            const tabs = document.querySelectorAll('.participant-tab');
+            const contents = document.querySelectorAll('.participant-content-item');
+            const activeInput = document.getElementById('activeParticipantTab');
+            
+            tabs.forEach((tab, index) => {
+                if(index == tabIndex) {
+                    tab.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                    tab.classList.remove('text-gray-500', 'font-medium');
+                    contents[index].classList.remove('hidden');
+                    activeInput.value = tabIndex;
+                } else {
+                    tab.classList.remove('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                    tab.classList.add('text-gray-500', 'font-medium');
+                    contents[index].classList.add('hidden');
+                }
+            });
+        }
     </script>
 
     <!-- MODULE SCRIPT: FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+        // Global Firebase Config (Replace with your actual config or use __firebase_config)
         const firebaseConfig = {
-            apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE",
-            authDomain: "dtbase-fest1.firebaseapp.com",
-            projectId: "dtbase-fest1",
-            storageBucket: "dtbase-fest1.firebasestorage.app",
-            messagingSenderId: "761020619162",
-            appId: "1:761020619162:web:4982fc6db9a80c25808223",
-            measurementId: "G-WKGSBNZ672"
+             apiKey: "AIzaSyDkSroz5GsDp5zKW2hIuNl9hpMeun5pyJE",
+             authDomain: "dtbase-fest1.firebaseapp.com",
+             projectId: "dtbase-fest1",
+             storageBucket: "dtbase-fest1.firebasestorage.app",
+             messagingSenderId: "761020619162",
+             appId: "1:761020619162:web:4982fc6db9a80c25808223",
+             measurementId: "G-WKGSBNZ672"
         };
+        // Initialization using provided globals (safeguarded)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const config = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
 
-        const app = initializeApp(firebaseConfig);
+
+        const app = initializeApp(config);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
@@ -1100,14 +1653,40 @@
         let candidatesList = [];
         let sectionsList = [];
         let teamsList = [];
+        let programsList = [];
+        let settingsData = { festivalName: "mvs designs", motto: "active", isActive: true, isTopicRegistrationOpen: false }; // Added default setting
         // Bulk Selection State
         let selectedCandidates = new Set();
+        
+        // New Collection Reference Helper
+        const usersCol = collection(db, `artifacts/${appId}/public/data/users`);
+        const settingsDoc = doc(db, `artifacts/${appId}/public/data/settings`, 'general');
+        const candidatesCol = collection(db, `artifacts/${appId}/public/data/candidates`);
+        const sectionsCol = collection(db, `artifacts/${appId}/public/data/sections`);
+        const teamsCol = collection(db, `artifacts/${appId}/public/data/teams`);
+        const programsCol = collection(db, `artifacts/${appId}/public/data/programs`);
+        const registrationsCol = collection(db, `artifacts/${appId}/public/data/registrations`);
 
-        signInAnonymously(auth).catch((error) => {
-            if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
-                document.getElementById('db-error-banner').classList.remove('hidden');
+
+        const signInUser = async () => {
+             try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    // FIX: Ensure signInWithCustomToken is correctly imported and used
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    // FIX: Ensure signInAnonymously is correctly imported and used
+                    await signInAnonymously(auth);
+                }
+            } catch(error) {
+                 if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed' || error.code === 'auth/invalid-api-key') {
+                    console.error("Firebase Auth Error. Check API Key and Auth Domain.");
+                    document.getElementById('db-error-banner').classList.remove('hidden');
+                 } else {
+                    console.error("Unknown Firebase Auth Error:", error);
+                 }
             }
-        });
+        };
+        signInUser();
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -1116,68 +1695,114 @@
                 subscribeToCandidates();
                 subscribeToSections();
                 subscribeToTeams();
+                subscribeToPrograms();
+                // No need to subscribe to registrations until needed
             }
         });
 
         function subscribeToUsers() {
-            const q = collection(db, 'users');
-            let hasShownError = false;
-            onSnapshot(q, (snapshot) => {
+            onSnapshot(usersCol, (snapshot) => {
                 globalUsersList = [];
-                snapshot.forEach((doc) => { globalUsersList.push({ id: doc.id, ...doc.data() }); });
+                snapshot.forEach((doc) => { 
+                    const data = doc.data();
+                    data.avatarLetter = (data.name || 'U').charAt(0).toUpperCase();
+                    globalUsersList.push({ id: doc.id, ...data }); 
+                });
                 renderUsersMini(globalUsersList);
                 renderDatabaseTable(globalUsersList);
             }, (error) => {
-                if (!hasShownError && error.code === 'permission-denied') {
-                    document.getElementById('db-error-banner').classList.remove('hidden');
-                    hasShownError = true;
-                }
+                 if (error.code === 'permission-denied') { document.getElementById('db-error-banner').classList.remove('hidden'); }
             });
         }
 
         function subscribeToSettings() {
-            onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
-                if (docSnap.exists()) updateUIFromSettings(docSnap.data());
+            onSnapshot(settingsDoc, (docSnap) => {
+                if (docSnap.exists()) {
+                    settingsData = docSnap.data();
+                    updateUIFromSettings(settingsData);
+                }
             });
         }
         
         function subscribeToCandidates() {
-            onSnapshot(collection(db, 'candidates'), (snapshot) => {
+            onSnapshot(candidatesCol, (snapshot) => {
                 candidatesList = [];
                 snapshot.forEach(doc => candidatesList.push({id: doc.id, ...doc.data()}));
-                renderCandidatesTable(candidatesList);
+                
+                // --- Triggers Recalculation ---
+                renderCandidatesTable(candidatesList, document.getElementById('sectionFilter')?.value || 'all');
+                renderTeamStudentsTable();
+                updateDashboardStats();
+                // -----------------------------
+                
                 selectedCandidates.clear();
                 updateBulkToolbar();
-                renderTeamStudentsTable();
             });
         }
 
         function subscribeToSections() {
-            onSnapshot(collection(db, 'sections'), (snapshot) => {
+            onSnapshot(sectionsCol, (snapshot) => {
                 sectionsList = [];
                 snapshot.forEach(doc => sectionsList.push({id: doc.id, ...doc.data()}));
+                sectionsList.sort((a,b) => a.name.localeCompare(b.name));
                 renderSectionsTable(sectionsList);
+                populateSectionFilterDropdown();
             });
         }
 
         function subscribeToTeams() {
-            onSnapshot(collection(db, 'teams'), (snapshot) => {
+            onSnapshot(teamsCol, (snapshot) => {
                 teamsList = [];
                 snapshot.forEach(doc => teamsList.push({id: doc.id, ...doc.data()}));
+                teamsList.sort((a,b) => a.name.localeCompare(b.name));
                 renderTeamsTable(teamsList);
-                // Re-render candidates to update team colors if teams load after candidates
-                if(candidatesList.length > 0) renderCandidatesTable(candidatesList);
+                if(candidatesList.length > 0) renderCandidatesTable(candidatesList, document.getElementById('sectionFilter')?.value || 'all');
                 
-                // Also populate the user dropdowns
                 populateUserTeamDropdown();
                 populateEditTeamDropdown();
             });
+        }
+
+        function subscribeToPrograms() {
+            onSnapshot(programsCol, (snapshot) => {
+                programsList = [];
+                snapshot.forEach(doc => programsList.push({id: doc.id, ...doc.data()}));
+                renderProgramsTable(programsList, 'admin');
+                renderProgramsTable(programsList, 'manager'); // For the read-only list
+                renderTopicRegistrationTable();
+                updateDashboardStats();
+            });
+        }
+        
+        function updateDashboardStats() {
+             if(!loggedInUserData) return;
+             
+             const totalCandidatesEl = document.getElementById('stat-total-candidates');
+             const totalProgramsEl = document.getElementById('stat-total-programs');
+
+             if(!totalCandidatesEl) return;
+             
+             if (loggedInUserData.position === 'Admin') {
+                 totalCandidatesEl.textContent = candidatesList.length;
+                 if(totalProgramsEl) totalProgramsEl.textContent = programsList.length;
+             } else if (loggedInUserData.position === 'Team Manager' && loggedInUserData.team) {
+                 const myTeamCount = candidatesList.filter(c => (c.team || '').trim() === loggedInUserData.team.trim()).length;
+                 totalCandidatesEl.textContent = myTeamCount;
+                 
+                 const activePrograms = programsList.filter(p => p.status === 'Active').length;
+                 if(totalProgramsEl) totalProgramsEl.textContent = activePrograms;
+             } else {
+                 totalCandidatesEl.textContent = '0';
+                 if(totalProgramsEl) totalProgramsEl.textContent = '0';
+             }
         }
 
         function updateUIFromSettings(data) {
             const name = data.festivalName || "mvs designs";
             const motto = data.motto || "active";
             const isActive = data.isActive !== false; 
+            const isTopicRegOpen = data.isTopicRegistrationOpen === true; // New setting
+            settingsData = data;
 
             document.getElementById('page-title').textContent = `${name} - Dashboard`;
             document.getElementById('login-festival-name').textContent = name;
@@ -1189,16 +1814,23 @@
             
             const statusEl = document.getElementById('sidebar-active-status');
             if(isActive) {
-                statusEl.innerHTML = 'Active';
+                statusEl.innerHTML = 'active <i class="fa-solid fa-wand-magic-sparkles ml-1"></i>';
                 statusEl.className = "text-xs text-green-500 font-medium flex items-center";
             } else {
-                statusEl.textContent = "Inactive";
+                statusEl.textContent = "inactive";
                 statusEl.className = "text-xs text-red-500 font-medium";
             }
             document.getElementById('setting-name').value = name;
             document.getElementById('setting-motto').value = motto;
             document.getElementById('setting-active').checked = isActive;
+            document.getElementById('setting-topic-reg-open').checked = isTopicRegOpen;
         }
+        
+        // Expose Sections List
+        window.getSectionsList = () => sectionsList;
+        window.getTeamsList = () => teamsList;
+        window.getCandidatesList = () => candidatesList;
+        window.getProgramsList = () => programsList;
 
         // --- RENDER LOGIC ---
         function renderUsersMini(users) {
@@ -1213,8 +1845,8 @@
             `;
             users.forEach(user => {
                 html += `
-                    <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group transition hover:border-yellow-400 bg-white">
-                        <div class="h-12 w-12 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center text-lg font-bold text-gray-600 mb-2 uppercase">${user.avatarLetter}</div>
+                    <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center w-32 relative group transition hover:border-gray-300 bg-white">
+                        <div class="h-12 w-12 rounded-full bg-gray-100 border-2 border-gray-100 flex items-center justify-center text-lg font-bold text-gray-600 mb-2 uppercase">${user.avatarLetter}</div>
                         <span class="font-bold text-sm text-gray-900 truncate w-full text-center">${user.name}</span>
                         <span class="text-xs text-gray-500 truncate w-full text-center">${user.position === 'Team Manager' ? 'Manager' : user.position}</span>
                     </div>
@@ -1253,7 +1885,7 @@
                         <td class="px-6 py-4"><div class="flex flex-col text-xs bg-gray-50 p-2 rounded border border-gray-100 max-w-[150px]"><span class="text-gray-500 mb-0.5">U: <span class="font-mono text-gray-700 font-bold select-all">${user.username}</span></span><span class="text-gray-500">P: <span class="font-mono text-gray-700 font-bold select-all">${user.password}</span></span></div></td>
                         <td class="px-6 py-4 text-right">
                             <button onclick="window.openEditModal('${user.id}', '${user.username}', '${user.password}', '${user.position}', '${user.team || ''}')" class="text-gray-400 hover:text-blue-500 transition-colors mr-3"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="window.deleteUser('${user.id}')" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="window.openDeleteModal('user', '${user.id}')" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -1265,15 +1897,17 @@
             let menuItems = [];
             if (role === 'Team Manager') {
                 menuItems = [
-                    { id: 'home', icon: 'fa-solid fa-house', label: 'Dashboard' },
-                    { id: 'students', icon: 'fa-solid fa-users', label: 'Students', action: 'team-students' },
-                    { id: 'topic', icon: 'fa-solid fa-pen-to-square', label: 'Topic Registration' },
-                    { id: 'program', icon: 'fa-solid fa-clipboard-list', label: 'Program Registration' }
+                    { id: 'home', icon: 'fa-solid fa-house', label: 'Dashboard', action: 'home' },
+                    { id: 'students', icon: 'fa-solid fa-users', label: 'My Students', action: 'team-students' },
+                    { id: 'team-programs', icon: 'fa-solid fa-list-check', label: 'Program List', action: 'team-programs' },
+                    { id: 'topic-registration', icon: 'fa-solid fa-pen-to-square', label: 'Topic Registration', action: 'topic-registration' },
+                    { id: 'program', icon: 'fa-solid fa-clipboard-list', label: 'Program Registration (Coming Soon)' }
                 ];
             } else {
                 menuItems = [
-                    { id: 'candidate', icon: 'fa-regular fa-user', label: 'Candidate', items: [{label: 'All Candidates', action: 'candidates'}, {label: 'Sections', action: 'sections'}, {label: 'Teams', action: 'teams'}, {label: 'Groups', action: ''}] },
-                    { id: 'programme', icon: 'fa-regular fa-calendar-check', label: 'Programme', items: [{label: 'All Programmes'}, {label: 'Registration'}] },
+                    { id: 'home', icon: 'fa-solid fa-house', label: 'Dashboard', action: 'home' },
+                    { id: 'candidate', icon: 'fa-regular fa-user', label: 'Candidate', items: [{label: 'All Candidates', action: 'candidates'}, {label: 'Sections', action: 'sections'}, {label: 'Teams', action: 'teams'}] },
+                    { id: 'programme', icon: 'fa-regular fa-calendar-check', label: 'Programme', items: [{label: 'All Programmes', action: 'programs'}, {label: 'Registration', action: 'topic-registration'}] },
                     { id: 'result', icon: 'fa-solid fa-trophy', label: 'Result', items: [{label: 'All Results'}] },
                 ];
             }
@@ -1282,12 +1916,17 @@
             if (role === 'Team Manager') {
                 menuItems.forEach(item => { 
                     const action = item.action || (item.id === 'home' ? 'home' : item.id);
-                    html += `<a href="#" onclick="window.switchView('${action}')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group mb-1 transition-colors"><i class="${item.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${item.label}</a>`; 
+                    // Add link for program registration if it's the right view.
+                    const clickAction = (item.id === 'program' ? 'window.openRegisterPopup()' : `window.switchView('${action}')`);
+                    html += `<a href="#" onclick="${clickAction}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group mb-1 transition-colors"><i class="${item.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${item.label}</a>`; 
                 });
             } else {
-                html += `<a href="#" onclick="window.switchView('home')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group mb-2"><i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>Dashboard</a>`;
                 menuItems.forEach(m => { 
-                    let subLinks = m.items.map(i => `<a href="#" onclick="${i.action ? `window.switchView('${i.action}')` : ''}" class="block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors">${i.label}</a>`).join('');
+                    if(m.id === 'home') {
+                        html += `<a href="#" onclick="window.switchView('home')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 bg-gray-100 rounded-md group mb-2"><i class="fa-solid fa-house w-5 text-center mr-2 text-gray-500 group-hover:text-gray-900"></i>Dashboard</a>`;
+                        return;
+                    }
+                    let subLinks = m.items.map(i => `<a href="#" onclick="${i.action ? `window.switchView('${i.action}')` : 'window.openRegisterPopup()'}" class="block px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors">${i.label}</a>`).join('');
                     
                     html += `<div><button onclick="toggleSidebarSubmenu('${m.id}')" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group justify-between focus:outline-none transition-colors"><div class="flex items-center"><i class="${m.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${m.label}</div><i id="arrow-${m.id}" class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i></button><div id="submenu-${m.id}" class="hidden ml-[1.35rem] pl-4 border-l border-gray-200 space-y-1 mt-1">${subLinks}</div></div>`; 
                 });
@@ -1313,14 +1952,14 @@
             if (!tbody || !loggedInUserData || loggedInUserData.position !== 'Team Manager') return;
 
             // Set header label to confirm which team is being viewed
-            if(headerLabel) headerLabel.textContent = `(${loggedInUserData.team || 'No Team Assigned'})`;
+            const managerTeam = (loggedInUserData.team || '').trim();
+            if(headerLabel) headerLabel.textContent = `(${managerTeam || 'No Team Assigned'})`;
 
             // Filter based on EXACT string match from user.team to candidate.team, with trimming
-            const managerTeam = (loggedInUserData.team || '').trim();
             const myTeamCandidates = candidatesList.filter(c => (c.team || '').trim() === managerTeam);
             
             if(myTeamCandidates.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${managerTeam}"</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${managerTeam}"</td></tr>`;
                 return;
             }
 
@@ -1333,6 +1972,7 @@
                         <td class="px-6 py-4 font-bold text-gray-800">${cand.name}</td>
                         <td class="px-6 py-4 text-gray-600">${cand.class || '-'}</td>
                         <td class="px-6 py-4 text-gray-600">${cand.adNo || '-'}</td>
+                        <td class="px-6 py-4 text-gray-600">${cand.gender || '-'}</td>
                         <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">${cand.section}</span></td>
                     </tr>
                 `;
@@ -1352,7 +1992,7 @@
 
             let matchedUser = null;
             if (userIn === 'administrator' && passIn === '81119') {
-                matchedUser = { name: 'Administrator', position: 'Admin', avatarLetter: 'A', username: 'administrator' };
+                matchedUser = { name: 'Administrator', position: 'Admin', avatarLetter: 'A', username: 'administrator', password: '81119' };
             } else {
                 const found = globalUsersList.find(u => u.username === userIn && u.password === passIn);
                 if (found) matchedUser = found;
@@ -1361,6 +2001,14 @@
             setTimeout(() => {
                 if (matchedUser) {
                     loggedInUserData = matchedUser;
+
+                    // Save to localStorage if "Remember me" is checked
+                    if (document.getElementById('rememberMe').checked) {
+                        localStorage.setItem('festival_user_auth', JSON.stringify(matchedUser));
+                    } else {
+                        localStorage.removeItem('festival_user_auth');
+                    }
+
                     window.showToast(`Welcome back, ${matchedUser.name}!`, 'success');
                     document.getElementById('header-username').textContent = matchedUser.name;
                     document.getElementById('header-avatar').textContent = matchedUser.avatarLetter;
@@ -1375,6 +2023,8 @@
                     if (matchedUser.position === 'Team Manager') document.getElementById('admin-bottom-section').classList.add('hidden');
                     else document.getElementById('admin-bottom-section').classList.remove('hidden');
 
+                    updateDashboardStats();
+
                     window.switchView('home');
                     document.getElementById('login-form').reset();
                     document.getElementById('login-page').classList.remove('page-visible'); document.getElementById('login-page').classList.add('page-hidden');
@@ -1386,6 +2036,46 @@
             }, 1500);
         };
 
+        // Check for Auto-Login on Load
+        function checkAutoLogin() {
+            const savedUser = localStorage.getItem('festival_user_auth');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    loggedInUserData = user;
+
+                    document.getElementById('header-username').textContent = user.name;
+                    document.getElementById('header-avatar').textContent = user.avatarLetter;
+                    document.getElementById('header-role-text').textContent = user.position;
+                    document.getElementById('dropdown-username').textContent = user.name;
+                    document.getElementById('dropdown-avatar').textContent = user.avatarLetter;
+                    document.getElementById('dropdown-role').textContent = user.position;
+
+                    window.renderSidebar(user.position);
+                    window.renderUserDropdown(user.position);
+
+                    if (user.position === 'Team Manager') document.getElementById('admin-bottom-section').classList.add('hidden');
+                    else document.getElementById('admin-bottom-section').classList.remove('hidden');
+                    
+                    updateDashboardStats();
+
+                    window.switchView('home');
+                    document.getElementById('login-page').classList.remove('page-visible');
+                    document.getElementById('login-page').classList.add('page-hidden');
+                    document.getElementById('dashboard-page').classList.remove('page-hidden');
+                    document.getElementById('dashboard-page').classList.add('page-visible');
+                    
+                    window.showToast(`Welcome back, ${user.name}!`, 'success');
+                } catch(e) {
+                    console.error("Auto login error", e);
+                    localStorage.removeItem('festival_user_auth');
+                }
+            }
+        }
+        
+        // Call Auto-Login immediately
+        checkAutoLogin();
+
         window.openManageAccountModal = () => { window.toggleUserMenu(); document.getElementById('manageAccountModal').classList.remove('hidden'); document.getElementById('myUsername').value = loggedInUserData.username; document.getElementById('myPassword').value = loggedInUserData.password || ""; };
         window.closeManageAccountModal = () => { document.getElementById('manageAccountModal').classList.add('hidden'); };
         window.saveMyAccount = async () => {
@@ -1395,11 +2085,33 @@
             try {
                 await updateDoc(doc(db, 'users', loggedInUserData.id), { username: newUsername, password: newPassword });
                 loggedInUserData.username = newUsername; loggedInUserData.password = newPassword;
+                
+                // Update local storage if logged in user is updated
+                if(localStorage.getItem('festival_user_auth')) {
+                    localStorage.setItem('festival_user_auth', JSON.stringify(loggedInUserData));
+                }
+                
                 window.showToast("Account Updated Successfully!", "success"); window.closeManageAccountModal();
             } catch(e) { window.showToast("Failed to update account", "error"); }
         };
 
-        window.saveSettings = async () => { const name = document.getElementById('setting-name').value; const motto = document.getElementById('setting-motto').value; const isActive = document.getElementById('setting-active').checked; try { await setDoc(doc(db, 'settings', 'general'), { festivalName: name, motto: motto, isActive: isActive }); window.showToast("Settings Saved!", "success"); } catch (e) { window.showToast("Error saving", "error"); } };
+        window.saveSettings = async () => { 
+            const name = document.getElementById('setting-name').value; 
+            const motto = document.getElementById('setting-motto').value; 
+            const isActive = document.getElementById('setting-active').checked; 
+            const isTopicRegistrationOpen = document.getElementById('setting-topic-reg-open').checked;
+            try { 
+                await setDoc(settingsDoc, { 
+                    festivalName: name, 
+                    motto: motto, 
+                    isActive: isActive,
+                    isTopicRegistrationOpen: isTopicRegistrationOpen
+                }); 
+                window.showToast("Settings Saved!", "success"); 
+            } catch (e) { 
+                window.showToast("Error saving", "error"); 
+            } 
+        };
         window.switchAdminTab = (tab) => { if(tab==='users'){document.getElementById('tab-users').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-settings').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-users').classList.remove('hidden'); document.getElementById('content-settings').classList.add('hidden');} else{document.getElementById('tab-settings').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-users').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-settings').classList.remove('hidden'); document.getElementById('content-users').classList.add('hidden');} };
         window.saveUser = async () => { const name = document.getElementById('inputName').value; const pos = document.getElementById('inputPosition').value; const team = document.getElementById('inputTeam').value; if(!name || !pos) { window.showToast("Fill details", "error"); return; } 
         
@@ -1409,7 +2121,7 @@
              return;
         }
 
-        const u = name.split(' ')[0].toLowerCase() + Math.floor(Math.random()*999); const p = Math.random().toString(36).slice(-6); await addDoc(collection(db, 'users'), { name, position: pos, team: pos==='Team Manager'?team:null, avatarLetter: name[0].toUpperCase(), username: u, password: p }); window.showToast("User Created", "success"); window.closeManageModal(); };
+        const u = name.split(' ')[0].toLowerCase() + Math.floor(Math.random()*999); const p = Math.random().toString(36).slice(-6); await addDoc(usersCol, { name, position: pos, team: pos==='Team Manager'?team:null, avatarLetter: name[0].toUpperCase(), username: u, password: p }); window.showToast("User Created", "success"); window.closeManageModal(); };
         
         // --- Updated Edit User Logic ---
         window.openEditModal = (id, u, p, pos, team) => { 
@@ -1445,7 +2157,7 @@
             }
 
             try {
-                await updateDoc(doc(db, 'users', id), data); 
+                await updateDoc(doc(usersCol, id), data); 
                 window.showToast("Updated Successfully", "success"); 
                 document.getElementById('editModal').classList.add('hidden');
             } catch(e) {
@@ -1454,12 +2166,16 @@
             }
         };
 
-        window.deleteUser = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'users', id)); };
+        window.deleteUser = async (id) => { 
+             window.openDeleteModal('user', id);
+        };
+
         window.handlePositionChange = () => { const p=document.getElementById('inputPosition').value; document.getElementById('teamSelectContainer').style.display = p==='Team Manager'?'block':'none'; };
         window.openDatabaseView = () => { window.toggleUserMenu(); window.switchView('database'); };
         
         window.renderUsersMini = renderUsersMini; window.renderDatabaseTable = renderDatabaseTable;
         window.renderTeamStudentsTable = renderTeamStudentsTable;
+        window.updateDashboardStats = updateDashboardStats;
 
         // --- Candidate Handlers ---
         window.populateSectionDropdown = function(selectedVal = null) {
@@ -1476,6 +2192,27 @@
                 if(selectedVal && sec.name === selectedVal) option.selected = true;
                 select.appendChild(option);
             });
+        }
+        
+        // Section Filter Population
+        window.populateSectionFilterDropdown = function() {
+             const select = document.getElementById('sectionFilter');
+             const currentVal = select.value;
+             select.innerHTML = '<option value="all">All Sections</option>';
+             
+             const activeSections = sectionsList.filter(s => s.isActive !== false);
+             activeSections.forEach(sec => {
+                 const option = document.createElement('option');
+                 option.value = sec.name;
+                 option.textContent = sec.name;
+                 if(currentVal && sec.name === currentVal) option.selected = true;
+                 select.appendChild(option);
+             });
+        }
+        
+        window.filterCandidatesBySection = function() {
+             const section = document.getElementById('sectionFilter').value;
+             renderCandidatesTable(candidatesList, section);
         }
 
         window.populateTeamDropdown = function(selectedVal = null) {
@@ -1531,10 +2268,11 @@
             const candClass = document.getElementById('candClass').value;
             const team = document.getElementById('candTeam').value;
             const section = document.getElementById('candSection').value;
+             const gender = document.getElementById('candGender').value;
             const id = document.getElementById('candId').value;
 
-            if(!chest || !name || !team || !section) {
-                window.showToast("Please fill required fields (including Section & Team)", "error");
+            if(!chest || !name || !team || !section || !gender) {
+                window.showToast("Please fill all required fields (Chest No, Name, Team, Section, Gender)", "error");
                 return;
             }
 
@@ -1545,15 +2283,16 @@
                 class: candClass,
                 team,
                 section,
+                 gender, // Added gender
                 createdAt: new Date().toISOString()
             };
 
             try {
                 if(id) {
-                    await updateDoc(doc(db, 'candidates', id), data);
+                    await updateDoc(doc(candidatesCol, id), data);
                     window.showToast("Candidate Updated!", "success");
                 } else {
-                    await addDoc(collection(db, 'candidates'), data);
+                    await addDoc(candidatesCol, data);
                     window.showToast("Candidate Added!", "success");
                 }
                 window.closeCandidateModal();
@@ -1586,10 +2325,10 @@
 
             try {
                 if(id) {
-                    await updateDoc(doc(db, 'sections', id), data);
+                    await updateDoc(doc(sectionsCol, id), data);
                     window.showToast("Section Updated!", "success");
                 } else {
-                    await addDoc(collection(db, 'sections'), data);
+                    await addDoc(sectionsCol, data);
                     window.showToast("Section Created!", "success");
                 }
                 window.closeSectionModal();
@@ -1600,13 +2339,7 @@
         }
 
         window.deleteSection = async (id) => {
-             // Close menu
-             document.getElementById('sectionActionMenu').classList.add('hidden');
-             
-            if(confirm("Delete this section? This will not delete associated candidates.")) {
-                await deleteDoc(doc(db, 'sections', id));
-                window.showToast("Section Deleted", "success");
-            }
+             window.openDeleteModal('section', id);
         }
 
         // --- Team Handlers ---
@@ -1631,10 +2364,10 @@
 
             try {
                 if(id) {
-                    await updateDoc(doc(db, 'teams', id), data);
+                    await updateDoc(doc(teamsCol, id), data);
                     window.showToast("Team Updated!", "success");
                 } else {
-                    await addDoc(collection(db, 'teams'), data);
+                    await addDoc(teamsCol, data);
                     window.showToast("Team Created!", "success");
                 }
                 window.closeTeamModal();
@@ -1645,11 +2378,68 @@
         }
 
         window.deleteTeam = async (id) => {
-             document.getElementById('sectionActionMenu').classList.add('hidden');
-            if(confirm("Delete this team?")) {
-                await deleteDoc(doc(db, 'teams', id));
-                window.showToast("Team Deleted", "success");
-            }
+             window.openDeleteModal('team', id);
+        }
+
+        // --- Program Handlers ---
+        window.saveProgram = async () => {
+             const code = document.getElementById('progCode').value;
+             const name = document.getElementById('progName').value;
+             const section = document.getElementById('progSection').value;
+             const type = document.getElementById('progType').value;
+             // Status derived from toggle state
+             const status = document.getElementById('progStatusToggle').checked ? 'Active' : 'Inactive';
+             
+             // Min/Max are number inputs
+             const minPart = parseInt(document.getElementById('progMinPart').value);
+             const maxPart = parseInt(document.getElementById('progMaxPart').value);
+             
+             // Boolean toggles
+             const topicRegReq = document.getElementById('progTopicRegReq').checked;
+             const topicReg = document.getElementById('progTopicReg').checked;
+             
+             // Hidden defaults
+             const progDesc = document.getElementById('progDesc').value;
+             const candReg = document.getElementById('progCandReg').value === 'true'; 
+             const enableGrading = document.getElementById('progEnableGrading').value === 'true';
+             const enablePosition = document.getElementById('progEnablePosition').value === 'true';
+             const gradeTemplate = document.getElementById('progGradeTemplate').value;
+             const posTemplate = document.getElementById('progPosTemplate').value;
+
+
+             if(!code || !name || !section || !type) {
+                 window.showToast("Please fill all required fields (*)", "error");
+                 return;
+             }
+             if (minPart > maxPart) {
+                  window.showToast("Min Participants cannot be greater than Max Participants", "error");
+                  return;
+             }
+
+             const data = {
+                 code, name, section, type, status, description: progDesc,
+                 minParticipants: minPart, 
+                 maxParticipants: maxPart,
+                 candidateRegistration: candReg,
+                 topicRegistrationRequired: topicRegReq,
+                 topicRegistration: topicReg,
+                 enableGrading, enablePosition,
+                 gradeTemplate, positionTemplate: posTemplate,
+                 createdAt: new Date().toISOString()
+             };
+
+             try {
+                 await addDoc(programsCol, data);
+                 window.showToast("Program Added Successfully!", "success");
+                 window.closeProgramModal();
+             } catch(e) {
+                 console.error(e);
+                 window.showToast("Error saving program", "error");
+             }
+        }
+        
+        window.deleteProgram = async (id) => {
+             window.openDeleteModal('program', id);
         }
 
         function renderSectionsTable(list) {
@@ -1673,7 +2463,7 @@
                         <td class="px-6 py-4 font-bold text-gray-900 text-sm">${sec.name}</td>
                         <td class="px-6 py-4">${statusBadge}</td>
                         <td class="px-6 py-4 text-gray-500 text-xs">${dateStr}</td>
-                        <td class="px-6 py-4 text-right action-cell">
+                        <td class="px-6 py-4 text-right action-cell flex gap-2 justify-end">
                             <button onclick="window.toggleSectionActionMenu(this, '${sec.id}', '${sec.name}', '${sec.isActive !== false}', '${dateStr}', 'section')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
                         </td>
                     </tr>
@@ -1721,6 +2511,492 @@
             tbody.innerHTML = html;
         }
 
+        function renderProgramsTable(list, type = 'admin') {
+            const tbodyId = type === 'admin' ? 'programs-table-body' : 'team-programs-table-body';
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+            
+            // Filter inactive programs from the manager view
+            let filteredList = type === 'manager' ? list.filter(p => p.status === 'Active') : list;
+
+            if (filteredList.length === 0) {
+                const colspan = type === 'admin' ? 8 : 7;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-gray-400 text-sm">No programs found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredList.forEach(prog => {
+                const statusBadge = prog.status === 'Active' 
+                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>' 
+                    : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
+                
+                const topicRegReq = prog.topicRegistrationRequired === true 
+                    ? '<i class="fa-solid fa-check text-green-500"></i> Yes' 
+                    : '<i class="fa-solid fa-xmark text-red-500"></i> No';
+                
+                const minMax = `${prog.minParticipants || 1}/${prog.maxParticipants || 1}`;
+
+                let adminActions = '';
+                let bulkCheckbox = '';
+                if(type === 'admin') {
+                    bulkCheckbox = `<td class="px-6 py-4 w-10 text-center action-cell">
+                                        <label class="custom-checkbox flex items-center cursor-pointer justify-center">
+                                            <input type="checkbox" class="hidden">
+                                            <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
+                                                <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
+                                            </div>
+                                        </label>
+                                    </td>`;
+                    adminActions = `<td class="px-6 py-4 text-right action-cell">
+                                        <button onclick="window.deleteProgram('${prog.id}')" class="text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                    </td>`;
+                }
+
+                html += `
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                        ${bulkCheckbox}
+                        <td class="px-6 py-4 font-mono text-xs font-bold text-gray-500">${prog.code}</td>
+                        <td class="px-6 py-4 font-bold text-gray-900 text-sm">${prog.name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500"><span class="bg-gray-50 border border-gray-200 px-2 py-1 rounded text-xs">${prog.type}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-500"><span class="bg-gray-50 border border-gray-200 px-2 py-1 rounded-full text-xs">${prog.section}</span></td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-700">${minMax}</td>
+                        <td class="px-6 py-4 text-xs font-medium text-gray-700">${topicRegReq}</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        ${adminActions}
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+
+        // Topic Registration Table for Team Managers
+        function renderTopicRegistrationTable() {
+            const tbody = document.getElementById('topic-reg-table-body');
+            const alert = document.getElementById('topic-reg-status-alert');
+            
+            if (!tbody || !loggedInUserData || loggedInUserData.position !== 'Team Manager') return;
+            
+            const isRegOpen = settingsData.isTopicRegistrationOpen === true;
+            if (isRegOpen) alert.classList.add('hidden'); else alert.classList.remove('hidden');
+
+            // Filter programs that require topic registration
+            const topicPrograms = programsList.filter(p => p.topicRegistrationRequired === true && p.status === 'Active');
+            
+            if (topicPrograms.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No programs available for topic registration</td></tr>`;
+                return;
+            }
+            
+            let html = '';
+            topicPrograms.forEach(prog => {
+                const minMax = `${prog.minParticipants || 1}/${prog.maxParticipants || 1}`;
+                
+                const buttonHtml = isRegOpen
+                    ? `<button onclick="window.openTopicRegistrationModal('${prog.id}')" class="px-3 py-1.5 bg-yellow-400 text-gray-900 font-bold text-xs rounded shadow-sm hover:bg-yellow-500 transition-colors"><i class="fa-solid fa-pen-to-square mr-1"></i> Register</button>`
+                    : `<button disabled class="px-3 py-1.5 bg-gray-200 text-gray-500 font-bold text-xs rounded">Closed</button>`;
+
+                html += `
+                     <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                         <td class="px-6 py-4 font-mono text-xs font-bold text-gray-500">${prog.code}</td>
+                         <td class="px-6 py-4 font-bold text-gray-900 text-sm">${prog.name}</td>
+                         <td class="px-6 py-4 text-sm text-gray-500"><span class="bg-gray-50 border border-gray-200 px-2 py-1 rounded-full text-xs">${prog.section}</span></td>
+                         <td class="px-6 py-4 text-sm text-gray-500"><span class="bg-gray-50 border border-gray-200 px-2 py-1 rounded text-xs">${prog.type}</span></td>
+                         <td class="px-6 py-4 text-sm text-gray-500 font-mono">${minMax}</td>
+                         <td class="px-6 py-4 text-right">
+                            ${buttonHtml}
+                         </td>
+                     </tr>
+                 `;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        // --- TOPIC REGISTRATION MODAL LOGIC ---
+        let teamManagerCandidates = [];
+        let activeProgram = null;
+
+        window.openTopicRegistrationModal = function(programId) {
+             activeProgram = programsList.find(p => p.id === programId);
+             if (!activeProgram) return;
+
+             // 1. Filter candidates for the logged-in manager's team
+             const managerTeam = (loggedInUserData.team || '').trim();
+             teamManagerCandidates = candidatesList.filter(c => (c.team || '').trim() === managerTeam);
+             
+             if(teamManagerCandidates.length < activeProgram.minParticipants) {
+                  window.showToast(`Your team must have at least ${activeProgram.minParticipants} registered students to participate in this program.`, "error");
+                  return;
+             }
+
+             // 2. Populate Modal Fields
+             document.getElementById('topicRegProgramId').value = programId;
+             document.getElementById('topicRegModalTitle').textContent = `Register Topic for ${activeProgram.name}`;
+             document.getElementById('topicAuthor').value = loggedInUserData.name;
+             document.getElementById('maxParticipantsInfo').textContent = `Max: ${activeProgram.maxParticipants}`;
+
+             // 3. Dynamic Tab & Content Generation
+             const tabsContainer = document.getElementById('participantTabs');
+             const contentContainer = document.getElementById('participantContent');
+             tabsContainer.innerHTML = '';
+             contentContainer.innerHTML = '';
+
+             const max = activeProgram.maxParticipants;
+             const selectOptions = teamManagerCandidates.map(c => `<option value="${c.id}">${c.name} (#${c.chestNo}, ${c.class})</option>`).join('');
+
+             for (let i = 0; i < max; i++) {
+                 // Tab
+                 const tabName = activeProgram.type === 'Individual' ? 'Participant' : `Participant ${i + 1}`;
+                 tabsContainer.innerHTML += `<button onclick="window.switchParticipantTab(${i})" class="participant-tab px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">${tabName}</button>`;
+
+                 // Content (Dropdown for each slot)
+                 contentContainer.innerHTML += `
+                    <div class="participant-content-item space-y-4 ${i > 0 ? 'hidden' : ''}" data-index="${i}">
+                        <h5 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Select Student for Slot ${i + 1}</h5>
+                        <div>
+                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Student Name *</label>
+                             <select id="participant-select-${i}" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                                 <option value="" disabled selected>Select a student from your team</option>
+                                 ${selectOptions}
+                             </select>
+                        </div>
+                    </div>
+                 `;
+             }
+             
+             // 4. Reset other inputs/state
+             document.getElementById('topicTitle').value = '';
+             document.getElementById('topicLink').value = '';
+             document.getElementById('topicNotes').value = '';
+             document.getElementById('topicRegError').classList.add('hidden');
+             document.getElementById('activeParticipantTab').value = '0';
+             window.switchParticipantTab(0); // Activate first tab
+
+             document.getElementById('topicRegistrationModal').classList.remove('hidden');
+        }
+
+        window.closeTopicRegistrationModal = function() {
+             document.getElementById('topicRegistrationModal').classList.add('hidden');
+        }
+
+        window.saveTopicRegistration = async function() {
+            const programId = document.getElementById('topicRegProgramId').value;
+            const program = programsList.find(p => p.id === programId);
+            if (!program) return;
+
+            const title = document.getElementById('topicTitle').value.trim();
+            const link = document.getElementById('topicLink').value.trim();
+            const notes = document.getElementById('topicNotes').value.trim();
+            const maxParticipants = program.maxParticipants;
+            const participants = [];
+            
+            const errorEl = document.getElementById('topicRegError');
+            errorEl.classList.add('hidden');
+
+            if (!title) {
+                errorEl.textContent = "Topic Title is required.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            // 1. Gather all selected participant IDs and check minimum count
+            for (let i = 0; i < maxParticipants; i++) {
+                const select = document.getElementById(`participant-select-${i}`);
+                if (select && select.value) {
+                    participants.push(select.value);
+                }
+            }
+            
+            const uniqueParticipants = new Set(participants);
+
+            if (uniqueParticipants.size < program.minParticipants) {
+                errorEl.textContent = `Minimum ${program.minParticipants} unique participants required. You selected ${uniqueParticipants.size}.`;
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            if (participants.length !== uniqueParticipants.size) {
+                errorEl.textContent = "Each participant slot must have a unique student selected.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            // 2. Prepare registration data
+            const registrationData = {
+                programId: programId,
+                programName: program.name,
+                team: loggedInUserData.team,
+                teamManager: loggedInUserData.name,
+                teamManagerId: loggedInUserData.id,
+                topicTitle: title,
+                topicLink: link,
+                topicNotes: notes,
+                participants: Array.from(uniqueParticipants), // Store only unique IDs
+                status: 'Pending Verification',
+                submittedAt: new Date().toISOString()
+            };
+
+            // 3. Save to Firestore
+            try {
+                await addDoc(registrationsCol, registrationData);
+                window.showToast("Topic Registration Submitted! Going to be verified.", "success");
+                window.closeTopicRegistrationModal();
+            } catch (e) {
+                console.error("Error saving registration:", e);
+                window.showToast("Submission Failed. Please check console.", "error");
+            }
+        }
+        
+        // --- ADMIN VIEW CANDIDATE ACTIONS ---
+        window.viewCandidate = async (id) => {
+            // Close menu
+            document.getElementById('globalActionMenu').classList.add('hidden');
+            
+            const docSnap = await getDoc(doc(candidatesCol, id));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Populate Details View
+                document.getElementById('detail-cand-name').textContent = data.name;
+                document.getElementById('detail-cand-name-crumb').textContent = data.name;
+                document.getElementById('detail-avatar').textContent = data.name.charAt(0).toUpperCase();
+                document.getElementById('detail-cand-chest').textContent = `#${data.chestNo}`;
+                
+                document.getElementById('detail-team').textContent = data.team;
+                document.getElementById('detail-section').textContent = data.section;
+                document.getElementById('detail-chest-no').textContent = `#${data.chestNo}`;
+                document.getElementById('detail-ad-no').textContent = data.adNo;
+                document.getElementById('detail-class').textContent = data.class;
+
+                // Gender Update
+                document.getElementById('detail-cand-gender').textContent = data.gender || 'UNKNOWN';
+
+
+                window.switchView('candidate-details');
+            } else {
+                window.showToast("Candidate not found", "error");
+            }
+        };
+
+        // --- Delete Modal Logic (FIXED to use custom modal) ---
+        let deleteTargetId = null;
+        let deleteType = null; // 'candidate', 'user', 'section', 'team', 'program'
+
+        // Generic Open Delete Modal
+        window.openDeleteModal = (type, id) => {
+            // Hide menus
+            document.getElementById('globalActionMenu').classList.add('hidden');
+            document.getElementById('sectionActionMenu').classList.add('hidden');
+            
+            deleteTargetId = id;
+            deleteType = type;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        };
+
+        window.deleteCandidate = (id) => {
+            window.openDeleteModal('candidate', id);
+        };
+
+        window.closeDeleteConfirmModal = () => {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            deleteTargetId = null;
+            deleteType = null;
+        };
+
+        window.confirmDelete = async () => {
+            if (!deleteTargetId || !deleteType) return;
+            
+            // Show loading state on button
+            const deleteBtn = document.querySelector('#deleteConfirmModal button.bg-red-700');
+            const originalText = deleteBtn.textContent;
+            deleteBtn.innerHTML = '<div class="loader"></div>';
+            deleteBtn.disabled = true;
+
+            try {
+                let collectionRef = null;
+                let deleteMsg = "";
+                if (deleteType === 'candidate') { collectionRef = candidatesCol; deleteMsg = "Candidate"; }
+                else if (deleteType === 'user') { collectionRef = usersCol; deleteMsg = "User"; }
+                else if (deleteType === 'section') { collectionRef = sectionsCol; deleteMsg = "Section"; }
+                else if (deleteType === 'team') { collectionRef = teamsCol; deleteMsg = "Team"; }
+                else if (deleteType === 'program') { collectionRef = programsCol; deleteMsg = "Program"; }
+                
+                if (collectionRef) {
+                    await deleteDoc(doc(collectionRef, deleteTargetId));
+                    window.showToast(`${deleteMsg} Deleted Successfully`, "success");
+                }
+                
+                window.closeDeleteConfirmModal();
+            } catch(e) {
+                console.error(e);
+                window.showToast("Delete failed", "error");
+            } finally {
+                deleteBtn.textContent = originalText;
+                deleteBtn.disabled = false;
+            }
+        };
+        
+        // Map old Confirm function to new one for compatibility if any
+        window.confirmDeleteCandidate = window.confirmDelete;
+        
+        // --- BULK DELETE FIX ---
+        window.deleteSelectedCandidates = async () => {
+            if (selectedCandidates.size === 0) {
+                window.showToast("No candidates selected for deletion.", "error");
+                return;
+            }
+            
+            // Use the modal for confirmation
+            deleteType = 'bulk_candidates';
+            deleteTargetId = Array.from(selectedCandidates).join(','); // Store IDs as a string
+            
+            // Override confirmDelete handler temporarily for bulk operation
+            const originalConfirmDelete = window.confirmDelete;
+            window.confirmDelete = async () => {
+                const deleteBtn = document.querySelector('#deleteConfirmModal button.bg-red-700');
+                deleteBtn.innerHTML = '<div class="loader"></div>';
+                deleteBtn.disabled = true;
+
+                try {
+                    const batch = writeBatch(db);
+                    deleteTargetId.split(',').forEach(id => {
+                        batch.delete(doc(candidatesCol, id));
+                    });
+                    
+                    await batch.commit();
+                    window.showToast(`${selectedCandidates.size} Candidates Deleted Successfully`, "success");
+                    selectedCandidates.clear();
+                    updateBulkToolbar();
+                    window.closeDeleteConfirmModal();
+                } catch(e) {
+                    console.error(e);
+                    window.showToast("Bulk Delete Failed", "error");
+                } finally {
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.disabled = false;
+                    window.confirmDelete = originalConfirmDelete; // Restore handler
+                }
+            };
+            
+            // Show modal
+            document.getElementById('deleteConfirmModal').querySelector('h3').textContent = `Are you sure you want to delete ${selectedCandidates.size} candidates?`;
+            document.getElementById('deleteConfirmModal').querySelector('p').textContent = `This action cannot be undone. This will permanently delete all ${selectedCandidates.size} selected candidates.`;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        };
+
+        // --- BULK ACTIONS ---
+        window.toggleSelectAll = () => {
+            const mainCheckbox = document.getElementById('selectAllCheckbox');
+            // Determine visible candidates based on current filter
+            const sectionFilter = document.getElementById('sectionFilter')?.value || 'all';
+            let visibleCandidates = candidatesList;
+            if(sectionFilter !== 'all') {
+                visibleCandidates = candidatesList.filter(c => c.section === sectionFilter);
+            }
+
+            if (mainCheckbox.checked) {
+                visibleCandidates.forEach(c => selectedCandidates.add(c.id));
+            } else {
+                 // Only unselect visible ones if we want partial control
+                 visibleCandidates.forEach(c => selectedCandidates.delete(c.id));
+            }
+            renderCandidatesTable(candidatesList, sectionFilter);
+            updateBulkToolbar();
+        }
+
+        window.toggleSelectCandidate = (id) => {
+            if (selectedCandidates.has(id)) {
+                selectedCandidates.delete(id);
+            } else {
+                selectedCandidates.add(id);
+            }
+            // Re-render with current filter if any
+            const filterVal = document.getElementById('sectionFilter') ? document.getElementById('sectionFilter').value : 'all';
+            renderCandidatesTable(candidatesList, filterVal); 
+            updateBulkToolbar();
+        }
+
+        function updateBulkToolbar() {
+            const toolbar = document.getElementById('candidates-toolbar');
+            const bulkToolbar = document.getElementById('candidates-bulk-toolbar');
+            const countSpan = document.getElementById('selected-count');
+            const mainCheckbox = document.getElementById('selectAllCheckbox');
+            
+            if (selectedCandidates.size > 0) {
+                toolbar.classList.add('hidden');
+                bulkToolbar.classList.remove('hidden');
+                countSpan.textContent = selectedCandidates.size;
+            } else {
+                toolbar.classList.remove('hidden');
+                bulkToolbar.classList.add('hidden');
+                mainCheckbox.checked = false;
+            }
+        }
+
+        function renderCandidatesTable(list, sectionFilter = 'all') {
+            const tbody = document.getElementById('candidates-table-body');
+            if(!tbody) return;
+            
+            let filteredList = list;
+            if(sectionFilter !== 'all') {
+                filteredList = list.filter(c => c.section === sectionFilter);
+            }
+
+            if(filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">No candidates found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredList.forEach(cand => {
+                const initial = cand.name.charAt(0).toUpperCase();
+                const isSelected = selectedCandidates.has(cand.id);
+                const teamObj = teamsList.find(t => t.name === cand.team);
+                const dotColor = teamObj ? teamObj.color : '#cbd5e1'; // Default to slate-300
+                
+                // Determine row style based on selection
+                const rowClass = isSelected ? 'bg-yellow-50' : 'hover:bg-gray-50';
+                const checkboxState = isSelected ? 'checked' : '';
+                
+                html += `
+                    <tr class="${rowClass} transition-colors group border-b border-gray-50">
+                        <td class="px-6 py-4 w-10 text-center action-cell">
+                             <label class="custom-checkbox flex items-center cursor-pointer justify-center">
+                                 <input type="checkbox" class="hidden" ${checkboxState} onchange="window.toggleSelectCandidate('${cand.id}')">
+                                 <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
+                                     <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
+                                 </div>
+                             </label>
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 font-medium text-sm">#${cand.chestNo}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">${cand.adNo || '-'}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full bg-yellow-50 border border-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs mr-3 uppercase">${initial}</div>
+                                <span class="font-bold text-gray-900 text-sm">${cand.name}</span>
+                            </div>
+                        </td>
+                         <td class="px-6 py-4 text-gray-500 text-sm">${cand.class || '-'}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full mr-2" style="background-color: ${dotColor}"></div>
+                                <span class="text-sm text-gray-700 font-medium">${cand.team}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600 bg-white">${cand.section}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right relative action-cell">
+                            <button onclick="window.toggleActionMenu(this, '${cand.id}', '${cand.chestNo}', '${cand.adNo}', '${cand.name}', '${cand.class}', '${cand.team}', '${cand.section}', '${cand.gender || ''}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+
+        // SECTION & TEAM DETAIL VIEWS (Unmodified functions)
         window.viewSection = (id) => {
              // Close menu
              document.getElementById('sectionActionMenu').classList.add('hidden');
@@ -1739,33 +3015,44 @@
 
              // Calculate Stats (Mock + Real)
              const secCandidates = candidatesList.filter(c => c.section === sec.name);
+             const secPrograms = programsList.filter(p => p.section === sec.name);
+             const activeSecPrograms = secPrograms.filter(p => p.status === 'Active').length;
+
              document.getElementById('stat-sec-cand').textContent = secCandidates.length;
-             // Mock data
-             document.getElementById('stat-sec-prog').textContent = "0"; 
-             document.getElementById('stat-sec-points').textContent = "0";
+             document.getElementById('stat-sec-prog').textContent = activeSecPrograms; 
+             document.getElementById('stat-sec-points').textContent = "50"; // Static for now
+             document.getElementById('stat-sec-pub').textContent = "0";
+             document.getElementById('stat-sec-pend').textContent = "0";
 
              // Render Candidate Table for Section
              const tbody = document.getElementById('sec-detail-table-body');
              if(secCandidates.length === 0) {
-                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>`;
+                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>`;
              } else {
                  let html = '';
                  secCandidates.forEach(c => {
-                     html += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
-                            <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
-                            <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
-                            <td class="px-6 py-3 text-gray-600">${c.team}</td>
-                            <td class="px-6 py-3 text-gray-400">-</td>
-                            <td class="px-6 py-3 text-green-600 font-bold">Active</td>
-                        </tr>
-                     `;
-                 });
-                 tbody.innerHTML = html;
+                      const gender = c.gender || '-';
+                      const status = 'Active'; // Default status
+
+                      html += `
+                          <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
+                              <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
+                              <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
+                              <td class="px-6 py-3 text-gray-600">${c.team}</td>
+                              <td class="px-6 py-3 text-gray-400">${gender}</td>
+                              <td class="px-6 py-3"><span class="text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full">${status}</span></td>
+                              <td class="px-6 py-3 text-right relative action-cell">
+                                  <button onclick="window.toggleActionMenu(this, '${c.id}', '${c.chestNo}', '${c.adNo}', '${c.name}', '${c.class}', '${c.team}', '${c.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                              </td>
+                          </tr>
+                      `;
+                  });
+                  tbody.innerHTML = html;
              }
 
              window.switchView('section-details');
-        }
+             window.switchSecTab('candidates'); // Default to candidates tab
+         }
 
         window.viewTeam = (id) => {
              // Close menu
@@ -1792,211 +3079,37 @@
              const teamCandidates = candidatesList.filter(c => c.team === team.name);
              document.getElementById('stat-team-cand').textContent = teamCandidates.length;
              // Mock data
-             document.getElementById('stat-team-points').textContent = "0";
+             document.getElementById('stat-team-points').textContent = "0"; // Published
+             document.getElementById('stat-team-total-points').textContent = "0";
+             document.getElementById('stat-team-unpublished').textContent = "0";
 
              // Render Candidate Table for Team
              const tbody = document.getElementById('team-detail-table-body');
              if(teamCandidates.length === 0) {
-                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>`;
+                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>`;
              } else {
                  let html = '';
                  teamCandidates.forEach(c => {
-                     html += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
-                            <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
-                            <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
-                            <td class="px-6 py-3 text-gray-600">${c.section || '-'}</td>
-                            <td class="px-6 py-3 text-gray-400">-</td>
-                            <td class="px-6 py-3 text-green-600 font-bold">Active</td>
-                        </tr>
-                     `;
-                 });
-                 tbody.innerHTML = html;
+                      html += `
+                          <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
+                              <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
+                              <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
+                              <td class="px-6 py-3 text-gray-600">${c.section || '-'}</td>
+                              <td class="px-6 py-3 text-gray-600">${c.gender || '-'}</td>
+                              <td class="px-6 py-3 text-green-600 font-bold">Active</td>
+                               <td class="px-6 py-3 text-right relative action-cell">
+                                   <button onclick="window.toggleActionMenu(this, '${c.id}', '${c.chestNo}', '${c.adNo}', '${c.name}', '${c.class}', '${c.team}', '${c.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                               </td>
+                          </tr>
+                      `;
+                  });
+                  tbody.innerHTML = html;
              }
 
              window.switchView('team-details');
-        }
+             window.switchTeamTab('candidates'); // Default to candidates tab
+         }
 
-        // --- BULK ACTIONS ---
-        window.toggleSelectAll = () => {
-            const mainCheckbox = document.getElementById('selectAllCheckbox');
-            if (mainCheckbox.checked) {
-                candidatesList.forEach(c => selectedCandidates.add(c.id));
-            } else {
-                selectedCandidates.clear();
-            }
-            renderCandidatesTable(candidatesList);
-            updateBulkToolbar();
-        }
-
-        window.toggleSelectCandidate = (id) => {
-            if (selectedCandidates.has(id)) {
-                selectedCandidates.delete(id);
-            } else {
-                selectedCandidates.add(id);
-            }
-            renderCandidatesTable(candidatesList); // Re-render to update visuals
-            updateBulkToolbar();
-        }
-
-        function updateBulkToolbar() {
-            const toolbar = document.getElementById('candidates-toolbar');
-            const bulkToolbar = document.getElementById('candidates-bulk-toolbar');
-            const countSpan = document.getElementById('selected-count');
-            const mainCheckbox = document.getElementById('selectAllCheckbox');
-
-            if(candidatesList.length > 0 && selectedCandidates.size === candidatesList.length) {
-                mainCheckbox.checked = true;
-            } else {
-                mainCheckbox.checked = false;
-            }
-
-            if (selectedCandidates.size > 0) {
-                toolbar.classList.add('hidden');
-                bulkToolbar.classList.remove('hidden');
-                countSpan.textContent = selectedCandidates.size;
-            } else {
-                toolbar.classList.remove('hidden');
-                bulkToolbar.classList.add('hidden');
-            }
-        }
-
-        window.deleteSelectedCandidates = async () => {
-            if(confirm(`Are you sure you want to delete ${selectedCandidates.size} candidates?`)) {
-                const promises = Array.from(selectedCandidates).map(id => deleteDoc(doc(db, 'candidates', id)));
-                
-                try {
-                    await Promise.all(promises);
-                    window.showToast(`${selectedCandidates.size} Candidates Deleted`, "success");
-                    selectedCandidates.clear();
-                    updateBulkToolbar();
-                } catch(e) {
-                    console.error(e);
-                    window.showToast("Error deleting candidates", "error");
-                }
-            }
-        }
-
-
-        function renderCandidatesTable(list) {
-            const tbody = document.getElementById('candidates-table-body');
-            if(!tbody) return;
-
-            if(list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">No candidates found</td></tr>`;
-                return;
-            }
-
-            let html = '';
-            list.forEach(cand => {
-                const initial = cand.name.charAt(0).toUpperCase();
-                const isSelected = selectedCandidates.has(cand.id);
-                const teamObj = teamsList.find(t => t.name === cand.team);
-                const dotColor = teamObj ? teamObj.color : '#cbd5e1'; // Default to slate-300
-                
-                // Determine row style based on selection
-                const rowClass = isSelected ? 'bg-yellow-50' : 'hover:bg-gray-50';
-                const checkboxState = isSelected ? 'checked' : '';
-                
-                html += `
-                    <tr class="${rowClass} transition-colors group border-b border-gray-50">
-                        <td class="px-6 py-4 w-10 text-center action-cell">
-                             <label class="custom-checkbox flex items-center cursor-pointer justify-center">
-                                <input type="checkbox" class="hidden" ${checkboxState} onchange="window.toggleSelectCandidate('${cand.id}')">
-                                <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
-                                    <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
-                                </div>
-                            </label>
-                        </td>
-                        <td class="px-6 py-4 text-gray-700 font-medium text-sm">#${cand.chestNo}</td>
-                        <td class="px-6 py-4 text-gray-500 text-sm">${cand.adNo || '-'}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full bg-yellow-50 border border-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs mr-3 uppercase">${initial}</div>
-                                <span class="font-bold text-gray-900 text-sm">${cand.name}</span>
-                            </div>
-                        </td>
-                         <td class="px-6 py-4 text-gray-500 text-sm">${cand.class || '-'}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full mr-2" style="background-color: ${dotColor}"></div>
-                                <span class="text-sm text-gray-700 font-medium">${cand.team}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600 bg-white">${cand.section}</span>
-                        </td>
-                        <td class="px-6 py-4 text-right relative action-cell">
-                            <button onclick="window.toggleActionMenu(this, '${cand.id}', '${cand.chestNo}', '${cand.adNo}', '${cand.name}', '${cand.class}', '${cand.team}', '${cand.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        // --- Candidate Actions ---
-        window.viewCandidate = async (id) => {
-            // Close menu
-            document.getElementById('globalActionMenu').classList.add('hidden');
-            
-            const docSnap = await getDoc(doc(db, 'candidates', id));
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                // Populate Details View
-                document.getElementById('detail-cand-name').textContent = data.name;
-                document.getElementById('detail-cand-name-crumb').textContent = data.name;
-                document.getElementById('detail-avatar').textContent = data.name.charAt(0).toUpperCase();
-                document.getElementById('detail-cand-chest').textContent = `#${data.chestNo}`;
-                
-                document.getElementById('detail-team').textContent = data.team;
-                document.getElementById('detail-section').textContent = data.section;
-                document.getElementById('detail-chest-no').textContent = `#${data.chestNo}`;
-                document.getElementById('detail-ad-no').textContent = data.adNo;
-                document.getElementById('detail-class').textContent = data.class;
-
-                window.switchView('candidate-details');
-            } else {
-                window.showToast("Candidate not found", "error");
-            }
-        };
-
-        // --- Delete Modal Logic ---
-        let deleteTargetId = null;
-
-        window.deleteCandidate = (id) => {
-            // Close menu
-            document.getElementById('globalActionMenu').classList.add('hidden');
-            deleteTargetId = id;
-            document.getElementById('deleteConfirmModal').classList.remove('hidden');
-        };
-
-        window.closeDeleteConfirmModal = () => {
-            document.getElementById('deleteConfirmModal').classList.add('hidden');
-            deleteTargetId = null;
-        };
-
-        window.confirmDeleteCandidate = async () => {
-            if (!deleteTargetId) return;
-            
-            // Show loading state on button
-            const deleteBtn = document.querySelector('#deleteConfirmModal button.bg-red-700');
-            const originalText = deleteBtn.textContent;
-            deleteBtn.textContent = 'Deleting...';
-            deleteBtn.disabled = true;
-
-            try {
-                await deleteDoc(doc(db, 'candidates', deleteTargetId));
-                window.showToast("Candidate Deleted Successfully", "success");
-                window.closeDeleteConfirmModal();
-            } catch(e) {
-                console.error(e);
-                window.showToast("Delete failed", "error");
-            } finally {
-                deleteBtn.textContent = originalText;
-                deleteBtn.disabled = false;
-            }
-        };
     </script>
 </body>
 </html>
