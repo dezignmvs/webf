@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,6 +49,18 @@
                         'fade-in-down': 'fade-in-down 0.2s ease-out',
                     }
                 }
+            }
+        }
+
+        // Placeholder to prevent crash if clicked before module loads
+        window.handleLogin = function(e) {
+            e.preventDefault();
+            console.warn("System still initializing...");
+            const btn = document.getElementById('login-btn');
+            if(btn) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "<span>Initializing...</span>";
+                setTimeout(() => btn.innerHTML = originalText, 1000);
             }
         }
     </script>
@@ -155,6 +168,27 @@
         <button id="btnSecDelete" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 border-t border-gray-50 transition-colors">
             <i class="fa-solid fa-trash text-red-400 text-xs"></i> Delete
         </button>
+    </div>
+
+    <!-- RESULT ACTION MODAL -->
+    <div id="resultActionModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Result Actions</h3>
+                <button onclick="document.getElementById('resultActionModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-2">
+                <button onclick="window.handleResultAction('publish')" class="w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                    <i class="fa-solid fa-bullhorn text-blue-500 w-5"></i> Publish Result
+                </button>
+                <button onclick="window.handleResultAction('edit')" class="w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                    <i class="fa-solid fa-pen text-yellow-500 w-5"></i> Edit Result
+                </button>
+                <button onclick="window.handleResultAction('delete')" class="w-full text-left px-6 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 border-t border-gray-50 transition-colors">
+                    <i class="fa-solid fa-trash text-red-500 w-5"></i> Delete Result
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- =========================== LOGIN PAGE =========================== -->
@@ -275,6 +309,80 @@
                                 <button onclick="window.openManageModal()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold px-3 py-1 rounded-full transition-colors flex items-center shadow-sm"><i class="fa-solid fa-user-plus mr-1"></i>Manage</button>
                             </div>
                             <div id="usersContainer" class="bg-white rounded-2xl shadow-sm p-6 h-auto flex flex-wrap gap-4 min-h-[100px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: ADMIN SETTINGS -->
+                <div id="view-settings" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+                            <p class="text-sm text-gray-500">Manage rules, templates, and timers</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs for Settings -->
+                    <div class="flex space-x-6 border-b border-gray-200 mb-6">
+                        <button id="setting-tab-general" onclick="window.switchSettingsTab('general')" class="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors">General & Limits</button>
+                        <button id="setting-tab-grade" onclick="window.switchSettingsTab('grade')" class="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">Grade Templates</button>
+                        <button id="setting-tab-point" onclick="window.switchSettingsTab('point')" class="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">Point Templates</button>
+                    </div>
+
+                    <!-- Content: General -->
+                    <div id="setting-content-general" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Participation Limits -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="font-bold text-gray-800 mb-4 flex items-center"><i class="fa-solid fa-users-gear mr-2 text-yellow-500"></i> Individual Program Limits</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Min Participants</label>
+                                    <input type="number" id="setting-min-participants" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" min="1" value="1">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Participants</label>
+                                    <input type="number" id="setting-max-participants" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" min="1" value="1">
+                                </div>
+                                <button onclick="window.saveGlobalSettings()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 rounded-lg shadow-sm transition-colors text-sm">Update Limits</button>
+                            </div>
+                        </div>
+
+                        <!-- Registration Timer -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="font-bold text-gray-800 mb-4 flex items-center"><i class="fa-solid fa-clock mr-2 text-blue-500"></i> Registration Timer</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Start Time</label>
+                                    <input type="datetime-local" id="setting-reg-start" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">End Time</label>
+                                    <input type="datetime-local" id="setting-reg-end" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none">
+                                </div>
+                                <button onclick="window.saveGlobalSettings()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded-lg shadow-sm transition-colors text-sm">Set Timer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content: Grade Templates -->
+                    <div id="setting-content-grade" class="hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-800">Grade Templates</h3>
+                            <button onclick="window.openTemplateModal('grade')" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>New Template</button>
+                        </div>
+                        <div id="grade-templates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Injected Cards -->
+                        </div>
+                    </div>
+
+                    <!-- Content: Point Templates -->
+                    <div id="setting-content-point" class="hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-800">Point Templates</h3>
+                            <button onclick="window.openTemplateModal('point')" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-bold rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-plus mr-2"></i>New Template</button>
+                        </div>
+                         <div id="point-templates-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Injected Cards -->
                         </div>
                     </div>
                 </div>
@@ -461,6 +569,7 @@
                                     <th class="px-6 py-4">Program Name</th>
                                     <th class="px-6 py-4">Section</th>
                                     <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4">Category</th>
                                     <th class="px-6 py-4 text-center">Min</th>
                                     <th class="px-6 py-4 text-center">Max</th>
                                     <th class="px-6 py-4">Mode</th>
@@ -469,7 +578,7 @@
                                 </tr>
                             </thead>
                             <tbody id="programmes-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="9" class="px-6 py-12 text-center text-gray-400 text-sm">Loading programmes...</td></tr>
+                                <tr><td colspan="10" class="px-6 py-12 text-center text-gray-400 text-sm">Loading programmes...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -929,65 +1038,109 @@
 
                 <!-- VIEW: CANDIDATE DETAILS -->
                 <div id="view-candidate-details" class="hidden">
-                    <!-- Breadcrumb & Header -->
-                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                        <span onclick="window.switchView('candidates')" class="hover:text-gray-900 cursor-pointer">Candidates</span>
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                        <span class="text-gray-900 font-medium" id="detail-cand-name-crumb">Suhail</span>
-                    </div>
+                    <div class="flex justify-between items-start mb-8 relative">
+                        <div class="flex items-center gap-2 text-sm text-gray-500 mb-0 absolute -top-8 left-0 hidden">
+                            <span onclick="window.switchView('candidates')" class="hover:text-gray-900 cursor-pointer">Candidates</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                            <span class="text-gray-900 font-medium" id="detail-cand-name-crumb">Suhail</span>
+                        </div>
+                        <button onclick="window.switchView('candidates')" class="text-gray-500 hover:text-gray-700 mr-4 mt-2"><i class="fa-solid fa-arrow-left"></i></button>
 
-                    <div class="flex justify-between items-start mb-8">
-                        <div class="flex items-start gap-4">
-                            <div class="h-16 w-16 rounded-2xl bg-yellow-100 flex items-center justify-center text-yellow-600 text-2xl font-bold" id="detail-avatar">S</div>
+                        <div class="flex items-center gap-4 flex-1">
+                            <div class="h-14 w-14 rounded-2xl bg-[#FFF8E1] flex items-center justify-center text-yellow-600 text-xl font-bold" id="detail-avatar">M</div>
                             <div>
-                                <div class="flex items-center gap-3 mb-1">
-                                    <h1 class="text-2xl font-bold text-gray-900" id="detail-cand-name">Suhail</h1>
-                                    <span class="px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded uppercase">Active</span>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h1 class="text-xl font-bold text-gray-900" id="detail-cand-name">mvs</h1>
+                                    <span class="px-2 py-0.5 bg-yellow-400 text-gray-900 text-[10px] font-bold rounded">Active</span>
                                 </div>
-                                <div class="flex items-center gap-3 text-sm text-gray-500">
-                                    <span id="detail-cand-gender" class="uppercase bg-gray-100 px-2 rounded text-xs font-bold text-gray-600">MALE</span>
+                                <div class="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                                    <span id="detail-cand-gender" class="uppercase bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 border border-gray-200">MALE</span>
                                     <span class="text-gray-300">•</span>
-                                    <span id="detail-cand-chest" class="font-mono font-medium text-gray-700">#001</span>
+                                    <span id="detail-cand-chest" class="text-gray-700 font-bold">#001</span>
+                                    <span class="text-gray-300">•</span>
+                                    <span class="text-gray-500">Adm: <span id="detail-ad-no">340</span></span>
                                 </div>
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50"><i class="fa-solid fa-download mr-2"></i>Export Registrations</button>
+                            <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center shadow-sm"><i class="fa-solid fa-download mr-2"></i>Export Registrations</button>
+                            <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center shadow-sm"><i class="fa-solid fa-user-plus mr-2"></i>Assign to Group</button>
+                            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         </div>
                     </div>
 
                     <!-- Stats Cards -->
-                    <div class="grid grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                            <div class="flex justify-between items-start">
-                                <div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Points</p><h3 class="text-2xl font-bold text-gray-900">0 pts</h3></div>
-                                <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-medal"></i></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <!-- Points -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL POINTS</p>
+                                <h3 class="text-2xl font-bold text-gray-900" id="detail-total-points">0 pts</h3>
                             </div>
+                            <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-medal"></i></div>
                         </div>
-                        <!-- More stats... -->
+                        <!-- Percentage -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL PERCENTAGE</p>
+                                <h3 class="text-2xl font-bold text-gray-900" id="detail-total-percentage">0%</h3>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-bullseye"></i></div>
+                        </div>
+                        <!-- Programs -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">PROGRAMS PARTICIPATED</p>
+                                <h3 class="text-2xl font-bold text-gray-900" id="detail-programs-count">0</h3>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><i class="fa-solid fa-chart-simple"></i></div>
+                        </div>
+                        <!-- Results -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RESULTS PUBLISHED</p>
+                                <h3 class="text-2xl font-bold text-gray-900" id="detail-results-count">0</h3>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600"><i class="fa-regular fa-circle-check"></i></div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-6">
-                        <!-- Personal Details -->
-                        <div class="col-span-1 bg-white rounded-2xl border border-gray-100 p-6 h-fit">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">Personal Details</h3>
-                            <div class="space-y-4 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-500">Team</span><span class="font-medium text-gray-900" id="detail-team">Blue Team</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Section</span><span class="font-medium text-gray-900" id="detail-section">Bidāya</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Chest Number</span><span class="font-medium text-gray-900" id="detail-chest-no">#001</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Ad. No</span><span class="font-medium text-gray-900" id="detail-ad-no">1234</span></div>
-                                <div class="flex justify-between"><span class="text-gray-500">Class</span><span class="font-medium text-gray-900" id="detail-class">10A</span></div>
+                    <!-- Tabs & Content -->
+                    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden min-h-[400px]">
+                        <div class="flex border-b border-gray-100 px-6">
+                            <button onclick="window.switchCandTab('participations')" id="cand-tab-participations" class="py-4 px-4 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 mr-4 flex items-center gap-2"><i class="fa-regular fa-user"></i>Participations</button>
+                            <button onclick="window.switchCandTab('results')" id="cand-tab-results" class="py-4 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 mr-4 flex items-center gap-2"><i class="fa-solid fa-trophy"></i>Results</button>
+                            <button onclick="window.switchCandTab('negative')" id="cand-tab-negative" class="py-4 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i>Negative Points</button>
+                        </div>
+                        
+                        <!-- Participations Tab -->
+                        <div id="cand-content-participations" class="block p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold text-gray-900">Registrations</h3>
+                                <span class="px-2 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-600 border border-gray-200" id="detail-reg-count-badge">0 Total</span>
+                            </div>
+                            <div id="cand-participations-list" class="space-y-2">
+                                <!-- Injected List -->
+                                <div class="p-8 flex flex-col items-center justify-center h-32 text-center text-gray-400">Loading...</div>
                             </div>
                         </div>
-                        <!-- Tabs & Content -->
-                        <div class="col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden min-h-[400px]">
-                            <div class="flex border-b border-gray-100">
-                                <button class="flex-1 py-4 text-sm font-medium text-yellow-600 border-b-2 border-yellow-400 bg-yellow-50/50"><i class="fa-regular fa-user mr-2"></i>Participations</button>
-                                <button class="flex-1 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-trophy mr-2"></i>Results</button>
+
+                        <!-- Results Tab -->
+                        <div id="cand-content-results" class="hidden p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold text-gray-900">Performance Results</h3>
+                                <span class="px-2 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-600 border border-gray-200" id="detail-res-count-badge">0 Results</span>
                             </div>
-                            <div class="p-8 flex flex-col items-center justify-center h-64 text-center">
-                                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-gray-300"><i class="fa-regular fa-folder-open text-xl"></i></div>
-                                <h4 class="text-gray-900 font-medium">No participations found</h4>
+                            <div id="cand-results-container" class="space-y-3">
+                                <div class="p-8 flex flex-col items-center justify-center h-32 text-center text-gray-400">No results found</div>
+                            </div>
+                        </div>
+
+                        <!-- Negative Points Tab -->
+                        <div id="cand-content-negative" class="hidden p-6">
+                             <div class="flex flex-col items-center justify-center h-64 text-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-gray-300"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+                                <h4 class="text-gray-900 font-medium">No negative points</h4>
                             </div>
                         </div>
                     </div>
@@ -1146,9 +1299,12 @@
                                         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider" id="reg-title">INDIVIDUAL REGISTRATIONS</h4>
                                         <button class="px-4 py-1.5 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors flex items-center"><i class="fa-solid fa-plus mr-2"></i>Add Registration</button>
                                     </div>
-                                    <div class="flex flex-col items-center justify-center h-[400px]">
-                                        <i class="fa-solid fa-user-group text-gray-200 text-5xl mb-4"></i>
-                                        <p class="text-sm text-gray-500">No individual registrations found</p>
+                                    <!-- Dynamic content here -->
+                                    <div id="prog-registrations-list" class="flex flex-col">
+                                        <div class="p-8 flex flex-col items-center justify-center h-[300px] text-gray-500">
+                                            <i class="fa-solid fa-user-group text-gray-200 text-5xl mb-4"></i>
+                                            <p>No registrations found</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1158,12 +1314,16 @@
                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 min-h-[500px]">
                                      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                                         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">RESULTS OVERVIEW</h4>
-                                        <span class="px-2 py-1 rounded border border-gray-200 text-xs font-bold text-gray-500">No Results</span>
+                                        <div class="flex gap-2">
+                                             <button onclick="window.openResultEntryModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center"><i class="fa-solid fa-pen-to-square mr-2"></i>Enter Results</button>
+                                        </div>
                                     </div>
-                                    <div class="flex flex-col items-center justify-center h-[400px]">
-                                        <i class="fa-solid fa-trophy text-gray-200 text-5xl mb-4"></i>
-                                        <p class="text-sm text-gray-500 mb-4">No results available yet</p>
-                                        <button class="px-5 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-xl text-sm transition-colors shadow-sm flex items-center"><i class="fa-solid fa-plus mr-2"></i>Add Results</button>
+                                    <div id="prog-results-container" class="p-6 grid gap-4">
+                                         <!-- Result List or Placeholder -->
+                                        <div class="flex flex-col items-center justify-center h-[300px]">
+                                            <i class="fa-solid fa-trophy text-gray-200 text-5xl mb-4"></i>
+                                            <p class="text-sm text-gray-500 mb-4">No results available yet</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1186,15 +1346,121 @@
                                 </div>
                             </div>
 
-                            <!-- Placeholder for other tabs -->
+                            <!-- TAB: GALLERY -->
+                            <div id="prog-tab-gallery" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 min-h-[500px]">
+                                <div id="gallery-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                     <div class="col-span-full flex flex-col items-center justify-center h-64 text-gray-400">
+                                         <i class="fa-regular fa-image text-4xl mb-2"></i>
+                                         <span>No images uploaded</span>
+                                     </div>
+                                </div>
+                            </div>
+
                             <div id="prog-tab-rules" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">No rules added</div>
-                            <div id="prog-tab-gallery" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">Gallery is empty</div>
-                            <div id="prog-tab-settings" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">Settings</div>
+                            
+                            <!-- TAB: SETTINGS (Updated) -->
+                            <div id="prog-tab-settings" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 min-h-[500px]">
+                                <h3 class="font-bold text-gray-900 mb-6">Result Configuration</h3>
+                                <div class="max-w-xl space-y-6">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Select Grade Template</label>
+                                        <select id="prog-setting-grade" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-sm bg-white"></select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Select Position Template (Point)</label>
+                                        <select id="prog-setting-point" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-sm bg-white"></select>
+                                    </div>
+                                    <div class="pt-4">
+                                        <button onclick="window.saveProgramConfig()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors flex items-center">
+                                            <i class="fa-regular fa-floppy-disk mr-2"></i> Save Configuration
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+
+                <!-- VIEW: MEDIA MANAGER (NEW) -->
+                <div id="view-media-dashboard" class="hidden">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Media Dashboard</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                             <h3 class="text-sm font-bold text-gray-500 uppercase">Total Uploads</h3>
+                             <p class="text-3xl font-bold text-gray-900 mt-2" id="media-total-uploads">0</p>
+                         </div>
+                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                             <h3 class="text-sm font-bold text-gray-500 uppercase">Images</h3>
+                             <p class="text-3xl font-bold text-gray-900 mt-2" id="media-total-images">0</p>
+                         </div>
+                    </div>
+                </div>
+                
+                <div id="view-media-upload" class="hidden">
+                     <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Upload Media</h2>
+                        <button onclick="window.openMediaUploadModal()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-bold rounded-lg shadow-sm"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>New Upload</button>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden p-8 text-center text-gray-500">
+                        Select "New Upload" to add media.
+                    </div>
+                </div>
+
+                <!-- VIEW: ALL RESULTS (NEW) -->
+                <div id="view-all-results" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Results</h2>
+                            <p class="text-sm text-gray-500">Team rankings and total points</p>
+                        </div>
+                    </div>
+                    <!-- Team Rankings Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="results-team-cards">
+                        <!-- Injected via JS -->
+                    </div>
+                    <!-- Results Table -->
+                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                             <h3 class="text-sm font-bold text-gray-700 uppercase">Program Scoreboard</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
+                                    <tr id="results-table-header">
+                                        <!-- Injected via JS -->
+                                    </tr>
+                                </thead>
+                                <tbody id="results-table-body" class="divide-y divide-gray-100">
+                                     <!-- Injected via JS -->
+                                </tbody>
+                            </table>
                         </div>
                      </div>
                 </div>
 
             </main>
+        </div>
+    </div>
+
+    <!-- ... (MODALS REMAIN UNCHANGED UNTIL SCRIPTS) ... -->
+    <!-- RESULT ENTRY MODAL (New) -->
+    <div id="resultEntryModal" class="fixed inset-0 bg-gray-50 z-[300] hidden overflow-y-auto">
+        <div class="max-w-4xl mx-auto p-6 min-h-screen flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Result Entry</h2>
+                    <p class="text-sm text-gray-500" id="result-entry-subtitle">Enter marks for candidates</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('resultEntryModal').classList.add('hidden')" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg shadow-sm hover:bg-gray-50">Cancel</button>
+                    <button onclick="window.saveResults()" class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-sm flex items-center"><i class="fa-solid fa-check mr-2"></i>Save Results</button>
+                </div>
+            </div>
+            
+            <div id="result-entry-list" class="space-y-4 flex-1 pb-20">
+                <!-- Cards injected here -->
+                <div class="text-center text-gray-500 py-10">Loading candidates...</div>
+            </div>
         </div>
     </div>
 
@@ -1213,6 +1479,71 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end"><button onclick="window.closeManageModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button><button onclick="window.saveUser()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg">Create User</button></div>
+        </div>
+    </div>
+
+    <!-- Template Modal (Grade/Point) -->
+    <div id="templateModal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-up">
+             <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800" id="templateModalTitle">Add Template</h3>
+                <button onclick="window.closeTemplateModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="templateId">
+                <input type="hidden" id="templateType"> <!-- 'grade' or 'point' -->
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Template Name</label><input type="text" id="templateName" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="e.g. Standard Grades"></div>
+                
+                <div id="templateRowsContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <!-- Rows injected via JS -->
+                </div>
+                <button onclick="window.addTemplateRow()" class="w-full py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-50">+ Add Row</button>
+
+                <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                    <div><h4 class="text-sm font-bold text-gray-900">Active Status</h4></div>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="templateActive" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="templateActive" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="window.closeTemplateModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button onclick="window.saveTemplate()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm">Save Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Upload Modal -->
+    <div id="mediaUploadModal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-up">
+             <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Upload Media</h3>
+                <button onclick="window.closeMediaUploadModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                 <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Program</label>
+                    <select id="mediaProgram" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none"></select>
+                </div>
+                 <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                    <select id="mediaCategory" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <option value="Image">Image</option>
+                        <option value="Video">Video</option>
+                    </select>
+                </div>
+                <div>
+                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Image URL</label>
+                     <input type="text" id="mediaUrl" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="https://...">
+                     <p class="text-[10px] text-gray-400 mt-1">Paste image link here.</p>
+                </div>
+                 <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Day / Description</label>
+                    <input type="text" id="mediaDesc" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="Day 1">
+                </div>
+            </div>
+             <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button onclick="window.closeMediaUploadModal()" class="text-gray-500 font-medium text-sm px-4 py-2 mr-2">Cancel</button>
+                <button onclick="window.saveMediaUpload()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-6 py-2 rounded-lg shadow-sm">Upload</button>
+            </div>
         </div>
     </div>
 
@@ -1300,10 +1631,39 @@
                         </select>
                     </div>
                 </div>
+                <!-- Category Dropdown (NEW) -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                    <select id="progCategory" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <option value="Stage">Stage</option>
+                        <option value="Non-Stage">Non-Stage</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Min Participants</label><input type="number" id="progMin" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" value="1" min="1"></div>
                     <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Participants</label><input type="number" id="progMax" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-yellow-400 outline-none" value="1" min="1"></div>
                 </div>
+                
+                <!-- Template Selects -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Grade Template</label>
+                        <select id="progGradeTemplate" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                            <option value="" selected>None</option>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Point Template</label>
+                         <select id="progPointTemplate" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none">
+                            <option value="" selected>None</option>
+                             <!-- Populated via JS -->
+                        </select>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-between border-t border-gray-100 pt-4">
                     <div><h4 class="text-sm font-bold text-gray-900">Active Status</h4><p class="text-xs text-gray-500 mt-0.5">Program visibility</p></div>
                     <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="progActive" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/><label for="progActive" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div>
@@ -1441,6 +1801,8 @@
                 if(viewName === 'admin-records' && window.renderAdminRecords) window.renderAdminRecords();
                 if(viewName === 'tm-program-registration' && window.renderTMProgramRegistrationTable) window.renderTMProgramRegistrationTable();
                 if(viewName === 'admin-program-registrations' && window.renderAdminProgramRegistrationCards) window.renderAdminProgramRegistrationCards();
+                if(viewName === 'media-dashboard' && window.renderMediaDashboard) window.renderMediaDashboard();
+                if(viewName === 'all-results' && window.renderAllResults) window.renderAllResults();
             }
         }
 
@@ -1461,6 +1823,53 @@
             });
         }
         
+        window.switchCandTab = function(tabName) {
+             const tabP = document.getElementById('cand-tab-participations');
+             const tabR = document.getElementById('cand-tab-results');
+             const tabN = document.getElementById('cand-tab-negative');
+             
+             const contentP = document.getElementById('cand-content-participations');
+             const contentR = document.getElementById('cand-content-results');
+             const contentN = document.getElementById('cand-content-negative');
+             
+             // Reset all tabs
+             [tabP, tabR, tabN].forEach(t => {
+                 t.classList.remove('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 t.classList.add('text-gray-500', 'hover:text-gray-700', 'font-medium');
+             });
+             [contentP, contentR, contentN].forEach(c => c.classList.add('hidden'));
+
+             // Activate specific
+             if(tabName === 'participations') {
+                 tabP.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 tabP.classList.remove('text-gray-500', 'hover:text-gray-700', 'font-medium');
+                 contentP.classList.remove('hidden');
+             } else if(tabName === 'results') {
+                 tabR.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 tabR.classList.remove('text-gray-500', 'hover:text-gray-700', 'font-medium');
+                 contentR.classList.remove('hidden');
+             } else if(tabName === 'negative') {
+                 tabN.classList.add('text-yellow-600', 'border-b-2', 'border-yellow-400', 'font-bold');
+                 tabN.classList.remove('text-gray-500', 'hover:text-gray-700', 'font-medium');
+                 contentN.classList.remove('hidden');
+             }
+        }
+        
+        window.switchSettingsTab = function(tabName) {
+            const tabs = ['general', 'grade', 'point'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`setting-tab-${t}`);
+                const content = document.getElementById(`setting-content-${t}`);
+                if(t === tabName) {
+                    btn.className = "pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
         window.switchTopicTab = function(index) {
              document.querySelectorAll('.topic-tab').forEach(t => t.classList.remove('active', 'border-b-2', 'border-yellow-400', 'text-yellow-600', 'font-bold'));
              document.querySelectorAll('.topic-content').forEach(c => c.classList.add('hidden'));
@@ -1691,11 +2100,13 @@
             document.getElementById('progCode').value = '';
             document.getElementById('progName').value = '';
             document.getElementById('progType').value = 'Individual';
+            document.getElementById('progCategory').value = 'Stage';
             document.getElementById('progMin').value = '1';
             document.getElementById('progMax').value = '1';
             document.getElementById('progActive').checked = true;
             document.getElementById('progTopicReg').checked = false;
             window.populateProgrammeSectionDropdown();
+            window.populateTemplateDropdowns(); // Populate Grade & Point Templates
             document.getElementById('programmeModal').classList.remove('hidden');
         }
         window.closeProgrammeModal = function() { document.getElementById('programmeModal').classList.add('hidden'); }
@@ -1738,7 +2149,7 @@
     <!-- MODULE SCRIPT: FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc, writeBatch, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -1763,7 +2174,13 @@
         let programmesList = [];
         let topicRegList = [];
         let programRegistrationsList = [];
+        let globalRules = null;
         let selectedCandidates = new Set();
+        let gradeTemplatesList = [];
+        let pointTemplatesList = [];
+        let galleryList = [];
+        let resultsList = [];
+        let currentProgramId = null;
 
         signInAnonymously(auth).catch((error) => {
             if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
@@ -1781,6 +2198,11 @@
                 subscribeToProgrammes();
                 subscribeToTopicRegistrations();
                 subscribeToProgramRegistrations();
+                subscribeToGlobalRules();
+                subscribeToGradeTemplates();
+                subscribeToPointTemplates();
+                subscribeToGallery();
+                subscribeToResults();
             }
         });
 
@@ -1803,6 +2225,20 @@
         function subscribeToSettings() {
             onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
                 if (docSnap.exists()) updateUIFromSettings(docSnap.data());
+            });
+        }
+
+        function subscribeToGlobalRules() {
+            onSnapshot(doc(db, 'settings', 'registration_rules'), (docSnap) => {
+                if(docSnap.exists()){
+                    globalRules = docSnap.data();
+                    document.getElementById('setting-min-participants').value = globalRules.minIndividual || 1;
+                    document.getElementById('setting-max-participants').value = globalRules.maxIndividual || 1;
+                    document.getElementById('setting-reg-start').value = globalRules.regStartTime || '';
+                    document.getElementById('setting-reg-end').value = globalRules.regEndTime || '';
+                } else {
+                    globalRules = { minIndividual: 1, maxIndividual: 1 };
+                }
             });
         }
         
@@ -1844,6 +2280,7 @@
                 programmesList = [];
                 snapshot.forEach(doc => programmesList.push({id: doc.id, ...doc.data()}));
                 renderProgrammesTable(programmesList);
+                updateDashboardStats();
             });
         }
         
@@ -1872,19 +2309,84 @@
                 }
             });
         }
+
+        function subscribeToGradeTemplates() {
+            onSnapshot(collection(db, 'grade_templates'), (snapshot) => {
+                gradeTemplatesList = [];
+                snapshot.forEach(doc => gradeTemplatesList.push({id: doc.id, ...doc.data()}));
+                renderTemplates('grade');
+            });
+        }
+
+        function subscribeToPointTemplates() {
+            onSnapshot(collection(db, 'point_templates'), (snapshot) => {
+                pointTemplatesList = [];
+                snapshot.forEach(doc => pointTemplatesList.push({id: doc.id, ...doc.data()}));
+                renderTemplates('point');
+            });
+        }
+
+        function subscribeToGallery() {
+            onSnapshot(collection(db, 'gallery'), (snapshot) => {
+                galleryList = [];
+                snapshot.forEach(doc => galleryList.push({id: doc.id, ...doc.data()}));
+                if(document.getElementById('view-media-dashboard').classList.contains('hidden') === false) {
+                     renderMediaDashboard();
+                }
+                updateDashboardStats();
+            });
+        }
+        
+        function subscribeToResults() {
+             onSnapshot(collection(db, 'results'), (snapshot) => {
+                resultsList = [];
+                snapshot.forEach(doc => resultsList.push({id: doc.id, ...doc.data()}));
+                if(currentProgramId) renderProgramResults(currentProgramId);
+                if(document.getElementById('view-all-results').classList.contains('hidden') === false) {
+                     renderAllResults();
+                }
+                updateDashboardStats();
+            });
+        }
         
         function updateDashboardStats() {
              if(!loggedInUserData) return;
+             
+             // Elements
              const totalCandidatesEl = document.getElementById('stat-total-candidates');
-             if(!totalCandidatesEl) return;
-             if (loggedInUserData.position === 'Admin') {
-                 totalCandidatesEl.textContent = candidatesList.length;
+             const totalProgramsEl = document.getElementById('stat-total-programs');
+             const publishedContentEl = document.getElementById('stat-published-content');
+             const resultsUploadedEl = document.getElementById('stat-results-uploaded');
+
+             let candCount = 0;
+             let progCount = 0;
+             let pubCount = 0;
+             let resCount = 0;
+
+             // Logic based on role
+             if (loggedInUserData.position === 'Admin' || loggedInUserData.position === 'Media') {
+                 candCount = candidatesList.length;
+                 progCount = programmesList.filter(p => p.isActive !== false).length;
+                 // Assuming Published Content = Gallery Images for now
+                 pubCount = galleryList.length;
+                 // Results Uploaded = Number of published result docs
+                 resCount = resultsList.filter(r => r.published).length;
              } else if (loggedInUserData.position === 'Team Manager' && loggedInUserData.team) {
-                 const myTeamCount = candidatesList.filter(c => (c.team || '').trim() === loggedInUserData.team.trim()).length;
-                 totalCandidatesEl.textContent = myTeamCount;
-             } else {
-                 totalCandidatesEl.textContent = '0';
+                 // Team Manager sees their own team count
+                 const myTeam = loggedInUserData.team.trim();
+                 candCount = candidatesList.filter(c => (c.team || '').trim() === myTeam).length;
+                 // Programs are total active programs available to register
+                 progCount = programmesList.filter(p => p.isActive !== false).length;
+                 // Published content relevant to everyone
+                 pubCount = galleryList.length;
+                 // Results relevant to everyone
+                 resCount = resultsList.filter(r => r.published).length;
              }
+
+             if(totalCandidatesEl) totalCandidatesEl.textContent = candCount;
+             if(totalProgramsEl) totalProgramsEl.textContent = progCount;
+             if(publishedContentEl) publishedContentEl.textContent = pubCount;
+             if(resultsUploadedEl) resultsUploadedEl.textContent = resCount;
         }
 
         function updateUIFromSettings(data) {
@@ -1981,16 +2483,23 @@
                     { id: 'topic-reg', icon: 'fa-solid fa-pen-to-square', label: 'Topic Registration', action: 'tm-topic-registration' },
                     { id: 'prog-reg', icon: 'fa-solid fa-user-plus', label: 'Program Registration', action: 'tm-program-registration' }
                 ];
+            } else if (role === 'Media') {
+                menuItems = [
+                    { id: 'home', icon: 'fa-solid fa-house', label: 'Dashboard' },
+                    { id: 'media-dash', icon: 'fa-solid fa-chart-pie', label: 'Analytics', action: 'media-dashboard' },
+                    { id: 'media-up', icon: 'fa-solid fa-cloud-arrow-up', label: 'Upload Media', action: 'media-upload' },
+                ];
             } else {
                 menuItems = [
                     { id: 'candidate', icon: 'fa-regular fa-user', label: 'Candidate', items: [{label: 'All Candidates', action: 'candidates'}, {label: 'Sections', action: 'sections'}, {label: 'Teams', action: 'teams'}] },
                     { id: 'programme', icon: 'fa-regular fa-calendar-check', label: 'Programme', items: [{label: 'All Programmes', action: 'all-programmes'}, {label: 'Registration', action: 'admin-program-registrations'}] },
-                    { id: 'result', icon: 'fa-solid fa-trophy', label: 'Result', items: [{label: 'All Results'}] },
-                    { id: 'records', icon: 'fa-solid fa-clipboard-check', label: 'Records', action: 'admin-records' } 
+                    { id: 'result', icon: 'fa-solid fa-trophy', label: 'Result', items: [{label: 'All Results', action: 'all-results'}] },
+                    { id: 'records', icon: 'fa-solid fa-clipboard-check', label: 'Records', action: 'admin-records' },
+                    { id: 'settings', icon: 'fa-solid fa-gear', label: 'Settings', action: 'settings' }
                 ];
             }
             let html = `<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>`;
-            if (role === 'Team Manager') {
+            if (role === 'Team Manager' || role === 'Media') {
                 menuItems.forEach(item => { 
                     const action = item.action || (item.id === 'home' ? 'home' : item.id);
                     html += `<a href="#" onclick="window.switchView('${action}')" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-md group mb-1 transition-colors"><i class="${item.icon} w-5 text-center mr-2 text-gray-400 group-hover:text-gray-600"></i>${item.label}</a>`; 
@@ -2014,6 +2523,8 @@
             const container = document.getElementById('dropdown-actions');
             if (role === 'Team Manager') {
                 container.innerHTML = `<button onclick="window.openManageAccountModal()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Manage Account</button>`;
+            } else if (role === 'Media') {
+                 container.innerHTML = `<button onclick="window.openManageAccountModal()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-regular fa-user w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Manage Account</button>`;
             } else {
                 container.innerHTML = `<button onclick="window.openDatabaseView()" class="w-full flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group text-left"><i class="fa-solid fa-database w-5 mr-3 text-gray-400 group-hover:text-gray-600 text-center"></i>Database</button>`;
             }
@@ -2023,11 +2534,15 @@
             const tbody = document.getElementById('team-students-table-body');
             const headerLabel = document.getElementById('my-students-team-label');
             if (!tbody || !loggedInUserData || loggedInUserData.position !== 'Team Manager') return;
-            if(headerLabel) headerLabel.textContent = `(${loggedInUserData.team || 'No Team Assigned'})`;
+            
             const managerTeam = (loggedInUserData.team || '').trim();
+            if(headerLabel) headerLabel.textContent = `(${managerTeam || 'No Team Assigned'})`;
+            
+            // Auto-filter by logged-in team
             const myTeamCandidates = candidatesList.filter(c => (c.team || '').trim() === managerTeam);
+            
             if(myTeamCandidates.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${managerTeam}"</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-sm">No students found for team: "${managerTeam}"</td></tr>`;
                 return;
             }
             let html = '';
@@ -2046,6 +2561,89 @@
             });
             tbody.innerHTML = html;
         }
+        
+        window.renderCandidatesTable = function(list, sectionFilter = 'all') {
+            const tbody = document.getElementById('candidates-table-body');
+            if(!tbody) return;
+            
+            let filteredList = list;
+            if (sectionFilter !== 'all') {
+                filteredList = list.filter(c => c.section === sectionFilter);
+            }
+            
+            if(filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">No candidates found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredList.forEach(c => {
+                 html += `
+                    <tr onclick="window.viewCandidate('${c.id}')" class="hover:bg-gray-50 transition-colors border-b border-gray-50 cursor-pointer">
+                         <td class="px-6 py-4 text-center" onclick="event.stopPropagation()">
+                             <label class="custom-checkbox flex items-center cursor-pointer justify-center">
+                                 <input type="checkbox" class="candidate-checkbox hidden" value="${c.id}" onchange="window.updateBulkToolbar()">
+                                 <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
+                                     <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
+                                 </div>
+                             </label>
+                         </td>
+                         <td class="px-6 py-4 font-mono text-sm text-gray-500 font-bold">#${c.chestNo}</td>
+                         <td class="px-6 py-4 text-sm text-gray-600">${c.adNo}</td>
+                         <td class="px-6 py-4 font-bold text-gray-900 text-sm">${c.name}</td>
+                         <td class="px-6 py-4 text-sm text-gray-600">${c.class}</td>
+                         <td class="px-6 py-4 text-sm text-gray-600">${c.team}</td>
+                         <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">${c.section}</span></td>
+                         <td class="px-6 py-4 text-right action-cell" onclick="event.stopPropagation()">
+                             <button onclick="window.toggleActionMenu(this, '${c.id}', '${c.chestNo}', '${c.adNo}', '${c.name}', '${c.class}', '${c.team}', '${c.section}', '${c.gender || ''}')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                         </td>
+                    </tr>
+                 `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.toggleSelectAll = function() {
+            const mainChk = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.candidate-checkbox');
+            checkboxes.forEach(cb => cb.checked = mainChk.checked);
+            window.updateBulkToolbar();
+        }
+
+        window.updateBulkToolbar = function() {
+            const checkboxes = document.querySelectorAll('.candidate-checkbox:checked');
+            const count = checkboxes.length;
+            const toolbar = document.getElementById('candidates-bulk-toolbar');
+            const normalToolbar = document.getElementById('candidates-toolbar');
+            document.getElementById('selected-count').textContent = count;
+            
+            if(count > 0) {
+                toolbar.classList.remove('hidden');
+                normalToolbar.classList.add('hidden');
+            } else {
+                toolbar.classList.add('hidden');
+                normalToolbar.classList.remove('hidden');
+            }
+        }
+        
+        window.deleteSelectedCandidates = async function() {
+             const checkboxes = document.querySelectorAll('.candidate-checkbox:checked');
+             if(checkboxes.length === 0) return;
+             if(!confirm(`Are you sure you want to delete ${checkboxes.length} candidates?`)) return;
+             
+             // Simple batch delete simulation
+             for(let cb of checkboxes) {
+                 await window.deleteCandidateDirect(cb.value);
+             }
+             window.showToast("Selected candidates deleted", "success");
+             document.getElementById('selectAllCheckbox').checked = false;
+        }
+        
+        window.deleteCandidateDirect = async (id) => {
+             try {
+                 await deleteDoc(doc(db, 'candidates', id));
+             } catch(e) { console.error("Failed to delete", id); }
+        }
 
         window.handleLogin = async (e) => {
             e.preventDefault();
@@ -2054,14 +2652,37 @@
             const btn = document.getElementById('login-btn');
             const btnText = btn.querySelector('span');
             const loader = document.getElementById('login-loader');
-            btn.disabled = true; btnText.textContent = "Verifying..."; loader.classList.remove('hidden'); btn.classList.add('opacity-80');
+            
+            btn.disabled = true; 
+            btnText.textContent = "Verifying..."; 
+            loader.classList.remove('hidden'); 
+            btn.classList.add('opacity-80');
+            
             let matchedUser = null;
+
+            // 1. Check Hardcoded Admin
             if (userIn === 'administrator' && passIn === '81119') {
                 matchedUser = { name: 'Administrator', position: 'Admin', avatarLetter: 'A', username: 'administrator' };
-            } else {
+            } 
+            // 2. Check Loaded User List
+            else {
                 const found = globalUsersList.find(u => u.username === userIn && u.password === passIn);
-                if (found) matchedUser = found;
+                if (found) {
+                    matchedUser = found;
+                } else {
+                    // 3. Fallback: Direct Query (if list empty/not loaded)
+                    try {
+                        const q = query(collection(db, 'users'), where('username', '==', userIn), where('password', '==', passIn));
+                        const querySnapshot = await getDocs(q);
+                        if (!querySnapshot.empty) {
+                             matchedUser = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+                        }
+                    } catch (err) {
+                        console.error("Direct login query failed", err);
+                    }
+                }
             }
+
             setTimeout(() => {
                 if (matchedUser) {
                     loggedInUserData = matchedUser;
@@ -2079,7 +2700,7 @@
                     document.getElementById('dropdown-role').textContent = matchedUser.position;
                     window.renderSidebar(matchedUser.position);
                     window.renderUserDropdown(matchedUser.position);
-                    if (matchedUser.position === 'Team Manager') document.getElementById('admin-bottom-section').classList.add('hidden');
+                    if (matchedUser.position === 'Team Manager' || matchedUser.position === 'Media') document.getElementById('admin-bottom-section').classList.add('hidden');
                     else document.getElementById('admin-bottom-section').classList.remove('hidden');
                     updateDashboardStats();
                     window.switchView('home');
@@ -2090,7 +2711,7 @@
                     window.showToast('Invalid Username or Password', 'error');
                 }
                 btn.disabled = false; btnText.textContent = "Login"; loader.classList.add('hidden'); btn.classList.remove('opacity-80');
-            }, 1500);
+            }, 1000);
         };
 
         function checkAutoLogin() {
@@ -2107,7 +2728,7 @@
                     document.getElementById('dropdown-role').textContent = user.position;
                     window.renderSidebar(user.position);
                     window.renderUserDropdown(user.position);
-                    if (user.position === 'Team Manager') document.getElementById('admin-bottom-section').classList.add('hidden');
+                    if (user.position === 'Team Manager' || user.position === 'Media') document.getElementById('admin-bottom-section').classList.add('hidden');
                     else document.getElementById('admin-bottom-section').classList.remove('hidden');
                     updateDashboardStats();
                     window.switchView('home');
@@ -2141,6 +2762,18 @@
         };
 
         window.saveSettings = async () => { const name = document.getElementById('setting-name').value; const motto = document.getElementById('setting-motto').value; const isActive = document.getElementById('setting-active').checked; try { await setDoc(doc(db, 'settings', 'general'), { festivalName: name, motto: motto, isActive: isActive }); window.showToast("Settings Saved!", "success"); } catch (e) { window.showToast("Error saving", "error"); } };
+        window.saveGlobalSettings = async () => {
+            const min = document.getElementById('setting-min-participants').value;
+            const max = document.getElementById('setting-max-participants').value;
+            const start = document.getElementById('setting-reg-start').value;
+            const end = document.getElementById('setting-reg-end').value;
+            try {
+                await setDoc(doc(db, 'settings', 'registration_rules'), { minIndividual: min, maxIndividual: max, regStartTime: start, regEndTime: end });
+                window.showToast("Global Rules Saved!", "success");
+            } catch (e) {
+                window.showToast("Error saving rules", "error");
+            }
+        };
         window.switchAdminTab = (tab) => { if(tab==='users'){document.getElementById('tab-users').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-settings').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-users').classList.remove('hidden'); document.getElementById('content-settings').classList.add('hidden');} else{document.getElementById('tab-settings').className="pb-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-400 transition-colors"; document.getElementById('tab-users').className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"; document.getElementById('content-settings').classList.remove('hidden'); document.getElementById('content-users').classList.add('hidden');} };
         window.saveUser = async () => { const name = document.getElementById('inputName').value; const pos = document.getElementById('inputPosition').value; const team = document.getElementById('inputTeam').value; if(!name || !pos) { window.showToast("Fill details", "error"); return; } 
         if(pos === 'Team Manager' && (!team || team === 'Select Team')) {
@@ -2315,16 +2948,43 @@
             });
         }
 
+        window.populateTemplateDropdowns = function() {
+            const gradeSelect = document.getElementById('progGradeTemplate');
+            const pointSelect = document.getElementById('progPointTemplate');
+            
+            // Grade
+            gradeSelect.innerHTML = '<option value="" selected>None</option>';
+            gradeTemplatesList.filter(t => t.isActive !== false).forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.id;
+                option.textContent = t.name;
+                gradeSelect.appendChild(option);
+            });
+
+            // Point
+            pointSelect.innerHTML = '<option value="" selected>None</option>';
+            pointTemplatesList.filter(t => t.isActive !== false).forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.id;
+                option.textContent = t.name;
+                pointSelect.appendChild(option);
+            });
+        }
+
         window.saveProgramme = async () => {
             const code = document.getElementById('progCode').value;
             const name = document.getElementById('progName').value;
             const section = document.getElementById('progSection').value;
             const type = document.getElementById('progType').value;
+            const category = document.getElementById('progCategory').value;
             const min = parseInt(document.getElementById('progMin').value) || 1;
             const max = parseInt(document.getElementById('progMax').value) || 1;
             const active = document.getElementById('progActive').checked;
             const topicReg = document.getElementById('progTopicReg').checked;
+            const gradeTemplate = document.getElementById('progGradeTemplate').value;
+            const pointTemplate = document.getElementById('progPointTemplate').value;
             const id = document.getElementById('progId').value;
+
             if(!code || !name || !section) {
                 window.showToast("Code, Name and Section are required", "error");
                 return;
@@ -2334,10 +2994,13 @@
                 programName: name,
                 section: section,
                 type: type,
+                category: category,
                 minParticipants: min,
                 maxParticipants: max,
                 isActive: active,
                 topicRegRequired: topicReg,
+                gradeTemplateId: gradeTemplate || null,
+                pointTemplateId: pointTemplate || null,
                 createdAt: id ? undefined : new Date().toISOString()
             };
             Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
@@ -2364,11 +3027,15 @@
             document.getElementById('progCode').value = prog.programCode;
             document.getElementById('progName').value = prog.programName;
             document.getElementById('progType').value = prog.type || 'Individual';
+            document.getElementById('progCategory').value = prog.category || 'Stage';
             document.getElementById('progMin').value = prog.minParticipants || 1;
             document.getElementById('progMax').value = prog.maxParticipants || 1;
             document.getElementById('progActive').checked = prog.isActive !== false;
             document.getElementById('progTopicReg').checked = prog.topicRegRequired === true;
             window.populateProgrammeSectionDropdown(prog.section);
+            window.populateTemplateDropdowns();
+            document.getElementById('progGradeTemplate').value = prog.gradeTemplateId || "";
+            document.getElementById('progPointTemplate').value = prog.pointTemplateId || "";
             document.getElementById('programmeModal').classList.remove('hidden');
             document.getElementById('sectionActionMenu').classList.add('hidden');
         }
@@ -2381,7 +3048,7 @@
             const tbody = document.getElementById('programmes-table-body');
             if(!tbody) return;
             if(list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-12 text-center text-gray-400 text-sm">No programmes found</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-gray-400 text-sm">No programmes found</td></tr>`;
                 return;
             }
             let html = '';
@@ -2393,17 +3060,17 @@
                     ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 uppercase">Required</span>'
                     : '<span class="text-gray-400 text-xs">-</span>';
                 html += `
-                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                    <tr onclick="window.viewProgramme('${p.id}')" class="hover:bg-gray-50 transition-colors border-b border-gray-50 cursor-pointer">
                         <td class="px-6 py-4 font-mono text-sm text-gray-500 font-bold">#${p.programCode}</td>
                         <td class="px-6 py-4 font-bold text-gray-900 text-sm">${p.programName}</td>
                         <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">${p.section}</span></td>
                         <td class="px-6 py-4 text-sm text-gray-600">${p.type}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${p.category || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-600 text-center">${p.minParticipants || 1}</td>
                         <td class="px-6 py-4 text-sm text-gray-600 text-center">${p.maxParticipants || 1}</td>
                         <td class="px-6 py-4 text-sm font-medium text-gray-700 flex items-center">${statusBadge}</td>
                         <td class="px-6 py-4 text-center">${topicRegBadge}</td>
-                        <td class="px-6 py-4 text-right action-cell">
-                             <button onclick="window.viewProgramme('${p.id}')" class="text-gray-400 hover:text-blue-600 p-2 rounded-full hover:bg-gray-100 mr-1"><i class="fa-solid fa-eye"></i></button>
+                        <td class="px-6 py-4 text-right action-cell" onclick="event.stopPropagation()">
                             <button onclick="window.toggleSectionActionMenu(this, '${p.id}', '${p.programName}', '', '', 'programme')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
                         </td>
                     </tr>
@@ -2447,7 +3114,7 @@
         window.renderTMAllProgramsTable = function(list) {
             const tbody = document.getElementById('tm-all-programmes-body');
             if(!tbody) return;
-            if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">No programs found</td></tr>`; return; }
+            if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 text-gray-sm">No programs found</td></tr>`; return; }
             let html = '';
             list.forEach(p => {
                 const topicRegBadge = p.topicRegRequired ? '<span class="text-xs font-bold text-purple-600">Yes</span>' : '<span class="text-xs text-gray-400">No</span>';
@@ -2735,21 +3402,46 @@
         }
 
         window.submitProgramRegistration = async function(progId) {
+            const now = new Date();
+            if(globalRules) {
+                if(globalRules.regStartTime && new Date(globalRules.regStartTime) > now) {
+                    window.showToast("Registration has not started yet.", "error");
+                    return;
+                }
+                if(globalRules.regEndTime && new Date(globalRules.regEndTime) < now) {
+                    window.showToast("Registration has ended.", "error");
+                    return;
+                }
+            }
+
             const prog = programmesList.find(p => p.id === progId);
             if(!prog) return;
             const inputs = document.querySelectorAll(`.prog-reg-input-${progId}`);
             const candidates = [];
-            let hasValue = false;
+            let count = 0;
             inputs.forEach(input => {
                 if(input.value.trim() !== "") {
                     candidates.push(input.value.trim());
-                    hasValue = true;
+                    count++;
                 }
             });
-            if(!hasValue) {
+            
+            if(count === 0) {
                 window.showToast("Please enter at least one Chest Number", "error");
                 return;
             }
+
+            // Check Limits
+            let maxLimit = parseInt(prog.maxParticipants) || 1;
+            if (prog.type === 'Individual' && globalRules && globalRules.maxIndividual) {
+                 if(!prog.maxParticipants) maxLimit = parseInt(globalRules.maxIndividual);
+            }
+            
+            if(count > maxLimit) {
+                window.showToast(`Limit exceeded! Max allowed: ${maxLimit}`, "error");
+                return;
+            }
+
             const teamName = loggedInUserData.team;
             const compositeKey = `${progId}_${teamName}`;
             const data = {
@@ -2783,12 +3475,24 @@
                 let statusColor = 'bg-yellow-100 text-yellow-800';
                 if(reg.status === 'Accepted') statusColor = 'bg-green-100 text-green-800';
                 if(reg.status === 'Rejected') statusColor = 'bg-red-100 text-red-800';
-                let candidatesHtml = reg.candidates.map((c, idx) => `
+                
+                const prog = programmesList.find(p => p.id === reg.programId);
+                let limit = 1;
+                if(prog) limit = prog.maxParticipants || 1;
+                
+                const isOverLimit = reg.candidates.length > limit;
+                const dangerIcon = isOverLimit ? `<i class="fa-solid fa-triangle-exclamation text-red-500 ml-2" title="Exceeds Limit (${limit})"></i>` : '';
+
+                let candidatesHtml = reg.candidates.map((chestNo, idx) => {
+                    const student = candidatesList.find(c => c.chestNo === chestNo);
+                    const displayName = student ? student.name : 'Unknown';
+                    return `
                     <div class="flex items-center text-sm text-gray-700 bg-gray-50 px-2 py-1 rounded border border-gray-100 mb-1">
-                        <span class="font-bold text-gray-500 mr-2">#${idx+1}</span>
-                        <span class="font-mono font-bold">${c}</span>
-                    </div>
-                `).join('');
+                        <span class="font-bold text-gray-500 mr-2">#${chestNo}</span>
+                        <span class="font-medium truncate">${displayName}</span>
+                    </div>`;
+                }).join('');
+
                 html += `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between h-full relative group">
                         <button onclick="window.deleteProgramRegistration('${reg.id}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
@@ -2796,7 +3500,7 @@
                         </button>
                         <div>
                             <div class="mb-3 pr-8">
-                                <h3 class="font-bold text-gray-900 text-lg leading-tight">${reg.programName}</h3>
+                                <h3 class="font-bold text-gray-900 text-lg leading-tight flex items-center">${reg.programName} ${dangerIcon}</h3>
                                 <p class="text-xs text-gray-500 mt-0.5">${reg.section} <span class="mx-1">•</span> <span class="font-mono text-xs">${reg.programCode}</span></p>
                             </div>
                             
@@ -2806,8 +3510,8 @@
                             </div>
 
                             <div class="mb-2">
-                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Candidates</p>
-                                <div class="grid grid-cols-2 gap-2">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Candidates (${reg.candidates.length})</p>
+                                <div class="grid grid-cols-1 gap-2">
                                     ${candidatesHtml}
                                 </div>
                             </div>
@@ -2876,6 +3580,44 @@
         window.deleteSection = async (id) => {
              window.openDeleteModal('section', id);
         }
+        
+        window.viewSection = async (id) => {
+            const sec = sectionsList.find(s => s.id === id);
+            if(!sec) return;
+            document.getElementById('detail-sec-title').textContent = sec.name;
+            const activeBadge = document.getElementById('detail-sec-status');
+            if(sec.isActive !== false) {
+                 activeBadge.textContent = "Active"; activeBadge.className="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm";
+            } else {
+                 activeBadge.textContent = "Inactive"; activeBadge.className="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full shadow-sm";
+            }
+            
+            // Populate stats
+            const sectionCands = candidatesList.filter(c => c.section === sec.name);
+            const sectionProgs = programmesList.filter(p => p.section === sec.name && p.isActive !== false);
+            document.getElementById('stat-sec-cand').textContent = sectionCands.length;
+            document.getElementById('stat-sec-prog').textContent = sectionProgs.length;
+            
+            // Render Table
+            const tbody = document.getElementById('sec-detail-table-body');
+            if(sectionCands.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>`;
+            } else {
+                 tbody.innerHTML = sectionCands.map(c => `
+                    <tr class="hover:bg-gray-50 border-b border-gray-50">
+                        <td class="px-6 py-4 font-mono text-sm text-gray-500 font-bold">#${c.chestNo}</td>
+                        <td class="px-6 py-4 font-bold text-gray-900 text-sm">${c.name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${c.team}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${c.gender || '-'}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">Registered</span></td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="window.viewCandidate('${c.id}')" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-eye"></i></button>
+                        </td>
+                    </tr>
+                 `).join('');
+            }
+            window.switchView('section-details');
+        }
 
         window.saveTeam = async () => {
             const name = document.getElementById('teamName').value;
@@ -2911,345 +3653,892 @@
         window.deleteTeam = async (id) => {
              window.openDeleteModal('team', id);
         }
-
-        function renderSectionsTable(list) {
-            const tbody = document.getElementById('sections-table-body');
-            if(!tbody) return;
-            if(list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">No sections found</td></tr>`;
-                return;
-            }
-            let html = '';
-            list.forEach(sec => {
-                const dateStr = sec.createdAt ? new Date(sec.createdAt).toLocaleDateString() : '-';
-                const statusBadge = sec.isActive !== false 
-                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>'
-                    : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
-                html += `
-                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
-                        <td class="px-6 py-4 font-bold text-gray-900 text-sm">${sec.name}</td>
-                        <td class="px-6 py-4">${statusBadge}</td>
-                        <td class="px-6 py-4 text-gray-500 text-xs">${dateStr}</td>
-                        <td class="px-6 py-4 text-right action-cell flex gap-2 justify-end">
-                            <button onclick="window.toggleSectionActionMenu(this, '${sec.id}', '${sec.name}', '${sec.isActive !== false}', '${dateStr}', 'section')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        function renderTeamsTable(list) {
-            const tbody = document.getElementById('teams-table-body');
-            if(!tbody) return;
-            if(list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">No teams found</td></tr>`;
-                return;
-            }
-            let html = '';
-            list.forEach(t => {
-                const statusBadge = t.isActive !== false 
-                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>'
-                    : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
-                html += `
-                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm" style="background-color: ${t.color || '#000'}"><i class="fa-solid fa-shield-halved"></i></div>
-                                <span class="font-bold text-gray-900 text-sm">${t.name}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full border border-gray-200" style="background-color: ${t.color || '#000'}"></div>
-                                <span class="font-mono text-xs text-gray-500">${t.color || '#000000'}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">${statusBadge}</td>
-                        <td class="px-6 py-4 text-right action-cell">
-                            <button onclick="window.toggleSectionActionMenu(this, '${t.id}', '${t.name}', '${t.isActive !== false}', '', 'team', '${t.color}')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        window.viewProgramme = (id) => {
-            const prog = programmesList.find(p => p.id === id);
-            if(!prog) return;
-            document.getElementById('detail-prog-title').textContent = prog.programName;
-            document.getElementById('detail-prog-code').textContent = prog.programCode;
-            document.getElementById('detail-prog-type').textContent = (prog.type || 'INDIVIDUAL').toUpperCase();
-            document.getElementById('detail-prog-sec-name').textContent = prog.section;
-            const regTitle = document.getElementById('reg-title');
-            if(regTitle) regTitle.textContent = `${(prog.type || 'INDIVIDUAL').toUpperCase()} REGISTRATIONS`;
-            window.switchProgTab('overview');
-            window.switchView('programme-details');
-        };
-
-        window.viewSection = (id) => {
-             document.getElementById('sectionActionMenu').classList.add('hidden');
-             const sec = sectionsList.find(s => s.id === id);
-             if(!sec) return;
-             document.getElementById('detail-sec-title').textContent = sec.name;
-             const statusEl = document.getElementById('detail-sec-status');
-             if(sec.isActive !== false) {
-                 statusEl.textContent = "Active"; statusEl.className = "px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm";
-             } else {
-                 statusEl.textContent = "Inactive"; statusEl.className = "px-3 py-1 bg-gray-200 text-gray-500 text-xs font-bold rounded-full shadow-sm";
-             }
-             const secCandidates = candidatesList.filter(c => c.section === sec.name);
-             document.getElementById('stat-sec-cand').textContent = secCandidates.length;
-             document.getElementById('stat-sec-prog').textContent = "0"; 
-             document.getElementById('stat-sec-points').textContent = "50"; 
-             const tbody = document.getElementById('sec-detail-table-body');
-             if(secCandidates.length === 0) {
-                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No candidates found in this section</td></tr>`;
-             } else {
-                 let html = '';
-                 secCandidates.forEach(c => {
-                     const gender = c.gender || '-';
-                     const status = 'Active'; 
-                     html += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
-                            <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
-                            <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
-                            <td class="px-6 py-3 text-gray-600">${c.team}</td>
-                            <td class="px-6 py-3 text-gray-400">${gender}</td>
-                            <td class="px-6 py-3"><span class="text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full">${status}</span></td>
-                            <td class="px-6 py-3 text-right relative action-cell">
-                                <button onclick="window.toggleActionMenu(this, '${c.id}', '${c.chestNo}', '${c.adNo}', '${c.name}', '${c.class}', '${c.team}', '${c.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
-                            </td>
-                        </tr>
-                     `;
-                 });
-                 tbody.innerHTML = html;
-             }
-             window.switchView('section-details');
-        }
-
-        window.viewTeam = (id) => {
-             document.getElementById('sectionActionMenu').classList.add('hidden');
-             const team = teamsList.find(t => t.id === id);
-             if(!team) return;
-             document.getElementById('detail-team-title').textContent = team.name;
-             const statusEl = document.getElementById('detail-team-status');
-             if(team.isActive !== false) {
-                 statusEl.textContent = "Active"; statusEl.className = "px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm";
-             } else {
-                 statusEl.textContent = "Inactive"; statusEl.className = "px-3 py-1 bg-gray-200 text-gray-500 text-xs font-bold rounded-full shadow-sm";
-             }
-             document.getElementById('detail-team-color-box').style.backgroundColor = team.color;
-             document.getElementById('detail-team-color-hex').textContent = team.color;
-             document.getElementById('detail-team-created').textContent = team.createdAt ? new Date(team.createdAt).toLocaleDateString() : '-';
-             const teamCandidates = candidatesList.filter(c => c.team === team.name);
-             document.getElementById('stat-team-cand').textContent = teamCandidates.length;
-             document.getElementById('stat-team-points').textContent = "0";
-             const tbody = document.getElementById('team-detail-table-body');
-             if(teamCandidates.length === 0) {
-                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>`;
-             } else {
-                 let html = '';
-                 teamCandidates.forEach(c => {
-                     html += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-50 text-xs">
-                            <td class="px-6 py-3 font-mono text-gray-500">#${c.chestNo}</td>
-                            <td class="px-6 py-3 font-bold text-gray-900">${c.name}</td>
-                            <td class="px-6 py-3 text-gray-600">${c.section || '-'}</td>
-                            <td class="px-6 py-3 text-gray-400">-</td>
-                            <td class="px-6 py-3 text-green-600 font-bold">Active</td>
-                             <td class="px-6 py-3 text-right relative action-cell">
-                                <button onclick="window.toggleActionMenu(this, '${c.id}', '${c.chestNo}', '${c.adNo}', '${c.name}', '${c.class}', '${c.team}', '${c.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
-                            </td>
-                        </tr>
-                     `;
-                 });
-                 tbody.innerHTML = html;
-             }
-             window.switchView('team-details');
-        }
-
-        window.toggleSelectAll = () => {
-            const mainCheckbox = document.getElementById('selectAllCheckbox');
-            if (mainCheckbox.checked) {
-                candidatesList.forEach(c => selectedCandidates.add(c.id));
-            } else {
-                selectedCandidates.clear();
-            }
-            renderCandidatesTable(candidatesList);
-            updateBulkToolbar();
-        }
-
-        window.toggleSelectCandidate = (id) => {
-            if (selectedCandidates.has(id)) {
-                selectedCandidates.delete(id);
-            } else {
-                selectedCandidates.add(id);
-            }
-            const filterVal = document.getElementById('sectionFilter') ? document.getElementById('sectionFilter').value : 'all';
-            renderCandidatesTable(candidatesList, filterVal); 
-            updateBulkToolbar();
-        }
-
-        function updateBulkToolbar() {
-            const toolbar = document.getElementById('candidates-toolbar');
-            const bulkToolbar = document.getElementById('candidates-bulk-toolbar');
-            const countSpan = document.getElementById('selected-count');
-            if (selectedCandidates.size > 0) {
-                toolbar.classList.add('hidden');
-                bulkToolbar.classList.remove('hidden');
-                countSpan.textContent = selectedCandidates.size;
-            } else {
-                toolbar.classList.remove('hidden');
-                bulkToolbar.classList.add('hidden');
-            }
-        }
-
-        window.deleteSelectedCandidates = async () => {
-            if(confirm(`Are you sure you want to delete ${selectedCandidates.size} candidates?`)) {
-                const promises = Array.from(selectedCandidates).map(id => deleteDoc(doc(db, 'candidates', id)));
-                try {
-                    await Promise.all(promises);
-                    window.showToast(`${selectedCandidates.size} Candidates Deleted`, "success");
-                    selectedCandidates.clear();
-                    updateBulkToolbar();
-                } catch(e) {
-                    console.error(e);
-                    window.showToast("Error deleting candidates", "error");
-                }
-            }
-        }
-
-        function renderCandidatesTable(list, sectionFilter = 'all') {
-            const tbody = document.getElementById('candidates-table-body');
-            if(!tbody) return;
-            let filteredList = list;
-            if(sectionFilter !== 'all') {
-                filteredList = list.filter(c => c.section === sectionFilter);
-            }
-            if(filteredList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm">No candidates found</td></tr>`;
-                return;
-            }
-            let html = '';
-            filteredList.forEach(cand => {
-                const initial = cand.name.charAt(0).toUpperCase();
-                const isSelected = selectedCandidates.has(cand.id);
-                const teamObj = teamsList.find(t => t.name === cand.team);
-                const dotColor = teamObj ? teamObj.color : '#cbd5e1'; 
-                const rowClass = isSelected ? 'bg-yellow-50' : 'hover:bg-gray-50';
-                const checkboxState = isSelected ? 'checked' : '';
-                html += `
-                    <tr class="${rowClass} transition-colors group border-b border-gray-50">
-                        <td class="px-6 py-4 w-10 text-center action-cell">
-                             <label class="custom-checkbox flex items-center cursor-pointer justify-center">
-                                <input type="checkbox" class="hidden" ${checkboxState} onchange="window.toggleSelectCandidate('${cand.id}')">
-                                <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center transition-colors bg-white hover:border-yellow-400">
-                                    <i class="fa-solid fa-check text-white text-[8px] opacity-0"></i>
-                                </div>
-                            </label>
-                        </td>
-                        <td class="px-6 py-4 text-gray-700 font-medium text-sm">#${cand.chestNo}</td>
-                        <td class="px-6 py-4 text-gray-500 text-sm">${cand.adNo || '-'}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full bg-yellow-50 border border-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs mr-3 uppercase">${initial}</div>
-                                <span class="font-bold text-gray-900 text-sm">${cand.name}</span>
-                            </div>
-                        </td>
-                         <td class="px-6 py-4 text-gray-500 text-sm">${cand.class || '-'}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full mr-2" style="background-color: ${dotColor}"></div>
-                                <span class="text-sm text-gray-700 font-medium">${cand.team}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600 bg-white">${cand.section}</span>
-                        </td>
-                        <td class="px-6 py-4 text-right relative action-cell">
-                            <button onclick="window.toggleActionMenu(this, '${cand.id}', '${cand.chestNo}', '${cand.adNo}', '${cand.name}', '${cand.class}', '${cand.team}', '${cand.section}')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        window.viewCandidate = async (id) => {
-            document.getElementById('globalActionMenu').classList.add('hidden');
-            const docSnap = await getDoc(doc(db, 'candidates', id));
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById('detail-cand-name').textContent = data.name;
-                document.getElementById('detail-cand-name-crumb').textContent = data.name;
-                document.getElementById('detail-avatar').textContent = data.name.charAt(0).toUpperCase();
-                document.getElementById('detail-cand-chest').textContent = `#${data.chestNo}`;
-                document.getElementById('detail-team').textContent = data.team;
-                document.getElementById('detail-section').textContent = data.section;
-                document.getElementById('detail-chest-no').textContent = `#${data.chestNo}`;
-                document.getElementById('detail-ad-no').textContent = data.adNo;
-                document.getElementById('detail-class').textContent = data.class;
-                window.switchView('candidate-details');
-            } else {
-                window.showToast("Candidate not found", "error");
-            }
-        };
-
-        window.openDeleteModal = (type, id) => {
-            document.getElementById('globalActionMenu').classList.add('hidden');
-            document.getElementById('sectionActionMenu').classList.add('hidden');
-            deleteTargetId = id;
-            deleteType = type;
-            document.getElementById('deleteConfirmModal').classList.remove('hidden');
-        };
-
-        window.deleteCandidate = (id) => {
-            window.openDeleteModal('candidate', id);
-        };
-
-        window.closeDeleteConfirmModal = () => {
-            document.getElementById('deleteConfirmModal').classList.add('hidden');
-            deleteTargetId = null;
-            deleteType = null;
-        };
-
-        let deleteTargetId = null;
-        let deleteType = null;
-
-        window.confirmDelete = async () => {
-            if (!deleteTargetId || !deleteType) return;
-            const deleteBtn = document.querySelector('#deleteConfirmModal button.bg-red-700');
-            const originalText = deleteBtn.textContent;
-            deleteBtn.textContent = 'Deleting...';
-            deleteBtn.disabled = true;
-            try {
-                let collectionName = '';
-                if (deleteType === 'candidate') collectionName = 'candidates';
-                else if (deleteType === 'user') collectionName = 'users';
-                else if (deleteType === 'section') collectionName = 'sections';
-                else if (deleteType === 'team') collectionName = 'teams';
-                else if (deleteType === 'programme') collectionName = 'programmes';
-                else if (deleteType === 'topic_registration') collectionName = 'topic_registrations';
-                else if (deleteType === 'program_registration') collectionName = 'program_registrations';
-                
-                if (collectionName) {
-                    await deleteDoc(doc(db, collectionName, deleteTargetId));
-                    window.showToast("Item Deleted Successfully", "success");
-                }
-                window.closeDeleteConfirmModal();
-            } catch(e) {
-                console.error(e);
-                window.showToast("Delete failed", "error");
-            } finally {
-                deleteBtn.textContent = originalText;
-                deleteBtn.disabled = false;
-            }
-        };
         
-        window.confirmDeleteCandidate = window.confirmDelete;
+        window.viewTeam = async (id) => {
+            const team = teamsList.find(t => t.id === id);
+            if(!team) return;
+            document.getElementById('detail-team-title').textContent = team.name;
+const activeBadge = document.getElementById('detail-team-status');
+if(team.isActive !== false) {
+activeBadge.textContent = "Active"; activeBadge.className="px-3 py-1 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full shadow-sm";
+} else {
+activeBadge.textContent = "Inactive"; activeBadge.className="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full shadow-sm";
+}
+document.getElementById('detail-team-color-box').style.backgroundColor = team.color || '#000';
+document.getElementById('detail-team-color-hex').textContent = team.color || '#000000';
 
-    </script>
+// Stats
+        const teamCands = candidatesList.filter(c => (c.team || '').trim() === team.name);
+        document.getElementById('stat-team-cand').textContent = teamCands.length;
+
+        // Calculate Team Points (Published only)
+        let publishedPoints = 0;
+        let totalPoints = 0;
+        let unpublishedPoints = 0;
+
+        resultsList.forEach(res => {
+            const teamEntries = res.entries.filter(e => e.team === team.name);
+            const pts = teamEntries.reduce((sum, e) => sum + (parseInt(e.totalPoints) || 0), 0);
+            
+            totalPoints += pts;
+            if(res.published) {
+                publishedPoints += pts;
+            } else {
+                unpublishedPoints += pts;
+            }
+        });
+
+        document.getElementById('stat-team-points').textContent = publishedPoints;
+        document.getElementById('stat-team-total-points').textContent = totalPoints;
+        document.getElementById('stat-team-unpublished').textContent = unpublishedPoints;
+
+        // Render Table
+        const tbody = document.getElementById('team-detail-table-body');
+        if(teamCands.length === 0) {
+             tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No candidates found in this team</td></tr>`;
+        } else {
+             tbody.innerHTML = teamCands.map(c => `
+                <tr class="hover:bg-gray-50 border-b border-gray-50">
+                    <td class="px-6 py-4 font-mono text-sm text-gray-500 font-bold">#${c.chestNo}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900 text-sm">${c.name}</td>
+                    <td class="px-6 py-4 text-gray-600">${c.section}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${c.gender || '-'}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">Active</span></td>
+                </tr>
+             `).join('');
+        }
+        window.switchView('team-details');
+    }
+
+    function renderSectionsTable(list) {
+        const tbody = document.getElementById('sections-table-body');
+        if(!tbody) return;
+        if(list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">No sections found</td></tr>`;
+            return;
+        }
+        let html = '';
+        list.forEach(sec => {
+            const dateStr = sec.createdAt ? new Date(sec.createdAt).toLocaleDateString() : '-';
+            const statusBadge = sec.isActive !== false 
+                ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>'
+                : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
+            html += `
+                <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                    <td class="px-6 py-4 font-bold text-gray-900 text-sm">${sec.name}</td>
+                    <td class="px-6 py-4">${statusBadge}</td>
+                    <td class="px-6 py-4 text-gray-500 text-xs">${dateStr}</td>
+                    <td class="px-6 py-4 text-right action-cell flex gap-2 justify-end">
+                        <button onclick="window.toggleSectionActionMenu(this, '${sec.id}', '${sec.name}', '${sec.isActive !== false}', '${dateStr}', 'section')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function renderTeamsTable(list) {
+        const tbody = document.getElementById('teams-table-body');
+        if(!tbody) return;
+        if(list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 text-sm">No teams found</td></tr>`;
+            return;
+        }
+        let html = '';
+        list.forEach(t => {
+            const statusBadge = t.isActive !== false 
+                ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">Active</span>'
+                : '<span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-md">Inactive</span>';
+            html += `
+                <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm" style="background-color: ${t.color || '#000'}"><i class="fa-solid fa-shield-halved"></i></div>
+                            <span class="font-bold text-gray-900 text-sm">${t.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full border border-gray-200" style="background-color: ${t.color || '#000'}"></div>
+                            <span class="font-mono text-xs text-gray-500">${t.color || '#000000'}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">${statusBadge}</td>
+                    <td class="px-6 py-4 text-right action-cell">
+                        <button onclick="window.toggleSectionActionMenu(this, '${t.id}', '${t.name}', '${t.isActive !== false}', '', 'team', '${t.color}')" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-ellipsis"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    window.viewProgramme = (id) => {
+        currentProgramId = id;
+        const prog = programmesList.find(p => p.id === id);
+        if(!prog) return;
+        document.getElementById('detail-prog-title').textContent = prog.programName;
+        document.getElementById('detail-prog-code').textContent = prog.programCode;
+        document.getElementById('detail-prog-type').textContent = (prog.type || 'INDIVIDUAL').toUpperCase();
+        document.getElementById('detail-prog-sec-name').textContent = prog.section;
+        const regTitle = document.getElementById('reg-title');
+        if(regTitle) regTitle.textContent = `${(prog.type || 'INDIVIDUAL').toUpperCase()} REGISTRATIONS`;
+        
+        // Populate Settings Tab with existing config
+        const gradeSelect = document.getElementById('prog-setting-grade');
+        const pointSelect = document.getElementById('prog-setting-point');
+        
+        gradeSelect.innerHTML = '<option value="" selected>None</option>';
+        gradeTemplatesList.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id; opt.textContent = t.name;
+            if(prog.gradeTemplateId === t.id) opt.selected = true;
+            gradeSelect.appendChild(opt);
+        });
+
+        pointSelect.innerHTML = '<option value="" selected>None</option>';
+        pointTemplatesList.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id; opt.textContent = t.name;
+            if(prog.pointTemplateId === t.id) opt.selected = true;
+            pointSelect.appendChild(opt);
+        });
+
+        // Populate Registrations Tab
+        const container = document.getElementById('prog-registrations-list');
+        const regs = programRegistrationsList.filter(r => r.programId === id);
+        if(regs.length === 0) {
+             container.innerHTML = `<div class="p-8 flex flex-col items-center justify-center h-[300px] text-gray-500"><i class="fa-solid fa-user-group text-gray-200 text-5xl mb-4"></i><p>No registrations found</p></div>`;
+             document.getElementById('stat-prog-reg').textContent = "0";
+        } else {
+            let totalCand = 0;
+            let html = regs.map(r => {
+                const candidateNames = r.candidates.map(chest => {
+                    const s = candidatesList.find(c => c.chestNo === chest);
+                    return s ? s.name : `#${chest}`;
+                }).join(', ');
+                totalCand += r.candidates.length;
+                return `
+                    <div class="p-4 border-b border-gray-50 flex justify-between items-center hover:bg-gray-50">
+                        <div>
+                            <p class="font-bold text-gray-900 text-sm">${r.team}</p>
+                            <p class="text-xs text-gray-500">${candidateNames}</p>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600">${r.status}</span>
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = html;
+            document.getElementById('stat-prog-reg').textContent = totalCand;
+        }
+
+        // Populate Gallery Tab
+        const galleryContainer = document.getElementById('gallery-container');
+        const images = galleryList.filter(img => img.programId === id);
+        document.getElementById('stat-prog-gallery').textContent = images.length;
+        if(images.length === 0) {
+             galleryContainer.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-64 text-gray-400"><i class="fa-regular fa-image text-4xl mb-2"></i><span>No images uploaded</span></div>`;
+        } else {
+             galleryContainer.innerHTML = images.map(img => `
+                <div class="relative group rounded-lg overflow-hidden h-40 bg-gray-100">
+                    <img src="${img.url}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
+                        <p class="text-white opacity-0 group-hover:opacity-100 text-xs font-bold">${img.description || 'Image'}</p>
+                    </div>
+                </div>
+             `).join('');
+        }
+        
+        // Render Results
+        renderProgramResults(id);
+
+        window.switchProgTab('overview');
+        window.switchView('programme-details');
+    };
+    
+    window.saveProgramConfig = async function() {
+        if(!currentProgramId) return;
+        const gId = document.getElementById('prog-setting-grade').value;
+        const pId = document.getElementById('prog-setting-point').value;
+        try {
+            await updateDoc(doc(db, 'programmes', currentProgramId), {
+                gradeTemplateId: gId || null,
+                pointTemplateId: pId || null
+            });
+            window.showToast("Configuration Saved", "success");
+        } catch(e) {
+            console.error(e);
+            window.showToast("Save Failed", "error");
+        }
+    }
+
+    window.openResultEntryModal = function() {
+        if(!currentProgramId) return;
+        const prog = programmesList.find(p => p.id === currentProgramId);
+        if(!prog) return;
+
+        // Check if templates are configured
+        if(!prog.gradeTemplateId || !prog.pointTemplateId) {
+            window.showToast("Please configure Grade and Position templates in Settings first.", "error");
+            window.switchProgTab('settings');
+            return;
+        }
+
+        const gradeTemplate = gradeTemplatesList.find(t => t.id === prog.gradeTemplateId);
+        const pointTemplate = pointTemplatesList.find(t => t.id === prog.pointTemplateId); // Position template
+
+        // Fetch all approved registrations
+        const regs = programRegistrationsList.filter(r => r.programId === currentProgramId && r.status === 'Accepted');
+        if(regs.length === 0) {
+            window.showToast("No accepted registrations found.", "error");
+            return;
+        }
+
+        // Flatten candidates
+        let allCandidates = [];
+        regs.forEach(r => {
+            r.candidates.forEach(chest => {
+                const c = candidatesList.find(x => x.chestNo === chest);
+                allCandidates.push({
+                    chestNo: chest,
+                    name: c ? c.name : 'Unknown',
+                    team: c ? c.team : r.team
+                });
+            });
+        });
+
+        // Get existing results if any
+        const existingResultDoc = resultsList.find(r => r.id === currentProgramId);
+        const existingEntries = existingResultDoc ? existingResultDoc.entries : [];
+
+        // Build UI
+        const listContainer = document.getElementById('result-entry-list');
+        let html = '';
+        
+        allCandidates.forEach(cand => {// entry for this candidate
+            const saved = existingEntries.find(e => e.chestNo === cand.chestNo);
+            const currentGrade = saved ? saved.grade : '';
+            const currentPos = saved ? saved.position : '';
+
+            html += `
+            <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm result-entry-card" data-chest="${cand.chestNo}" data-name="${cand.name}" data-team="${cand.team}">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 text-sm">#${cand.chestNo}</div>
+                    <div>
+                        <p class="font-bold text-gray-900">${cand.name}</p>
+                        <p class="text-xs text-gray-500">${cand.team}</p>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Grade</label>
+                        <select class="entry-grade w-full md:w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-yellow-400 outline-none bg-white">
+                            <option value="" data-points="0">None</option>
+                            ${gradeTemplate.rows.map(r => `<option value="${r.label}" data-points="${r.points}" ${r.label === currentGrade ? 'selected' : ''}>${r.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Position</label>
+                        <select class="entry-position w-full md:w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-yellow-400 outline-none bg-white">
+                            <option value="" data-points="0">None</option>
+                            ${pointTemplate.rows.map(r => `<option value="${r.label}" data-points="${r.points}" ${r.label === currentPos ? 'selected' : ''}>${r.label}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        listContainer.innerHTML = html;
+        document.getElementById('result-entry-subtitle').textContent = `${prog.programName} (${prog.programCode}) - ${allCandidates.length} Candidates`;
+        document.getElementById('resultEntryModal').classList.remove('hidden');
+    }
+
+    window.saveResults = async function() {
+        if(!currentProgramId) return;
+        const cards = document.querySelectorAll('.result-entry-card');
+        const entries = [];
+        
+        cards.forEach(card => {
+            const chestNo = card.dataset.chest;
+            const name = card.dataset.name;
+            const team = card.dataset.team;
+            
+            const gradeSelect = card.querySelector('.entry-grade');
+            const posSelect = card.querySelector('.entry-position');
+            
+            const grade = gradeSelect.value;
+            const position = posSelect.value;
+            
+            const gradePoints = parseInt(gradeSelect.options[gradeSelect.selectedIndex].dataset.points) || 0;
+            const posPoints = parseInt(posSelect.options[posSelect.selectedIndex].dataset.points) || 0;
+            const totalPoints = gradePoints + posPoints;
+
+            if(grade || position) {
+                entries.push({
+                    chestNo, name, team, grade, position, totalPoints
+                });
+            }
+        });
+
+        // Sort entries: Priority to Position (assuming text needs mapping or just points), then Total Points
+        // Simple sort by total points descending for now
+        entries.sort((a, b) => b.totalPoints - a.totalPoints);
+
+        try {
+            await setDoc(doc(db, 'results', currentProgramId), {
+                programId: currentProgramId,
+                entries: entries,
+                updatedAt: new Date().toISOString(),
+                published: false // Default to draft
+            });
+            window.showToast("Results Saved Successfully", "success");
+            document.getElementById('resultEntryModal').classList.add('hidden');
+            document.getElementById('stat-prog-result').textContent = 'Draft';
+        } catch(e) {
+            console.error(e);
+            window.showToast("Error saving results", "error");
+        }
+    }
+
+    function renderProgramResults(progId) {
+        const container = document.getElementById('prog-results-container');
+        const resultDoc = resultsList.find(r => r.id === progId);
+        
+        if(!resultDoc || !resultDoc.entries || resultDoc.entries.length === 0) {
+            container.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-[300px]">
+                <i class="fa-solid fa-trophy text-gray-200 text-5xl mb-4"></i>
+                <p class="text-sm text-gray-500 mb-4">No results available yet</p>
+            </div>`;
+            document.getElementById('stat-prog-result').textContent = 'No Results';
+            return;
+        }
+
+        const isPublished = resultDoc.published;
+        document.getElementById('stat-prog-result').textContent = isPublished ? 'Published' : 'Draft';
+        const statusBadge = isPublished 
+            ? '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Published</span>' 
+            : '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Draft</span>';
+
+        let html = `
+        <div class="flex justify-between items-center mb-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <div class="flex items-center gap-3">
+                ${statusBadge}
+                <span class="text-xs text-gray-500">Last updated: ${new Date(resultDoc.updatedAt).toLocaleDateString()}</span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.togglePublishResult('${progId}', ${!isPublished})" class="px-3 py-1.5 border border-gray-200 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">
+                    ${isPublished ? '<i class="fa-solid fa-eye-slash mr-1"></i> Unpublish' : '<i class="fa-solid fa-bullhorn mr-1"></i> Publish'}
+                </button>
+                <button onclick="window.printResults('${progId}')" class="px-3 py-1.5 border border-gray-200 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">
+                    <i class="fa-solid fa-print mr-1"></i> Print
+                </button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+        `;
+
+        resultDoc.entries.forEach((entry, idx) => {
+            let rankDisplay = `<span class="text-gray-400 font-mono text-sm">#${idx + 1}</span>`;
+            let trophyColor = 'text-gray-300';
+            
+            // Heuristic for rank display based on position text
+            const posLower = (entry.position || '').toLowerCase();
+            if(posLower.includes('first') || posLower.includes('1st')) { rankDisplay = '<i class="fa-solid fa-trophy text-yellow-400 text-lg"></i>'; trophyColor='text-yellow-400'; }
+            else if(posLower.includes('second') || posLower.includes('2nd')) { rankDisplay = '<i class="fa-solid fa-trophy text-gray-400 text-lg"></i>'; trophyColor='text-gray-400'; }
+            else if(posLower.includes('third') || posLower.includes('3rd')) { rankDisplay = '<i class="fa-solid fa-trophy text-orange-700 text-lg"></i>'; trophyColor='text-orange-700'; }
+
+            html += `
+            <div class="bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-4">
+                    <div class="w-8 text-center">${rankDisplay}</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-gray-900">${entry.name}</h4>
+                            <span class="text-xs bg-gray-100 text-gray-600 px-1.5 rounded border border-gray-200">#${entry.chestNo}</span>
+                        </div>
+                        <p class="text-xs text-gray-500">${entry.team}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-right">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Grade</p>
+                        <p class="font-bold text-gray-800">${entry.grade || '-'}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Position</p>
+                        <p class="font-bold text-gray-800">${entry.position || '-'}</p>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Points</p>
+                        <p class="font-bold text-blue-600 text-lg">${entry.totalPoints}</p>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    window.togglePublishResult = async function(progId, state) {
+        try {
+            await updateDoc(doc(db, 'results', progId), { published: state });
+            window.showToast(state ? "Result Published" : "Result Unpublished", "success");
+        } catch(e) {
+            console.error(e);
+            window.showToast("Action Failed", "error");
+        }
+    }
+
+    window.printResults = function(progId) {
+        window.showToast("Print feature coming soon", "info");
+    }
+
+    window.viewCandidate = async (id) => {
+        document.getElementById('globalActionMenu').classList.add('hidden');
+        const docSnap = await getDoc(doc(db, 'candidates', id));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Update Header
+            document.getElementById('detail-cand-name').textContent = data.name;
+            document.getElementById('detail-cand-name-crumb').textContent = data.name;
+            document.getElementById('detail-avatar').textContent = data.name.charAt(0).toUpperCase();
+            document.getElementById('detail-cand-chest').textContent = `#${data.chestNo}`;
+            document.getElementById('detail-ad-no').textContent = data.adNo;
+            document.getElementById('detail-cand-gender').textContent = data.gender || '-';
+
+            // Calculate Stats
+            const participations = programRegistrationsList.filter(r => r.candidates.includes(data.chestNo));
+            const myResults = resultsList.filter(r => r.entries.some(e => e.chestNo === data.chestNo) && r.published === true);
+            
+            let totalPoints = 0;
+            myResults.forEach(res => {
+                const entry = res.entries.find(e => e.chestNo === data.chestNo);
+                if(entry) totalPoints += (parseInt(entry.totalPoints) || 0);
+            });
+
+            // Assuming some logic for percentage, or placeholder
+            const percentage = participations.length > 0 ? Math.round((totalPoints / (participations.length * 10)) * 100) : 0; // Dummy calc based on 10 pts max/prog
+
+            document.getElementById('detail-total-points').textContent = `${totalPoints} pts`;
+            document.getElementById('detail-total-percentage').textContent = `${percentage}%`;
+            document.getElementById('detail-programs-count').textContent = participations.length;
+            document.getElementById('detail-results-count').textContent = myResults.length;
+
+            // 1. Participations Tab
+            const containerP = document.getElementById('cand-participations-list');
+            document.getElementById('detail-reg-count-badge').textContent = `${participations.length} Total`;
+            
+            if(participations.length === 0) {
+                 containerP.innerHTML = `<div class="p-8 flex flex-col items-center justify-center h-32 text-center text-gray-400">No participations found</div>`;
+            } else {
+                 let html = '';
+                 participations.forEach(p => {
+                     const prog = programmesList.find(pr => pr.id === p.programId);
+                     const type = prog ? prog.type : 'Individual';
+                     html += `
+                        <div class="flex items-center p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                            <div class="w-2 h-2 rounded-full bg-blue-500 mr-4"></div>
+                            <div class="flex-1">
+                                <span class="font-bold text-gray-800 text-sm mr-2">${p.programName}</span>
+                                <span class="text-xs text-gray-400 font-mono">${p.programCode}</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full border border-blue-100 text-blue-600 text-xs font-bold bg-blue-50">${type}</span>
+                        </div>
+                     `;
+                 });
+                 containerP.innerHTML = html;
+            }
+
+            // 2. Results Tab
+            const containerR = document.getElementById('cand-results-container');
+            document.getElementById('detail-res-count-badge').textContent = `${myResults.length} Results`;
+            
+            if(myResults.length === 0) {
+                containerR.innerHTML = `<div class="p-8 flex flex-col items-center justify-center h-32 text-center text-gray-400">No results published yet</div>`;
+            } else {
+                let htmlR = '';
+                myResults.forEach(res => {
+                    const entry = res.entries.find(e => e.chestNo === data.chestNo);
+                    const prog = programmesList.find(p => p.id === res.programId);
+                    const progName = prog ? prog.programName : 'Unknown Program';
+                    const dateStr = new Date(res.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                    htmlR += `
+                    <div class="flex items-center justify-between p-4 border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow bg-white">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm shadow-blue-200">
+                                <i class="fa-solid fa-star text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-gray-900">${progName}</h4>
+                                    <span class="text-xs text-gray-400 font-mono">001</span>
+                                </div>
+                                <div class="flex items-center gap-3 mt-1 text-xs font-medium text-gray-500">
+                                    <span class="text-green-600 flex items-center gap-1"><i class="fa-solid fa-chart-line"></i> ${entry.totalPoints} pts</span>
+                                    <span class="bg-gray-100 px-1.5 rounded text-gray-600 border border-gray-200 uppercase">${entry.grade || '-'}</span>
+                                    <span>${dateStr}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full">Published</span>
+                            <button class="px-3 py-1.5 border border-gray-200 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-50">Certificate</button>
+                            <button class="px-3 py-1.5 border border-gray-200 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-50">Poster</button>
+                        </div>
+                    </div>
+                    `;
+                });
+                containerR.innerHTML = htmlR;
+            }
+
+            window.switchCandTab('participations'); // Default tab
+            window.switchView('candidate-details');
+        } else {
+            window.showToast("Candidate not found", "error");
+        }
+    };
+
+    window.openDeleteModal = (type, id) => {
+        document.getElementById('globalActionMenu').classList.add('hidden');
+        document.getElementById('sectionActionMenu').classList.add('hidden');
+        deleteTargetId = id;
+        deleteType = type;
+        document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    };
+
+    window.deleteCandidate = (id) => {
+        window.openDeleteModal('candidate', id);
+    };
+    
+    window.deleteCandidateDirect = async (id) => {
+         // For bulk actions
+         try {
+             await deleteDoc(doc(db, 'candidates', id));
+         } catch(e) { console.error("Failed to delete", id); }
+    }
+
+    window.closeDeleteConfirmModal = () => {
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+        deleteTargetId = null;
+        deleteType = null;
+    };
+
+    let deleteTargetId = null;
+    let deleteType = null;
+
+    window.confirmDelete = async () => {
+        if (!deleteTargetId || !deleteType) return;
+        const deleteBtn = document.querySelector('#deleteConfirmModal button.bg-red-700');
+        const originalText = deleteBtn.textContent;
+        deleteBtn.textContent = 'Deleting...';
+        deleteBtn.disabled = true;
+        try {
+            let collectionName = '';
+            if (deleteType === 'candidate') collectionName = 'candidates';
+            else if (deleteType === 'user') collectionName = 'users';
+            else if (deleteType === 'section') collectionName = 'sections';
+            else if (deleteType === 'team') collectionName = 'teams';
+            else if (deleteType === 'programme') collectionName = 'programmes';
+            else if (deleteType === 'topic_registration') collectionName = 'topic_registrations';
+            else if (deleteType === 'program_registration') collectionName = 'program_registrations';
+            else if (deleteType === 'grade_template') collectionName = 'grade_templates';
+            else if (deleteType === 'point_template') collectionName = 'point_templates';
+            
+            if (collectionName) {
+                await deleteDoc(doc(db, collectionName, deleteTargetId));
+                window.showToast("Item Deleted Successfully", "success");
+            }
+            window.closeDeleteConfirmModal();
+        } catch(e) {
+            console.error(e);
+            window.showToast("Delete failed", "error");
+        } finally {
+            deleteBtn.textContent = originalText;
+            deleteBtn.disabled = false;
+        }
+    };
+    
+    window.confirmDeleteCandidate = window.confirmDelete;
+
+    /* ================= TEMPLATE SETTINGS LOGIC ================= */
+    window.openTemplateModal = function(type) {
+        document.getElementById('templateType').value = type;
+        document.getElementById('templateId').value = '';
+        document.getElementById('templateName').value = '';
+        document.getElementById('templateRowsContainer').innerHTML = '';
+        document.getElementById('templateModalTitle').textContent = type === 'grade' ? 'Add Grade Template' : 'Add Point Template';
+        
+        // Add initial row
+        window.addTemplateRow();
+        document.getElementById('templateModal').classList.remove('hidden');
+    }
+
+    window.closeTemplateModal = function() {
+        document.getElementById('templateModal').classList.add('hidden');
+    }
+
+    window.addTemplateRow = function(lbl = '', pts = '') {
+        const container = document.getElementById('templateRowsContainer');
+        const type = document.getElementById('templateType').value;
+        const placeholder = type === 'grade' ? 'Grade (e.g. A)' : 'Position (e.g. 1st)';
+        const div = document.createElement('div');
+        div.className = "flex gap-2 items-center template-row";
+        div.innerHTML = `
+            <input type="text" class="row-label w-1/2 px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-yellow-400" placeholder="${placeholder}" value="${lbl}">
+            <input type="number" class="row-points w-1/3 px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-yellow-400" placeholder="Points" value="${pts}">
+            <button onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fa-solid fa-trash text-xs"></i></button>
+        `;
+        container.appendChild(div);
+    }
+
+    window.saveTemplate = async function() {
+        const id = document.getElementById('templateId').value;
+        const type = document.getElementById('templateType').value;
+        const name = document.getElementById('templateName').value;
+        const active = document.getElementById('templateActive').checked;
+        
+        if(!name) { window.showToast("Name required", "error"); return; }
+        
+        const rows = [];
+        document.querySelectorAll('.template-row').forEach(row => {
+            const label = row.querySelector('.row-label').value;
+            const points = row.querySelector('.row-points').value;
+            if(label && points) rows.push({label, points: parseInt(points)});
+        });
+
+        if(rows.length === 0) { window.showToast("Add at least one row", "error"); return; }
+
+        const col = type === 'grade' ? 'grade_templates' : 'point_templates';
+        const data = { name, rows, isActive: active, type };
+        
+        try {
+            if(id) await updateDoc(doc(db, col, id), data);
+            else await addDoc(collection(db, col), data);
+            window.showToast("Template Saved", "success");
+            window.closeTemplateModal();
+        } catch(e) {
+            console.error(e);
+            window.showToast("Error saving template", "error");
+        }
+    }
+
+    function renderTemplates(type) {
+        const list = type === 'grade' ? gradeTemplatesList : pointTemplatesList;
+        const container = document.getElementById(`${type}-templates-container`);
+        if(!container) return;
+        
+        container.innerHTML = list.map(t => {
+            const rowsHtml = t.rows.slice(0, 3).map(r => `<div class="flex justify-between text-xs text-gray-500"><span>${r.label}</span><span>${r.points} pts</span></div>`).join('');
+            return `
+            <div class="bg-white border border-gray-100 rounded-xl p-5 relative shadow-sm hover:shadow-md transition-shadow">
+                 <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-bold text-gray-800">${t.name}</h4>
+                    <div class="flex gap-2">
+                         <button onclick="window.editTemplate('${type}', '${t.id}')" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button>
+                         <button onclick="window.deleteTemplate('${type}', '${t.id}')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                 </div>
+                 <div class="space-y-1 mb-2">${rowsHtml}</div>
+                 ${t.rows.length > 3 ? '<p class="text-[10px] text-gray-400">...</p>' : ''}
+            </div>`;
+        }).join('');
+    }
+
+    window.deleteTemplate = (type, id) => {
+         window.openDeleteModal(`${type}_template`, id);
+    }
+
+    window.editTemplate = (type, id) => {
+        const list = type === 'grade' ? gradeTemplatesList : pointTemplatesList;
+        const t = list.find(x => x.id === id);
+        if(!t) return;
+        
+        document.getElementById('templateType').value = type;
+        document.getElementById('templateId').value = t.id;
+        document.getElementById('templateName').value = t.name;
+        document.getElementById('templateActive').checked = t.isActive !== false;
+        document.getElementById('templateModalTitle').textContent = type === 'grade' ? 'Edit Grade Template' : 'Edit Point Template';
+        
+        const container = document.getElementById('templateRowsContainer');
+        container.innerHTML = '';
+        t.rows.forEach(r => window.addTemplateRow(r.label, r.points));
+        
+        document.getElementById('templateModal').classList.remove('hidden');
+    }
+
+    /* ================= RESULT ACTION LOGIC ================= */
+    window.openResultActionModal = function(mode) {
+         document.getElementById('resultActionModal').classList.remove('hidden');
+    }
+
+    window.handleResultAction = function(action) {
+        document.getElementById('resultActionModal').classList.add('hidden');
+        if(action === 'delete') {
+             // Placeholder for actual result deletion logic
+             window.showToast("Result Deleted (Simulated)", "success");
+             document.getElementById('stat-prog-result').textContent = 'No Results';
+        } else if(action === 'publish') {
+             // Placeholder
+             window.showToast("Result Published (Simulated)", "success");
+             document.getElementById('stat-prog-result').textContent = 'Published';
+        } else {
+             window.showToast("Edit Mode (Simulated)", "info");
+        }
+    }
+
+    /* ================= MEDIA MANAGER LOGIC ================= */
+    window.renderMediaDashboard = function() {
+        document.getElementById('media-total-uploads').textContent = galleryList.length;
+        document.getElementById('media-total-images').textContent = galleryList.filter(i => i.category === 'Image').length;
+    }
+
+    window.openMediaUploadModal = function() {
+         const progSelect = document.getElementById('mediaProgram');
+         progSelect.innerHTML = '<option value="" disabled selected>Select Program</option>';
+         programmesList.filter(p => p.isActive !== false).forEach(p => {
+             const opt = document.createElement('option');
+             opt.value = p.id;
+             opt.textContent = p.programName;
+             progSelect.appendChild(opt);
+         });
+         document.getElementById('mediaUploadModal').classList.remove('hidden');
+    }
+
+    window.closeMediaUploadModal = function() {
+         document.getElementById('mediaUploadModal').classList.add('hidden');
+    }
+
+    window.saveMediaUpload = async function() {
+         const progId = document.getElementById('mediaProgram').value;
+         const category = document.getElementById('mediaCategory').value;
+         const url = document.getElementById('mediaUrl').value;
+         const desc = document.getElementById('mediaDesc').value;
+         
+         if(!progId || !url) { window.showToast("Program and URL required", "error"); return; }
+         
+         try {
+             await addDoc(collection(db, 'gallery'), {
+                 programId: progId,
+                 category,
+                 url,
+                 description: desc,
+                 createdAt: new Date().toISOString()
+             });
+             window.showToast("Uploaded Successfully", "success");
+             window.closeMediaUploadModal();
+         } catch(e) {
+             console.error(e);
+             window.showToast("Upload Failed", "error");
+         }
+    }
+
+    /* ================= ADMIN RESULT DASHBOARD (NEW) ================= */
+    window.renderAllResults = function() {
+        // 1. Calculate Team Points
+        const teamPoints = {};
+        const activeTeams = teamsList.filter(t => t.isActive !== false);
+        activeTeams.forEach(t => teamPoints[t.name] = 0);
+
+        // Calculate points from PUBLISHED results
+        resultsList.filter(r => r.published).forEach(res => {
+            res.entries.forEach(entry => {
+                const teamName = entry.team;
+                const points = parseInt(entry.totalPoints) || 0;
+                if(teamPoints[teamName] !== undefined) {
+                    teamPoints[teamName] += points;
+                } else {
+                    // Handle case if team name slightly differs or wasn't in list
+                    teamPoints[teamName] = (teamPoints[teamName] || 0) + points;
+                }
+            });
+        });
+
+        // 2. Render Cards (Sorted by Points)
+        const sortedTeams = Object.keys(teamPoints).map(name => ({
+            name, 
+            points: teamPoints[name],
+            color: (activeTeams.find(t => t.name === name) || {}).color || '#000'
+        })).sort((a,b) => b.points - a.points);
+
+        const cardsContainer = document.getElementById('results-team-cards');
+        cardsContainer.innerHTML = sortedTeams.map((t, idx) => {
+            let rankBadge = '';
+            if(idx === 0) rankBadge = '<div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-trophy"></i></div>';
+            else if(idx === 1) rankBadge = '<div class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-xs">2nd</div>';
+            else if(idx === 2) rankBadge = '<div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-xs">3rd</div>';
+
+            return `
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full" style="background-color: ${t.color}"></div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background-color: ${t.color}"></div>
+                        <span class="font-bold text-gray-700 text-sm">${t.name}</span>
+                    </div>
+                    ${rankBadge}
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Total Points</p>
+                    <h3 class="text-3xl font-bold text-gray-900">${t.points}</h3>
+                </div>
+            </div>`;
+        }).join('');
+
+        // 3. Render Scoreboard Table
+        const thead = document.getElementById('results-table-header');
+        const tbody = document.getElementById('results-table-body');
+        
+        // Header
+        let headerHtml = `<th class="px-6 py-4 w-1/3">Program Information</th>`;
+        activeTeams.forEach(t => {
+            headerHtml += `<th class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-2"><div class="w-2 h-2 rounded-full" style="background-color:${t.color}"></div>${t.name}</div></th>`;
+        });
+        headerHtml += `<th class="px-6 py-4 text-right">Actions</th>`;
+        thead.innerHTML = headerHtml;
+
+        // Body
+        const publishedResults = resultsList.filter(r => r.published);
+        if(publishedResults.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${activeTeams.length + 2}" class="px-6 py-12 text-center text-gray-400">No published results yet.</td></tr>`;
+        } else {
+            tbody.innerHTML = publishedResults.map(res => {
+                const prog = programmesList.find(p => p.id === res.programId);
+                if(!prog) return '';
+                
+                let teamColumns = activeTeams.map(t => {
+                    // Calculate total points for this team in this program result
+                    const teamEntries = res.entries.filter(e => e.team === t.name);
+                    const pts = teamEntries.reduce((sum, e) => sum + (parseInt(e.totalPoints) || 0), 0);
+                    return `<td class="px-6 py-4 text-center text-sm font-bold text-gray-700">${pts > 0 ? pts : '-'}</td>`;
+                }).join('');
+
+                return `
+                <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div>
+                            <div class="font-bold text-gray-900 text-sm">${prog.programName}</div>
+                            <div class="text-xs text-gray-500 font-mono">#${prog.programCode}</div>
+                            <div class="flex gap-2 mt-1">
+                                <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase">${prog.section}</span>
+                                <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold uppercase">${prog.type}</span>
+                            </div>
+                        </div>
+                    </td>
+                    ${teamColumns}
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="window.viewProgramme('${prog.id}')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-arrow-right"></i></button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+    }
+
+</script>
 </body>
 </html>
+
